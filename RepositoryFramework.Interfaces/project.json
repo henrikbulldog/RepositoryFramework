@@ -5,7 +5,7 @@
 	"frameworks": {
 		"netcoreapp1.1": {
       "imports": [
-        "dotnet5.6",
+        "dotnet5.6"
       ],
       "dependencies": {
         "System.Reflection.TypeExtensions": "4.3.0",

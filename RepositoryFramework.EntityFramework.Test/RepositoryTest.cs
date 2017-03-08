@@ -99,32 +99,44 @@ namespace RepositoryFramework.Test
 
 				category = categoryRepository.Find(constraint).Items.First();
 				Assert.NotNull(category);
-				var products = category.Products;
 
-				// Assert
-				if (products == null)
-				{
-					Assert.Equal(0, expectedProductRows);
-				}
-				else
-				{
-					Assert.Equal(expectedProductRows, products.Count);
-					var product = products.First();
-					if (product.Parts == null)
-					{
-						Assert.Equal(0, expectedPartRows);
-					}
-					else
-					{
-						Assert.Equal(expectedPartRows, product.Parts.Count);
-					}
-				}
-			}
-		}
+        // Assert
+        Include_AssertProduct(category.Products, expectedProductRows, expectedPartRows);
 
-		[Theory]
+        // Act
+        categoryRepository.DetachAll();
+        category = categoryRepository.GetById((categories) => (categories.Where(c => c.Id == 1)), constraint.Expandable);
+        Assert.NotNull(category);
+
+        // Assert
+        Include_AssertProduct(category.Products, expectedProductRows, expectedPartRows);
+      }
+    }
+
+    private void Include_AssertProduct(ICollection<Product> products, int expectedProductRows, int expectedPartRows)
+    {
+      if (products == null)
+      {
+        Assert.Equal(0, expectedProductRows);
+      }
+      else
+      {
+        Assert.Equal(expectedProductRows, products.Count);
+        var product = products.First();
+        if (product.Parts == null)
+        {
+          Assert.Equal(0, expectedPartRows);
+        }
+        else
+        {
+          Assert.Equal(expectedPartRows, product.Parts.Count);
+        }
+      }
+    }
+
+    [Theory]
 		[InlineData(false, false)]
-		[InlineData(true, false)]
+		[InlineData(false, true)]
 		[InlineData(true, false)]
 		[InlineData(true, true)]
 		public void SortBy(bool descendingOrder, bool useExpression)
@@ -211,7 +223,7 @@ namespace RepositoryFramework.Test
 					new QueryConstraints<Product>()
 					.Page(3, 40)
 					.SortBy("Name")
-					.Include(new List<string> { "Parts" })
+					.Include(p => p.Parts)
 					).Items;
 
 				// Assert

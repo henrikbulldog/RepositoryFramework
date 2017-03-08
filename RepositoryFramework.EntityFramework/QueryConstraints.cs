@@ -27,23 +27,6 @@ namespace RepositoryFramework.EntityFramework
 		/// </summary>
 		protected Type ModelType { get; set; }
 
-		/// <summary>
-		/// Gets start record (in the data source)
-		/// </summary>
-		/// <remarks>Calculated with the help of PageNumber and PageSize.</remarks>
-		/// 
-		public int StartRecord
-		{
-			get
-			{
-				if (Pageable.PageNumber <= 1)
-					return 0;
-
-				return (Pageable.PageNumber - 1) * (Pageable.PageSize);
-			}
-		}
-
-
 		public IExpandable<TEntity> Expandable { get; private set; }
 		public IPageable<TEntity> Pageable { get; private set; }
 		public ISortable<TEntity> Sortable { get; private set; }
@@ -119,5 +102,11 @@ namespace RepositoryFramework.EntityFramework
 			Sortable.SortByDescending(property);
 			return this;
 		}
-	}
+
+    public IQueryConstraints<TEntity> Include(Expression<Func<TEntity, object>> property)
+    {
+      Expandable.Include(property);
+      return this;
+    }
+  }
 }

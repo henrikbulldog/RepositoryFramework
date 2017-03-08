@@ -28,7 +28,7 @@ namespace RepositoryFramework.Interfaces
     IExpandable<TEntity> Include(Expression<Func<TEntity, object>> property);
 
     /// <summary>
-    /// Include reference properties
+    /// Include list of reference properties
     /// </summary>
     /// <param name="propertyPaths"></param>
     IExpandable<TEntity> Include(List<string> propertyPaths);

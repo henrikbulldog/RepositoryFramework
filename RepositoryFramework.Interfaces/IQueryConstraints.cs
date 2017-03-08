@@ -27,13 +27,19 @@ namespace RepositoryFramework.Interfaces
 		/// </summary>
 		/// <param name="propertyPaths"></param>
 		IQueryConstraints<TEntity> Include(List<string> propertyPaths);
-		
-		/// <summary>
-		/// Use paging
-		/// </summary>
-		/// <param name="pageNumber">Page to get (one based index).</param>
-		/// <param name="pageSize">Number of items per page.</param>
-		IQueryConstraints<TEntity> Page(int pageNumber, int pageSize);
+
+    /// <summary>
+    /// Include reference property
+    /// </summary>
+    /// <param name="property">Property expression</param>
+    IQueryConstraints<TEntity> Include(Expression<Func<TEntity, object>> property);
+
+    /// <summary>
+    /// Use paging
+    /// </summary>
+    /// <param name="pageNumber">Page to get (one based index).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    IQueryConstraints<TEntity> Page(int pageNumber, int pageSize);
 		
 		/// <summary>
 		/// Sort ascending by a property

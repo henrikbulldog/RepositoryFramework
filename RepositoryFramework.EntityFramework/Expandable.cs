@@ -7,14 +7,17 @@ namespace RepositoryFramework.EntityFramework
 {
 	public class Expandable<TEntity> : Constrainable<TEntity>, IExpandable<TEntity> where TEntity : class
 	{
-		/// <summary>
-		/// List of reference properties to include
-		/// </summary>
-		public List<string> Includes { get; private set; }
+    /// <summary>
+    /// List of reference properties to include
+    /// </summary>
+    public List<string> Includes { get; private set; } = new List<string>();
 
-		public IExpandable<TEntity> Include(List<string> propertyPaths)
+    /// <summary>
+    /// Include list of reference properties
+    /// </summary>
+    /// <param name="propertyPaths"></param>
+    public IExpandable<TEntity> Include(List<string> propertyPaths)
 		{
-			Includes = new List<string>();
 			if (propertyPaths == null) throw new ArgumentNullException(nameof(propertyPaths));
 			foreach (var propertyPath in propertyPaths)
 			{
@@ -23,12 +26,12 @@ namespace RepositoryFramework.EntityFramework
 			return this;
 		}
 
+    /// <summary>
+    /// Include reference property
+    /// </summary>
+    /// <param name="propertyPath"></param>
 		public IExpandable<TEntity> Include(string propertyPath)
 		{
-			if(Includes == null)
-			{
-				Includes = new List<string>();
-			}
 			if (!string.IsNullOrEmpty(propertyPath))
 			{
 				var validatedPropertyPath = propertyPath;
@@ -43,6 +46,10 @@ namespace RepositoryFramework.EntityFramework
 			return this;
 		}
 
+    /// <summary>
+    /// Include reference property
+    /// </summary>
+    /// <param name="property">Property expression</param>
     public IExpandable<TEntity> Include(Expression<Func<TEntity, object>> property)
     {
       var propertyPath = GetName(property);

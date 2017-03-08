@@ -119,7 +119,7 @@ But I need it! If you don't like Linq in the Find() and GetById() methods, use t
   categoryRepository.Find(new CategoryFilter { Name = "My category" });
 ~~~~
 
-## Why Are RepositoryFramework and RepositoryFramework.EntityFramework in Different Packages ?
+## Why Are RepositoryFramework.Interfaces and RepositoryFramework.EntityFramework in Different Packages ?
 Because I plan to make (or convince someone else to make) more implementation packages such as:
 * RepositoryFramework.Api (a generic REST API client repository)
 * RepositoryFramework.Dapper
