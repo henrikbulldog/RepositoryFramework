@@ -1,5 +1,6 @@
 # RepositoryFramework
 A .Net framework for accessing data using the Repository pattern.
+I used the code and advice given by Jonas Gauffin in this article: https://dzone.com/articles/repository-pattern-done-right, and elaborated on that.
 
 ## What is the "Repository Pattern" ?
 I will refer you to this excellent article instead of venturing an explanation myself: https://martinfowler.com/eaaCatalog/repository.html!
@@ -19,21 +20,22 @@ Simply because the code base will be easier to read and navigate.
 Well, I decided that the Repository Framework should support these scenarios, because that was what I needed in my current project:
 * A repository that supports the classical CRUD operations: Create, Read, Update and Delete.
 * A repository that only supports a subset of CRUD, for example a read-only repository.
-* A repository that supports Layered Executrion Trees (LET) or IQuerable, such as Entity Framework.
+* A repository that supports Layered Executrion Trees (LET) or Linq to SQL, such as Entity Framework.
 * A repository that does not support LET, such as a repository that calls a legacy data access framework or a downstream API.
 * A repository that supports data paging and sorting.
 
 ## What Does IUnitOfWork Do ?
 Gives you the opportunity to control when changes are committed to the data storage by calling the method SaveChanges().
 
-## Interfaces for Queryable (LET) Repositories
-These interfaces are typically used by LET repositories, and are used in the Entity Framework Core implementation in RepositoryFramework.EntityFramework:
+## Interfaces for Repositories that Support Linq to SQL
+These interfaces are typically used by repositories that support Linq to SQL, and are used in the Entity Framework Core implementation in RepositoryFramework.EntityFramework:
+* IUnitOfWork
 * IRepository
 * IGetQueryable
 * IFindQueryable
 
-## Interfaces for Non-Queryable (LET) Repositories
-These interfaces are typically used by Non-LET repositories:
+## Interfaces for Repositories with No Support for Linq to SQL
+These interfaces are typically used by repositories with no support for Linq to SQL:
 * IRepository
 * IGet
 * IFindFilter
@@ -97,8 +99,28 @@ These interfaces are typically used by Non-LET repositories:
 
   ~~~~
 
+## Wait, You Shouldn't Expose Linq from a Repository!
+True in principle, because Linq to SQL implementations are incomplete and differ from one ORM framework to another. 
+But I need it! If you don't like Linq in the Find() and GetById() methods, use the non-Linq alternatives in IGet and IFindFilter:
+
+~~~~
+  public class CategoryFilter
+  {
+    public int Id { get; set; }
+    public string Name { get; set; }
+  }
+
+...
+
+  categoryRepository.GetById(new CategoryFilter { Id = 123 });
+
+...
+
+  categoryRepository.Find(new CategoryFilter { Name = "My category" });
+~~~~
+
 ## Why Are RepositoryFramework and RepositoryFramework.EntityFramework in Different Packages ?
 Because I plan to make (or convince someone else to make) more implementation packages such as:
-* RepositoryFramework.Api
+* RepositoryFramework.Api (a generic REST API client repository)
 * RepositoryFramework.Dapper
 * RepositoryFramework.NHibernate (well, if and when NHibernate is ported to .Net Core, which it is currently not)

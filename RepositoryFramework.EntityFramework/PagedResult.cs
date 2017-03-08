@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RepositoryFramework.Interfaces;
+using System.Collections.Generic;
 
 namespace RepositoryFramework.EntityFramework
 {

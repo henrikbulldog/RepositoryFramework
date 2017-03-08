@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using RepositoryFramework.Interfaces;
 
 namespace RepositoryFramework.EntityFramework
 {

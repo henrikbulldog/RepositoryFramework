@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RepositoryFramework.Interfaces;
+using System;
 
 namespace RepositoryFramework.EntityFramework
 {
