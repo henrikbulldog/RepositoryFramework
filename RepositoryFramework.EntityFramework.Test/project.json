@@ -6,7 +6,7 @@
     "Microsoft.DotNet.InternalAbstractions": "1.0.500-preview2-1-003177",
     "xunit": "2.2.0",
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
-    "RepositoryFramework.EntityFramework": "1.0.0-*",
+    "RepositoryFramework.EntityFramework": "*",
     "Microsoft.CodeCoverage": "1.0.2"
   },
 
