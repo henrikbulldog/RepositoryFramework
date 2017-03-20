@@ -1,9 +1,9 @@
 ﻿{
-	"version": "1.0.1-*",
+	"version": "1.0.2-*",
 
   "dependencies": {
     "Microsoft.EntityFrameworkCore": "1.1.0",
-    "RepositoryFramework.Interfaces": "1.0.1"
+    "RepositoryFramework.Interfaces": "1.0.2-*"
   },
 	"frameworks": {
 			"netcoreapp1.1": {

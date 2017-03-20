@@ -56,7 +56,7 @@ namespace RepositoryFramework.EntityFramework
 
 			var count = query.Count();
 
-			return new PagedResult<TEntity>(items, count);
+			return new QueryResult<TEntity>(items, count);
 		}
 
 		private IQueryable<TEntity> Filter(Func<IQueryable<TEntity>, IQueryable<TEntity>> filter)

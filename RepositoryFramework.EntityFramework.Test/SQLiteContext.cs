@@ -17,5 +17,10 @@ namespace RepositoryFramework.Test
       Database.EnsureDeleted();
       Database.EnsureCreated();
     }
+    public override void Dispose()
+    {
+      Database.EnsureDeleted();
+      base.Dispose();
+    }
   }
 }
