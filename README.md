@@ -8,6 +8,7 @@ I will refer you to this excellent article instead of venturing an explanation m
 ## What is the "Repository Framework" ?
 A collection of generic interfaces and utility classes that abstracts concrete implementations of repositories.
 A concrete impementation using Entity Frameworkk Core can be found in the project RepositoryFramework.EntityFramework. 
+A concrete implementation using RestSharp for API ReSTful clients can be found in the project RepositoryFramework.Api. 
 
 ## Why Should I Use This Repository Framework ?
 You should't necessarily. Every tool has its purpose. 
@@ -35,9 +36,10 @@ These interfaces are typically used by repositories that support Linq to SQL, an
 * IFindQueryable
 
 ## Interfaces for Repositories with No Support for Linq to SQL
-These interfaces are typically used by repositories with no support for Linq to SQL:
+These interfaces are typically used by repositories with no support for Linq to SQL or by the API client repository:
 * IRepository
 * IGet
+* IFind
 * IFindFilter
 
 ## How Does the Repository Framework Interfaces Work ?
@@ -119,8 +121,44 @@ But I need it! If you don't like Linq in the Find() and GetById() methods, use t
   categoryRepository.Find(new CategoryFilter { Name = "My category" });
 ~~~~
 
-## Why Are RepositoryFramework.Interfaces and RepositoryFramework.EntityFramework in Different Packages ?
-Because I plan to make (or convince someone else to make) more implementation packages such as:
-* RepositoryFramework.Api (a generic REST API client repository)
-* RepositoryFramework.Dapper
-* RepositoryFramework.NHibernate (well, if and when NHibernate is ported to .Net Core, which it is currently not)
+## How does the RepositoryFramework.Api ReST Client Work?
+To GET https://jsonplaceholder.typicode.com/posts:
+~~~~
+    private Configuration configuration =
+      new Configuration
+      {
+        AuthenticationType = AuthenticationType.Anonymous
+      };
+
+      var apiRepository = new ApiRepository<Post>(configuration, 
+        "https://jsonplaceholder.typicode.com");
+      var result = apiRepository.Find();
+~~~~
+To POST https://jsonplaceholder.typicode.com/posts:
+~~~~
+    var post = new Post
+      {
+        Id = 1,
+        UserId = 1,
+        Title = "New title",
+        Body = "New body"
+      };
+      apiRepository.Create(post);
+~~~~
+To PUT https://jsonplaceholder.typicode.com/posts/1:
+~~~~
+      apiRepository.Update(post);
+~~~~
+To DELETE https://jsonplaceholder.typicode.com/posts/1:
+~~~~
+      apiRepository.Delete(post);
+~~~~
+Tp specify GET parameters, alternative resource path and entity ID property:
+~~~~
+      var apiRepository = new ApiFilterRepository<Post, UserIdFilter>(
+        configuration,
+        "https://jsonplaceholder.typicode.com",
+        "posts",
+        (post => post.Id));
+      var result = apiRepository.Find(new UserIdFilter { UserId = 1 });
+~~~~
