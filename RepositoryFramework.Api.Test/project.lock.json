@@ -2868,7 +2868,7 @@
           "lib/netstandard1.1/xunit.runner.utility.dotnet.dll": {}
         }
       },
-      "RepositoryFramework.Api/1.0.0": {
+      "RepositoryFramework.Api/1.0.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
@@ -3299,7 +3299,7 @@
           "lib/net45/xunit.runner.utility.desktop.dll": {}
         }
       },
-      "RepositoryFramework.Api/1.0.0": {
+      "RepositoryFramework.Api/1.0.1": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
@@ -9193,7 +9193,7 @@
         "xunit.runner.utility.nuspec"
       ]
     },
-    "RepositoryFramework.Api/1.0.0": {
+    "RepositoryFramework.Api/1.0.1": {
       "type": "project",
       "path": "../RepositoryFramework.Api/project.json",
       "msbuildProject": "../RepositoryFramework.Api/RepositoryFramework.Api.xproj"

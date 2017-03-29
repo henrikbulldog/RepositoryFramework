@@ -46,6 +46,24 @@ namespace RepositoryFramework.Api.Test
     }
 
     [Fact]
+    public void Find_Invalid_Path()
+    {
+      var apiRepository = new ApiFilterRepository<Post, UserIdFilter>(configuration, "https://jsonplaceholder.typicode.com", "bad_path");
+      var filter = new UserIdFilter { UserId = 1 };
+      try
+      {
+        apiRepository.Find(filter);
+      }
+      catch(ApiException exc)
+      {
+        Assert.Equal("GET", exc.Method);
+        Assert.Equal("https://jsonplaceholder.typicode.com/bad_path", exc.Path);
+        Assert.Equal(404, exc.ErrorCode);
+        Assert.Equal(1, (exc.Filter as UserIdFilter).UserId);
+      }
+    }
+
+    [Fact]
     public void GetById()
     {
       var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");

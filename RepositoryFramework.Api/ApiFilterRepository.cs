@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.IO;
-using Newtonsoft.Json;
 using RestSharp;
-using RestSharp.Extensions;
-using System.Threading;
 using System.Reflection;
 using System.Linq;
 using RepositoryFramework.Interfaces;
-using RestSharp.Authenticators;
 using System.Linq.Expressions;
 
 namespace RepositoryFramework.Api
@@ -74,10 +68,12 @@ namespace RepositoryFramework.Api
 
       if (((int)response.StatusCode) >= 400)
         throw new ApiException((int)response.StatusCode,
-          $"Error calling {EntityType}Repository.Find(): {response.Content}", response.Content);
+          $"Error calling {EntityType}Repository.Find()", "GET", BasePath, path, queryParams, null,
+          response.Content);
       else if (((int)response.StatusCode) == 0)
         throw new ApiException((int)response.StatusCode,
-          $"Error calling {EntityType}Repository.Find(): {response.ErrorMessage}", response.ErrorMessage);
+          $"Error calling {EntityType}Repository.Find(): {response.ErrorMessage}", 
+          "GET", BasePath, path, queryParams, null, response.ErrorMessage);
 
       var result = (List<TEntity>)Deserialize(response.Content, typeof(List<TEntity>), response.Headers);
       return new QueryResult<TEntity>(result, result.Count);
