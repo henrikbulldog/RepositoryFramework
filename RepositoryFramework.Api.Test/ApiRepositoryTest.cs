@@ -57,7 +57,8 @@ namespace RepositoryFramework.Api.Test
       catch(ApiException exc)
       {
         Assert.Equal("GET", exc.Method);
-        Assert.Equal("https://jsonplaceholder.typicode.com/bad_path", exc.Path);
+        Assert.Equal("https://jsonplaceholder.typicode.com", exc.BasePath);
+        Assert.Equal("bad_path", exc.Path);
         Assert.Equal(404, exc.ErrorCode);
         Assert.Equal(1, (exc.Filter as UserIdFilter).UserId);
       }

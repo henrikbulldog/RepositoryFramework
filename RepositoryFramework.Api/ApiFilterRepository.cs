@@ -68,12 +68,12 @@ namespace RepositoryFramework.Api
 
       if (((int)response.StatusCode) >= 400)
         throw new ApiException((int)response.StatusCode,
-          $"Error calling {EntityType}Repository.Find()", "GET", BasePath, path, queryParams, null,
+          $"Error calling {EntityType}Repository.Find()", "GET", BasePath, path, filter, null,
           response.Content);
       else if (((int)response.StatusCode) == 0)
         throw new ApiException((int)response.StatusCode,
           $"Error calling {EntityType}Repository.Find(): {response.ErrorMessage}", 
-          "GET", BasePath, path, queryParams, null, response.ErrorMessage);
+          "GET", BasePath, path, filter, null, response.ErrorMessage);
 
       var result = (List<TEntity>)Deserialize(response.Content, typeof(List<TEntity>), response.Headers);
       return new QueryResult<TEntity>(result, result.Count);

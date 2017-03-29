@@ -154,11 +154,11 @@ namespace RepositoryFramework.Api
       if (((int)response.StatusCode) >= 400)
         throw new ApiException((int)response.StatusCode,
           $"Error calling APIRepository<{EntityTypeName}>.Create", 
-          "POST", EntityPath, null, entity, response.Content);
+          "POST", BasePath, EntityPath, null, entity, response.Content);
       else if (((int)response.StatusCode) == 0)
         throw new ApiException((int)response.StatusCode,
           $"Error calling APIRepository<{EntityTypeName}>.Update: {response.ErrorMessage}",
-          "POST", EntityPath, null, entity);
+          "POST", BasePath, EntityPath, null, entity);
 
       DeserializeAndPopulate(response.Content, ref entity, response.Headers);
     }
@@ -184,7 +184,7 @@ namespace RepositoryFramework.Api
       {
         throw new ApiException(400, 
           $"Missing required parameter entity when calling APIRepository<{EntityTypeName}>.Update()",
-          "DELETE", EntityPath, null, entity);
+          "DELETE", BasePath, EntityPath, null, entity);
       }
 
       var path = $"{EntityPath}/{GetIdPropertyValue(entity)}";
@@ -220,7 +220,7 @@ namespace RepositoryFramework.Api
       if (((int)response.StatusCode) >= 400)
         throw new ApiException((int)response.StatusCode,
           $"Error calling APIRepository<{EntityTypeName}>.Delete: {response.Content}",
-          "DELETE", EntityPath, null, entity, response.Content);
+          "DELETE", BasePath, EntityPath, null, entity, response.Content);
       else if (((int)response.StatusCode) == 0)
         throw new ApiException((int)response.StatusCode,
           $"Error calling APIRepository<{EntityTypeName}>.Delete: {response.ErrorMessage}",
@@ -232,7 +232,7 @@ namespace RepositoryFramework.Api
       if (filter == null)
       {
         throw new ApiException(400, $"Missing required parameter filter when calling APIRepository<{EntityTypeName}>.GetById()",
-          "GET", EntityPath, filter);
+          "GET", BasePath, EntityPath, filter);
       }
       var path = $"{EntityPath}/{filter}";
       path = path.Replace("{format}", "json");
@@ -250,11 +250,11 @@ namespace RepositoryFramework.Api
       if (((int)response.StatusCode) >= 400)
         throw new ApiException((int)response.StatusCode,
           $"Error calling APIRepository<{EntityTypeName}>.GetById", 
-          "GET", path, filter, response.Content);
+          "GET", BasePath, path, filter, response.Content);
       else if (((int)response.StatusCode) == 0)
         throw new ApiException((int)response.StatusCode,
           $"Error calling APIRepository<{EntityTypeName}>.GetById: {response.ErrorMessage}",
-          "GET", path, filter, response.Content);
+          "GET", BasePath, path, filter, response.Content);
 
       return (TEntity)Deserialize(response.Content, typeof(TEntity), response.Headers);
     }
@@ -265,7 +265,7 @@ namespace RepositoryFramework.Api
       {
         throw new ApiException(400,
           $"Missing required parameter entity when calling APIRepository<{EntityTypeName}>.Update()",
-          "PUT", EntityPath, null, entity);
+          "PUT", BasePath, EntityPath, null, entity);
       }
 
       var path = $"{EntityPath}/{GetIdPropertyValue(entity)}";
@@ -301,11 +301,11 @@ namespace RepositoryFramework.Api
       if (((int)response.StatusCode) >= 400)
         throw new ApiException((int)response.StatusCode,
           $"Error calling APIRepository<{EntityTypeName}>.Update", 
-          "PUT", path, null, entity, response.Content);
+          "PUT", BasePath, path, null, entity, response.Content);
       else if (((int)response.StatusCode) == 0)
         throw new ApiException((int)response.StatusCode,
           $"Error calling APIRepository<{EntityTypeName}>.Update: {response.ErrorMessage}",
-          "PUT", path, null, entity, response.Content);
+          "PUT", BasePath, path, null, entity, response.Content);
 
       DeserializeAndPopulate(response.Content, ref entity, response.Headers);
     }
