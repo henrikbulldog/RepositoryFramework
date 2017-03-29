@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -24,6 +26,19 @@ namespace RepositoryFramework.Api.Test
       Assert.True(result.TotalCount > 0,
         JsonConvert.SerializeObject(result.Items, Formatting.Indented));
       Assert.False(result.Items.Any(p => p.UserId != 1));
+    }
+
+    [Fact]
+    public void Find_SubEntities()
+    {
+      var apiRepository = new ApiFilterRepository<Comment, PostIdFilter>(
+        configuration,
+        "https://jsonplaceholder.typicode.com",
+        "posts/{postId}/comments");
+      var result = apiRepository.Find(new PostIdFilter { PostId = 1 });
+      Assert.True(result.TotalCount > 0,
+        JsonConvert.SerializeObject(result.Items, Formatting.Indented));
+      Assert.False(result.Items.Any(p => p.PostId != 1));
     }
 
     [Fact]
@@ -54,7 +69,7 @@ namespace RepositoryFramework.Api.Test
       {
         apiRepository.Find(filter);
       }
-      catch(ApiException exc)
+      catch (ApiException exc)
       {
         Assert.Equal("GET", exc.Method);
         Assert.Equal("https://jsonplaceholder.typicode.com", exc.BasePath);
@@ -111,6 +126,29 @@ namespace RepositoryFramework.Api.Test
       };
       apiRepository.Create(post);
       Assert.NotEqual(1, post.Id);
+    }
+
+    [Fact]
+    public void CreateList()
+    {
+      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      var posts = new List<Post>
+      {
+        new Post
+        {
+          UserId = 1,
+          Title = "New title 1",
+          Body = "New body 1"
+        },
+        new Post
+        {
+          UserId = 1,
+          Title = "New title 2",
+          Body = "New body 2"
+        },
+      };
+      apiRepository.Create(posts);
+      Assert.NotEqual(1, posts[0].Id);
     }
   }
 }

@@ -68,7 +68,8 @@ namespace RepositoryFramework.Api
 
       if (((int)response.StatusCode) >= 400)
         throw new ApiException((int)response.StatusCode,
-          $"Error calling {EntityType}Repository.Find()", "GET", BasePath, path, filter, null,
+          $"Error calling {EntityType}Repository.Find(): {response.Content}", 
+          "GET", BasePath, path, filter, null,
           response.Content);
       else if (((int)response.StatusCode) == 0)
         throw new ApiException((int)response.StatusCode,

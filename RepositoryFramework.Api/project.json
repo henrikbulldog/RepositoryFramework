@@ -1,9 +1,9 @@
 {
-	"version": "1.0.1-*",
+	"version": "1.0.2",
 
   "dependencies": {
     "Newtonsoft.Json": "9.0.2-beta2",
-    "RepositoryFramework.Interfaces": "1.0.2-*"
+    "RepositoryFramework.Interfaces": "1.0.3"
   },
 
   "frameworks": {

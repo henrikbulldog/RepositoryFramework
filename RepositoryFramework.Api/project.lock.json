@@ -1521,7 +1521,7 @@
           "lib/netstandard1.3/System.Xml.XmlSerializer.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/1.0.2": {
+      "RepositoryFramework.Interfaces/1.0.3": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
@@ -1556,7 +1556,7 @@
           "lib/net452/RestSharp.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/1.0.2": {
+      "RepositoryFramework.Interfaces/1.0.3": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "compile": {
@@ -5392,7 +5392,7 @@
         "runtimes/aot/lib/netcore50/System.Xml.XmlSerializer.dll"
       ]
     },
-    "RepositoryFramework.Interfaces/1.0.2": {
+    "RepositoryFramework.Interfaces/1.0.3": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"
@@ -5401,7 +5401,7 @@
   "projectFileDependencyGroups": {
     "": [
       "Newtonsoft.Json >= 9.0.2-beta2",
-      "RepositoryFramework.Interfaces >= 1.0.2-*"
+      "RepositoryFramework.Interfaces >= 1.0.3"
     ],
     ".NETCoreApp,Version=v1.1": [
       "RestSharp.NetCore >= 105.2.3"
