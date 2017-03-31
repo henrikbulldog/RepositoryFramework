@@ -1,21 +1,29 @@
 ﻿{
-	"version": "1.0.2-*",
+  "version": "1.0.2-*",
 
   "dependencies": {
     "Microsoft.EntityFrameworkCore": "1.1.0",
-    "RepositoryFramework.Interfaces": "1.0.2-*"
+    "RepositoryFramework.Interfaces": "*",
+    "StyleCop.Analyzers": {
+      "version": "1.0.0",
+      "type": "build"
+    }
   },
-	"frameworks": {
-			"netcoreapp1.1": {
-				"imports": [
-					"dotnet5.6"
-				],
-				"dependencies": {
-					"System.Reflection.TypeExtensions": "4.3.0",
-					"RestSharp.NetCore": "105.2.3"
-				}
-			},
-		"net452": {
-		}
-	}
+  "buildOptions": {
+    "additionalArguments": [ "/ruleset:../RULES.ruleset", "/additionalfile:../stylecop.json" ],
+    "xmlDoc": "true"
+  },
+  "frameworks": {
+    "netcoreapp1.1": {
+      "imports": [
+        "dotnet5.6"
+      ],
+      "dependencies": {
+        "System.Reflection.TypeExtensions": "4.3.0",
+        "RestSharp.NetCore": "105.2.3"
+      }
+    },
+    "net452": {
+    }
+  }
 }

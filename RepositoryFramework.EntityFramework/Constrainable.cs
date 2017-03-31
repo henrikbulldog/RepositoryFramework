@@ -1,24 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace RepositoryFramework.EntityFramework
 {
   /// <summary>
   /// Can get the name of a memeber property from an expression
   /// </summary>
-  /// <typeparam name="TEntity"></typeparam>
+  /// <typeparam name="TEntity">Entity type</typeparam>
   public class Constrainable<TEntity>
   {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Constrainable{TEntity}"/> class
+    /// </summary>
     public Constrainable()
     {
       ModelType = typeof(TEntity);
     }
 
     /// <summary>
-    /// Gets model which will be queried.
+    /// Gets or sets the model which will be queried.
     /// </summary>
     protected Type ModelType { get; set; }
 
@@ -26,11 +26,15 @@ namespace RepositoryFramework.EntityFramework
     /// Get property name from expression
     /// </summary>
     /// <param name="exp">Property expression</param>
-    protected static string GetName(Expression<Func<TEntity, object>> exp)
+    /// <returns>Property name</returns>
+    protected static string GetPropertyName(Expression<Func<TEntity, object>> exp)
     {
       var body = exp.Body as MemberExpression;
 
-      if (body != null) return body.Member.Name;
+      if (body != null)
+      {
+        return body.Member.Name;
+      }
 
       var ubody = (UnaryExpression)exp.Body;
       body = ubody.Operand as MemberExpression;

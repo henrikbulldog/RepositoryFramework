@@ -1,16 +1,18 @@
 ﻿namespace RepositoryFramework.Interfaces
 {
-	/// <summary>
-	/// Gets an entity by id.
-	/// </summary>
-	/// <typeparam name="TEntity"></typeparam>
-	/// <typeparam name="TFilter"></typeparam>
-	public interface IGet<TEntity, in TFilter> where TEntity : class
+  /// <summary>
+  /// Gets an entity by id.
+  /// </summary>
+  /// <typeparam name="TEntity">Entity type</typeparam>
+  /// <typeparam name="TFilter">Filter type</typeparam>
+  public interface IGet<TEntity, in TFilter>
+    where TEntity : class
   {
     /// <summary>
     /// Gets an entity by id.
     /// </summary>
-    /// <param name="id">Id</param>
+    /// <param name="filter">Filter</param>
+    /// <returns>Entity</returns>
     TEntity GetById(TFilter filter);
   }
 }

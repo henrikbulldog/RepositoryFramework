@@ -1,6 +1,6 @@
 ﻿namespace RepositoryFramework.Test.Models
 {
-	public class OrderDetail
+  public class OrderDetail
     {
     public int Id { get; set; }
 

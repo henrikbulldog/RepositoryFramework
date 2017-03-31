@@ -1,7 +1,16 @@
 {
   "title": "RepositoryFramework.Interfaces",
 	"version": "1.0.3",
-
+  "dependencies": {
+    "StyleCop.Analyzers": {
+      "version": "1.0.0",
+      "type": "build"
+    }
+  },
+  "buildOptions": {
+    "additionalArguments": [ "/ruleset:../RULES.ruleset", "/additionalfile:../stylecop.json" ],
+    "xmlDoc": "true"
+  },
 	"frameworks": {
 		"netcoreapp1.1": {
       "imports": [

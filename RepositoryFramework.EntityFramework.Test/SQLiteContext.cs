@@ -3,7 +3,7 @@ using RepositoryFramework.Test.Models;
 
 namespace RepositoryFramework.Test
 {
-	public class SQLiteContext : DbContext
+  public class SQLiteContext : DbContext
   {
     public DbSet<Product> Products { get; set; }
     public DbSet<Category> Categories { get; set; }

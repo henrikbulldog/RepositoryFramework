@@ -1,9 +1,18 @@
 {
-	"version": "1.0.2",
+  "version": "1.0.2",
 
   "dependencies": {
     "Newtonsoft.Json": "9.0.2-beta2",
-    "RepositoryFramework.Interfaces": "1.0.3"
+    "RepositoryFramework.Interfaces": "*",
+    "StyleCop.Analyzers": {
+      "version": "1.0.0",
+      "type": "build"
+    }
+  },
+
+  "buildOptions": {
+    "additionalArguments": [ "/ruleset:../RULES.ruleset", "/additionalfile:../stylecop.json" ],
+    "xmlDoc": "true"
   },
 
   "frameworks": {

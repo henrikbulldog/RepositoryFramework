@@ -6,54 +6,35 @@ namespace RepositoryFramework.Api
   /// API Exception
   /// </summary>
   public class ApiException : Exception
-	{
-		/// <summary>
-		/// Gets or sets the error code (HTTP status code)
-		/// </summary>
-		/// <value>The error code (HTTP status code).</value>
-		public int ErrorCode { get; private set; }
-
-		/// <summary>
-		/// Gets or sets the error content (body json object)
-		/// </summary>
-		/// <value>The error content (Http response body).</value>
-		public Object ErrorContent { get; private set; }
-
+  {
     /// <summary>
-    /// HTTP Method
+    /// Initializes a new instance of the <see cref="ApiException"/> class.
     /// </summary>
-    public string Method { get; private set; }
-
-    /// <summary>
-    /// Base path
-    /// </summary>
-    public string BasePath { get; private set; }
-
-    /// <summary>
-    /// Request path
-    /// </summary>
-    public string Path { get; private set; }
-
-    /// <summary>
-    /// Request parameters
-    /// </summary>
-    public object Filter { get; set; }
-
-    /// <summary>
-    /// Entity used in request
-    /// </summary>
-    public object Entity { get; set; }
+    public ApiException()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApiException"/> class.
     /// </summary>
-    public ApiException() { }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ApiException"/> class.
-    /// </summary>
-    public ApiException(int errorCode, string message, string method, string basePath, string path, 
-      object filter = null, object entity = null, object errorContent = null) : base(message)
+    /// <param name="errorCode">Error code</param>
+    /// <param name="message">Message</param>
+    /// <param name="method">Method</param>
+    /// <param name="basePath">Base path</param>
+    /// <param name="path">Entity path</param>
+    /// <param name="filter">request filter</param>
+    /// <param name="entity">Entity</param>
+    /// <param name="errorContent">Error content</param>
+    public ApiException(
+      int errorCode,
+      string message,
+      string method,
+      string basePath,
+      string path,
+      object filter = null,
+      object entity = null,
+      object errorContent = null)
+      : base(message)
     {
       ErrorCode = errorCode;
       Method = method;
@@ -64,6 +45,41 @@ namespace RepositoryFramework.Api
       ErrorContent = errorContent;
     }
 
-  }
+    /// <summary>
+    /// Gets the error code (HTTP status code)
+    /// </summary>
+    /// <value>The error code (HTTP status code).</value>
+    public int ErrorCode { get; private set; }
 
+    /// <summary>
+    /// Gets the error content (body json object)
+    /// </summary>
+    /// <value>The error content (Http response body).</value>
+    public object ErrorContent { get; private set; }
+
+    /// <summary>
+    /// Gets HTTP Method
+    /// </summary>
+    public string Method { get; private set; }
+
+    /// <summary>
+    /// Gets Base path
+    /// </summary>
+    public string BasePath { get; private set; }
+
+    /// <summary>
+    /// Gets Request path
+    /// </summary>
+    public string Path { get; private set; }
+
+    /// <summary>
+    /// Gets request parameters filter object
+    /// </summary>
+    public object Filter { get; private set; }
+
+    /// <summary>
+    /// Gets Entity used in request
+    /// </summary>
+    public object Entity { get; private set; }
+  }
 }

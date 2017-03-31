@@ -1,10 +1,11 @@
 ﻿namespace RepositoryFramework.Interfaces
 {
-	/// <summary>
-	/// Deletes an entity.
-	/// </summary>
-	/// <typeparam name="TEntity"></typeparam>
-	public interface IDelete<TEntity> where TEntity : class
+  /// <summary>
+  /// Deletes an entity.
+  /// </summary>
+  /// <typeparam name="TEntity">Entity type</typeparam>
+  public interface IDelete<TEntity>
+    where TEntity : class
   {
     /// <summary>
     /// Delete an existing entity

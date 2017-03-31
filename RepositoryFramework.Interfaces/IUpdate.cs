@@ -1,10 +1,11 @@
 ﻿namespace RepositoryFramework.Interfaces
 {
-	/// <summary>
-	/// Updates an etity.
-	/// </summary>
-	/// <typeparam name="TEntity"></typeparam>
-	public interface IUpdate<TEntity> where TEntity : class
+  /// <summary>
+  /// Updates an etity.
+  /// </summary>
+  /// <typeparam name="TEntity">Entity type</typeparam>
+  public interface IUpdate<TEntity>
+    where TEntity : class
   {
     /// <summary>
     /// Update an existing entity
