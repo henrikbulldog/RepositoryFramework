@@ -1,6 +1,6 @@
 {
   "title": "RepositoryFramework.Interfaces",
-	"version": "1.0.3",
+	"version": "1.0.4",
   "dependencies": {
     "StyleCop.Analyzers": {
       "version": "1.0.0",

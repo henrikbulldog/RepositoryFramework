@@ -2868,7 +2868,7 @@
           "lib/netstandard1.1/xunit.runner.utility.dotnet.dll": {}
         }
       },
-      "RepositoryFramework.Api/1.0.2": {
+      "RepositoryFramework.Api/1.0.3": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
@@ -2883,7 +2883,7 @@
           "netcoreapp1.1/RepositoryFramework.Api.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/1.0.3": {
+      "RepositoryFramework.Interfaces/1.0.4": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
@@ -3299,7 +3299,7 @@
           "lib/net45/xunit.runner.utility.desktop.dll": {}
         }
       },
-      "RepositoryFramework.Api/1.0.2": {
+      "RepositoryFramework.Api/1.0.3": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
@@ -3314,7 +3314,7 @@
           "net452/RepositoryFramework.Api.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/1.0.3": {
+      "RepositoryFramework.Interfaces/1.0.4": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "compile": {
@@ -9193,12 +9193,12 @@
         "xunit.runner.utility.nuspec"
       ]
     },
-    "RepositoryFramework.Api/1.0.2": {
+    "RepositoryFramework.Api/1.0.3": {
       "type": "project",
       "path": "../RepositoryFramework.Api/project.json",
       "msbuildProject": "../RepositoryFramework.Api/RepositoryFramework.Api.xproj"
     },
-    "RepositoryFramework.Interfaces/1.0.3": {
+    "RepositoryFramework.Interfaces/1.0.4": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"

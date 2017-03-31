@@ -1524,7 +1524,7 @@
           "lib/netstandard1.3/System.Xml.XmlSerializer.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/1.0.3": {
+      "RepositoryFramework.Interfaces/1.0.4": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
@@ -1562,7 +1562,7 @@
       "StyleCop.Analyzers/1.0.0": {
         "type": "package"
       },
-      "RepositoryFramework.Interfaces/1.0.3": {
+      "RepositoryFramework.Interfaces/1.0.4": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "compile": {
@@ -5412,7 +5412,7 @@
         "runtimes/aot/lib/netcore50/System.Xml.XmlSerializer.dll"
       ]
     },
-    "RepositoryFramework.Interfaces/1.0.3": {
+    "RepositoryFramework.Interfaces/1.0.4": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"
