@@ -1,0 +1,31 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Dapper": "1.50.2",
+    "RepositoryFramework.Interfaces": "1.0.4",
+    "StyleCop.Analyzers": {
+      "version": "1.0.0",
+      "type": "build"
+    }
+  },
+  "buildOptions": {
+    "additionalArguments": [ "/ruleset:../RULES.ruleset", "/additionalfile:../stylecop.json" ],
+    "xmlDoc": "true"
+  },
+
+  "frameworks": {
+    "netcoreapp1.1": {
+      "imports": [
+        "dotnet5.6"
+      ],
+      "dependencies": {
+        "System.Reflection.TypeExtensions": "4.3.0",
+        "System.Linq.Queryable": "4.0.1",
+        "System.Runtime.InteropServices": "4.1.0"
+      }
+    },
+    "net452": {
+    }
+  }
+}
