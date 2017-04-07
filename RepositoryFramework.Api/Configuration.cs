@@ -112,7 +112,7 @@ namespace RepositoryFramework.Api
     }
 
     /// <summary>
-    /// OAuth2 access token
+    /// Gets or sets OAuth2 access token
     /// </summary>
     public string AccessToken { get; set; }
   }

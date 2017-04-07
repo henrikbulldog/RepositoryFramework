@@ -41,10 +41,10 @@ namespace RepositoryFramework.Dapper
       }
 
       var columns = EntityColumns.Where(s => s != EntityIdPropertyName);
-      var parameters = columns.Select(name => "@" + name ).ToList();
+      var parameters = columns.Select(name => "@" + name).ToList();
 
       IEnumerable<int> result = Connection.Query<int>(
-        $"EXEC Create{EntityTypeName} {string.Join(",", parameters)}", 
+        $"EXEC Create{EntityTypeName} {string.Join(",", parameters)}",
         entity);
 
       EntityType.GetProperty(EntityIdPropertyName)?
@@ -63,7 +63,7 @@ namespace RepositoryFramework.Dapper
       }
 
       Connection.Execute(
-        $"EXEC Delete{EntityTypeName} @{EntityIdPropertyName}", 
+        $"EXEC Delete{EntityTypeName} @{EntityIdPropertyName}",
         entity);
     }
 
@@ -98,7 +98,7 @@ namespace RepositoryFramework.Dapper
       }
 
       IEnumerable<TEntity> result = Connection.Query<TEntity>(
-        $"EXEC Get{EntityTypeName} @{EntityIdPropertyName}", 
+        $"EXEC Get{EntityTypeName} @{EntityIdPropertyName}",
         new { Id = filter });
 
       return result.FirstOrDefault();
