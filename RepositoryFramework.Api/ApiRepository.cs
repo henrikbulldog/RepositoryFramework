@@ -909,16 +909,12 @@ namespace RepositoryFramework.Api
           break;
         case AuthenticationType.BasicAuthentication:
           RestClient.Authenticator = new HttpBasicAuthenticator(Configuration.Username, Configuration.Password);
-
-          // headerParams["Authorization"] = "Basic " + Base64Encode(configuration.Username + ":" + configuration.Password);
           break;
         case AuthenticationType.ApiKey:
           headerParams["api_key"] = GetApiKeyWithPrefix("api_key");
           break;
         case AuthenticationType.OAuth2:
-          RestClient.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(string.Empty);
-
-          // TODO support oauth
+          RestClient.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(Configuration.AccessToken);
           break;
       }
     }

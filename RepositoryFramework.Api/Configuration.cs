@@ -110,5 +110,10 @@ namespace RepositoryFramework.Api
         dateTimeFormat = value;
       }
     }
+
+    /// <summary>
+    /// OAuth2 access token
+    /// </summary>
+    public string AccessToken { get; set; }
   }
 }
