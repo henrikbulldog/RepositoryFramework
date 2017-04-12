@@ -4,7 +4,7 @@ using System.Linq;
 namespace RepositoryFramework.Interfaces
 {
   /// <summary>
-  /// Finds a list of entites using a lambda expression for filtering.
+  /// Finds a list of entites using a filter expression and query constraints for expansion, paging and sorting.
   /// </summary>
   /// <typeparam name="TEntity">Entity type</typeparam>
   public interface IFindQueryable<TEntity> : IFindConstraints<TEntity>

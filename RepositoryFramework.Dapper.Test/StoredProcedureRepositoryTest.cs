@@ -14,8 +14,7 @@ namespace RepositoryFramework.Dapper.Test
   {
     protected override IDbConnection CreateConnection()
     {
-      //return new SqlConnection(@"Server=.\SQLEXPRESS;Database=StoredProcedureRepositoryTest;Trusted_Connection=True;");
-      return new SqlConnection("Server=BL-FA-STG01;Database=HTH;Trusted_Connection=True;");
+      return new SqlConnection(@"Server=(LocalDb)\MSSQLLocalDB;Database=master;Trusted_Connection=True;");
     }
 
     private static void RunScript(IDbConnection connection, string script)
@@ -36,7 +35,7 @@ namespace RepositoryFramework.Dapper.Test
       }
     }
 
-    protected override void InitializeDatabase(IDbConnection connection)
+    protected override void InitializeDatabase(IDbConnection connection, string database)
     {
       if (connection.State != ConnectionState.Open)
       {
@@ -44,6 +43,15 @@ namespace RepositoryFramework.Dapper.Test
       }
 
       var script = $@"
+USE master
+IF EXISTS(SELECT * FROM sys.databases WHERE NAME='{database}')
+	DROP DATABASE [{database}]
+GO
+
+CREATE DATABASE [{database}]
+GO
+
+USE StoredProcedureRepositoryTest
 IF OBJECT_ID ('Category') IS NOT NULL 
   DROP TABLE Category
 GO

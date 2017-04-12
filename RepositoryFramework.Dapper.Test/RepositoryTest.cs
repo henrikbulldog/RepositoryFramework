@@ -16,7 +16,7 @@ namespace RepositoryFramework.Dapper.Test
       return new SqliteConnection("Data Source=:memory:");
     }
 
-    protected virtual void InitializeDatabase(IDbConnection connection)
+    protected virtual void InitializeDatabase(IDbConnection connection, string database)
     {
       if (connection.State != ConnectionState.Open)
       {
@@ -47,7 +47,7 @@ Description NVARCHAR(100)
     {
       using (var connection = CreateConnection())
       {
-        InitializeDatabase(connection);
+        InitializeDatabase(connection, "RepositoryTest_Create_And_GetById");
 
         // Arrange
         var categoryRepository = CreateCategoryRepository<IdFilter>(connection);
@@ -74,7 +74,7 @@ Description NVARCHAR(100)
     {
       using (var connection = CreateConnection())
       {
-        InitializeDatabase(connection);
+        InitializeDatabase(connection, "RepositoryTest_Update");
 
         // Arrange
         var categoryRepository = CreateCategoryRepository<IdFilter>(connection);
@@ -104,7 +104,7 @@ Description NVARCHAR(100)
     {
       using (var connection = CreateConnection())
       {
-        InitializeDatabase(connection);
+        InitializeDatabase(connection, "RepositoryTest_Delete");
 
         // Arrange
         var categoryRepository = CreateCategoryRepository<IdFilter>(connection);
@@ -132,7 +132,7 @@ Description NVARCHAR(100)
     {
       using (var connection = CreateConnection())
       {
-        InitializeDatabase(connection);
+        InitializeDatabase(connection, "RepositoryTest_Find");
 
         // Arrange
         var categoryRepository = CreateCategoryRepository<IdFilter>(connection);
@@ -163,7 +163,7 @@ Description NVARCHAR(100)
     {
       using (var connection = CreateConnection())
       {
-        InitializeDatabase(connection);
+        InitializeDatabase(connection, "RepositoryTest_FindFilter");
 
         // Arrange
         var categoryRepository = CreateCategoryRepository<CategoryFilter>(connection);

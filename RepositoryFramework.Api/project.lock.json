@@ -1830,11 +1830,11 @@
       "type": "package",
       "path": "StyleCop.Analyzers/1.0.0",
       "files": [
+        "StyleCop.Analyzers.1.0.0.nupkg.sha512",
+        "StyleCop.Analyzers.nuspec",
         "analyzers/dotnet/cs/Newtonsoft.Json.dll",
         "analyzers/dotnet/cs/StyleCop.Analyzers.CodeFixes.dll",
         "analyzers/dotnet/cs/StyleCop.Analyzers.dll",
-        "stylecop.analyzers.1.0.0.nupkg.sha512",
-        "stylecop.analyzers.nuspec",
         "tools/install.ps1",
         "tools/uninstall.ps1"
       ]

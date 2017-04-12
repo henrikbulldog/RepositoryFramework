@@ -7,8 +7,16 @@ I will refer you to this excellent article instead of venturing an explanation m
 
 ## What is the "Repository Framework" ?
 A collection of generic interfaces and utility classes that abstracts concrete implementations of repositories.
-A concrete impementation using Entity Frameworkk Core can be found in the project RepositoryFramework.EntityFramework. 
-A concrete implementation using RestSharp for API ReSTful clients can be found in the project RepositoryFramework.Api. 
+Currently there are 3 implementations of the interfaces in separate packages on NuGet.org:
+* RepositoryFramework.EntityFramework. 
+  * Uses Entity Framework Core, see https://docs.microsoft.com/en-us/ef/core/
+  * No SQL needed
+* RepositoryFramework.Dapper
+  * Uses Daper, see https://github.com/StackExchange/Dapper
+  * Uses dynamic SQL embedded in C3 code
+* RepositoryFramework.Api
+  *  Uses RestSharp, see http://restsharp.org/
+  *  For ReSTful API clients
 
 ## Why Should I Use This Repository Framework ?
 You should't necessarily. Every tool has its purpose. 
@@ -16,6 +24,21 @@ If you are writing a simple application with a limited functional scope, you sho
 Don't bother setting up repositories unless you really need them. 
 If you are building Microservices as part of a larger enterprise scale solution, streamlining your data access code, through the use of the Repository Framework, might turn out to be a good investment;
 Simply because the code base will be easier to read and navigate.
+
+### Interfaces for Repositories that Support Linq to SQL
+These interfaces are typically used by repositories that support Linq to SQL, they are used in RepositoryFramework.EntityFramework:
+* IRepository: Creates, updates and deletes entities
+* IUnitOfWork: Saves changes made to a database context
+* IGetQueryable: Gets an entity by a filter expression and query constraints for expanding (eager loading) related objects
+* IFind: Finds a list of entites
+* IFindQueryable: Finds a list of entites using a filter expression and query constraints for expansion, paging and sorting
+
+### Interfaces for Repositories with No Support for Linq to SQL
+These interfaces are used by repositories with no support for Linq to SQL, they are used in RepositoryFramework.Api and RepositoryFramework.Dapper:
+* IRepository: Creates, updates and deletes entities
+* IGet: Gets an entity by id
+* IFind: Finds a list of entites
+* IFindFilter: Finds a list of entites using an object with filtering information
 
 ## I See a lot of Interfaces, Why Not Just IRepository ?
 Well, I decided that the Repository Framework should support these scenarios, because that was what I needed in my current project:
@@ -25,24 +48,7 @@ Well, I decided that the Repository Framework should support these scenarios, be
 * A repository that does not support LET, such as a repository that calls a legacy data access framework or a downstream API.
 * A repository that supports data paging and sorting.
 
-## What Does IUnitOfWork Do ?
-Gives you the opportunity to control when changes are committed to the data storage by calling the method SaveChanges().
-
-## Interfaces for Repositories that Support Linq to SQL
-These interfaces are typically used by repositories that support Linq to SQL, and are used in the Entity Framework Core implementation in RepositoryFramework.EntityFramework:
-* IUnitOfWork
-* IRepository
-* IGetQueryable
-* IFindQueryable
-
-## Interfaces for Repositories with No Support for Linq to SQL
-These interfaces are typically used by repositories with no support for Linq to SQL or by the API client repository:
-* IRepository
-* IGet
-* IFind
-* IFindFilter
-
-## How Does the Repository Framework Interfaces Work ?
+## How To Use RepositoryFramework.EntityFramework ?
   ~~~~
   // Given this model:
 	
@@ -67,6 +73,7 @@ These interfaces are typically used by repositories with no support for Linq to 
   ...
 
   // To create an entity:
+  DbContext db = CreateContext();
   var categoryRepository = new Repository<Category>(db);
   var category = new Category { Name = "Category1" };
   categoryRepository.Create(category);
@@ -101,7 +108,7 @@ These interfaces are typically used by repositories with no support for Linq to 
 
   ~~~~
 
-## Wait, You Shouldn't Expose Linq from a Repository!
+### Wait, You Shouldn't Expose Linq from a Repository!
 True in principle, because Linq to SQL implementations are incomplete and differ from one ORM framework to another. 
 But I need it! If you don't like Linq in the Find() and GetById() methods, use the non-Linq alternatives in IGet and IFindFilter:
 
@@ -121,7 +128,154 @@ But I need it! If you don't like Linq in the Find() and GetById() methods, use t
   categoryRepository.Find(new CategoryFilter { Name = "My category" });
 ~~~~
 
-## How does the RepositoryFramework.Api ReST Client Work?
+## How To Use RepositoryFramework.Dapper?
+  ~~~~
+  // Given this model:
+	
+  public class Category
+  {
+    public int Id? { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public virtual ICollection<Product> Products { get; set; }
+  }
+
+  public class Product
+  {
+    public int Id? { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public decimal Price { get; set; }
+    public virtual Category Category { get; set; }
+    public ICollection<Part> Parts { get; set; }
+  }
+
+  public class IdFilter
+  {
+    public int Id { get; set; }
+  }
+
+  public class CategoryFilter
+  {
+    public string Name { get; set; }
+    public string Description { get; set; }
+  }
+
+  ...
+
+  // To create an entity:
+  IDbConnection connection = CreateConnection();
+  var categoryRepository = new Repository<Category, IdFilter>(connection);
+  var category = new Category
+  {
+    Name = Guid.NewGuid().ToString(),
+    Description = Guid.NewGuid().ToString()
+  };
+  categoryRepository.Create(category);
+
+  ...
+
+  // To update an entity:
+  category.Name = "Changed name";
+  categoryRepository.Update(category);
+  categoryRepository.SaveChanges();
+
+  ...
+
+  // To delete an entity:
+  categoryRepository.Delete(category);
+  categoryRepository.SaveChanges();
+
+  ...
+
+  // To read an entity with a filter:
+  var categoryRepository = CreateCategoryRepository<CategoryFilter>(connection);
+  var result = categoryRepository.Find(
+    new CategoryFilter 
+    { 
+      Name = "Category 1"
+    });
+
+  ...
+
+  // To expand replated objects, you have to override the Find() method:
+  public class CategoryRepository : Repository<Category, CategoryFilter>
+  {
+    public override IQueryResult<Category> Find()
+    {
+      if (Connection.State != ConnectionState.Open)
+      {
+        Connection.Open();
+      }
+
+      var findQuery = $@"
+SELECT * FROM Category c
+OUTER LEFT JOIN Product p ON p.CategoryId = c.Id";
+
+      var lookup = new Dictionary<int?, Category>();
+      IEnumerable<Category> result = SqlMapper.Query<Category, Product, Category>(
+        Connection, 
+        findQuery, 
+        (category, product) => Map(category, product, lookup));
+
+      var categories = lookup.Values.AsEnumerable();
+      return new QueryResult<Category>(categories, categories.Count());
+    }
+
+    private Category Map(Category category, Product product, Dictionary<int?, Category> lookup)
+    {
+      Category currentCategory;
+
+      if (!lookup.TryGetValue(category.Id, out currentCategory))
+      {
+        currentCategory = category;
+        lookup.Add(category.Id, currentCategory);
+      }
+
+      if (currentCategory.Products == null)
+      {
+        currentCategory.Products = new List<Product>();
+      }
+
+      if (product != null)
+      {
+        currentCategory.Products.Add(product);
+      }
+      return currentCategory;
+    }
+  }
+
+  ~~~~
+
+### Wait, You Should Only Have One Language Per File!
+I agree. So I made StoredProcedureRepository. This allows you to put all your SQL in the database and use stored procedures as an abstraction layer to SQL (and SQL dialects!).
+In order to use StoredProcedureRepository<Category, TFilter>, you must create stored procedures using this naming convention:
+
+* CREATE[Entity type name]
+* INSERT[Entity type name]
+* UPDATE[Entity type name]
+* DELETE[Entity type name]
+
+For example:
+
+~~~~
+
+CREATE PROCEDURE CreateCategory
+  @Name NVARCHAR(100) = NULL,
+  @Description NVARCHAR(100) = NULL
+AS
+BEGIN
+  INSERT INTO Category (Name, Description)
+  VALUES(@Name, @Description)
+
+  SELECT @@IDENTITY
+END
+
+~~~~
+
+Having created the stored procedures, you can use StoredProcedureRepository just like Repository.
+
+## How To Use RepositoryFramework.Api?
 To GET https://jsonplaceholder.typicode.com/posts:
 ~~~~
     private Configuration configuration =
