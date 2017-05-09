@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 
 namespace RepositoryFramework.Api
 {
@@ -81,5 +82,14 @@ namespace RepositoryFramework.Api
     /// Gets Entity used in request
     /// </summary>
     public object Entity { get; private set; }
+
+    /// <summary>
+    /// Convert to string
+    /// </summary>
+    /// <returns>String</returns>
+    public override string ToString()
+    {
+      return $"{base.ToString()}\nErrorCode: {ErrorCode}\nErrorContent: {ErrorContent}\nMethod: {Method}\nBasePath: {BasePath}\nPath: {Path}\nFilter: {JsonConvert.SerializeObject(Filter)}\nEntity: {JsonConvert.SerializeObject(Entity)}";
+    }
   }
 }

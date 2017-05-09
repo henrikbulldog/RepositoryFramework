@@ -51,7 +51,7 @@ GO
 CREATE DATABASE [{database}]
 GO
 
-USE StoredProcedureRepositoryTest
+USE [{database}]
 IF OBJECT_ID ('Category') IS NOT NULL 
   DROP TABLE Category
 GO
