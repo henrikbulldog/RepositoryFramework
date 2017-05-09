@@ -240,7 +240,4 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
-/RepositoryFramework.Api
-/RepositoryFramework.Api.Test
-/RepositoryFramework.MongoDB
-/RepositoryFramework.MongoDB.Test
+/RepositoryFramework.MongoDB.Test/data

@@ -360,9 +360,10 @@ Tp specify GET parameters, alternative resource path and entity ID property:
 
   ...
 
-  // To read a list of entities with a filter expression , sorting and paging:
+  // To read a list of entities with a filter expression, sorting and paging:
   mongoRepository.Find(doc => doc.IntTest < 100),
-      new Sortable<TestDocument>().SortBy(td => td.IntTest),
-      new Pageable<TestDocument>().Page(1, 2));
+      new QueryConstraints<TestDocument>()
+        .SortBy(td => td.IntTest)
+        .Page(1, 2));
 
   ~~~~
