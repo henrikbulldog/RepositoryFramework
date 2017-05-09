@@ -15,6 +15,9 @@ namespace RepositoryFramework.MongoDB.Test
 {
   public class Mongo2GoTest : IClassFixture<MongoDBFixture>
   {
+    private MongoDBFixture mongoDBFixture;
+    private string collectionName = "TestCollection";
+
     public Mongo2GoTest(MongoDBFixture mongoDBFixture)
     {
       this.mongoDBFixture = mongoDBFixture;
@@ -29,13 +32,7 @@ namespace RepositoryFramework.MongoDB.Test
           .SetIdGenerator(StringObjectIdGenerator.Instance); ;
       });
       }
-
-      collection = mongoDBFixture.Database.GetCollection<TestDocument>(collectionName);
     }
-
-    private MongoDBFixture mongoDBFixture;
-    internal static IMongoCollection<TestDocument> collection;
-    internal static string collectionName = "TestCollection";
 
     public static IList<T> ReadBsonFile<T>(string fileName)
     {
@@ -46,6 +43,9 @@ namespace RepositoryFramework.MongoDB.Test
     [Fact]
     public void SaveAndRetrieve()
     {
+      var collection = mongoDBFixture.Database
+        .GetCollection<TestDocument>(collectionName);
+
       List<TestDocument> queryResult;
 
       collection.InsertOne(TestDocument.DummyData1());

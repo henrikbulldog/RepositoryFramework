@@ -1,8 +1,9 @@
-﻿{
+{
   "dependencies": {
     "Microsoft.DotNet.InternalAbstractions": "1.0.500-preview2-1-003177",
     "MongoDB.Driver": "2.4.3",
-    "RepositoryFramework.Interfaces": "1.0.4"
+    "RepositoryFramework.Interfaces": "1.0.4",
+    "System.Linq.Expressions": "4.3.0"
   },
 
   "frameworks": {

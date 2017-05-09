@@ -7,20 +7,12 @@ namespace RepositoryFramework.MongoDB.Test
 {
   public class TestDocument
   {
-    //public TestDocument()
-    //{
-    //  TestDocumentId = Guid.NewGuid().ToString();
-    //}
-
-    //[BsonId]
-    //[BsonRepresentation(BsonType.ObjectId)]
     public string TestDocumentId { get; set; }
 
     public string StringTest { get; set; }
 
     public int IntTest { get; set; }
 
-    //[BsonDateTimeOptions(Kind = DateTimeKind.Local)]
     public DateTime? DateTest { get; set; }
 
     public List<string> ListTest { get; set; }
@@ -29,8 +21,8 @@ namespace RepositoryFramework.MongoDB.Test
     {
       return new TestDocument
       {
-        StringTest = "Hello World",
-        IntTest = 42,
+        StringTest = "A",
+        IntTest = 1,
         DateTest = new DateTime(1984, 09, 30, 6, 6, 6, 171, DateTimeKind.Utc).ToLocalTime(),
         ListTest = new List<string> { "I", "am", "a", "list", "of", "strings" }
       };
@@ -40,8 +32,8 @@ namespace RepositoryFramework.MongoDB.Test
     {
       return new TestDocument
       {
-        StringTest = "Foo",
-        IntTest = 23,
+        StringTest = "B",
+        IntTest = 2,
       };
     }
 
@@ -49,8 +41,8 @@ namespace RepositoryFramework.MongoDB.Test
     {
       return new TestDocument
       {
-        StringTest = "Bar",
-        IntTest = 77,
+        StringTest = "C",
+        IntTest = 3,
       };
     }
   }

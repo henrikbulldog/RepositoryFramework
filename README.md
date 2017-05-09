@@ -13,10 +13,13 @@ Currently there are 3 implementations of the interfaces in separate packages on 
   * No SQL needed
 * RepositoryFramework.Dapper
   * Uses Daper, see https://github.com/StackExchange/Dapper
-  * Uses dynamic SQL embedded in C3 code
+  * Uses dynamic SQL embedded in C# code
 * RepositoryFramework.Api
   *  Uses RestSharp, see http://restsharp.org/
   *  For ReSTful API clients
+*  RepositoryFramework.MongoDB
+   *  Uses MongoDB, see https://docs.mongodb.com/
+   *  Uses the MongoDB C# driver, https://github.com/mongodb/mongo-csharp-driver
 
 ## Why Should I Use This Repository Framework ?
 You should't necessarily. Every tool has its purpose. 
@@ -110,22 +113,16 @@ Well, I decided that the Repository Framework should support these scenarios, be
 
 ### Wait, You Shouldn't Expose Linq from a Repository!
 True in principle, because Linq to SQL implementations are incomplete and differ from one ORM framework to another. 
-But I need it! If you don't like Linq in the Find() and GetById() methods, use the non-Linq alternatives in IGet and IFindFilter:
+If you don't like Linq parameters, inherit from Repository and do your own implementation:
 
 ~~~~
-  public class CategoryFilter
+  public class CategoryRepository : Repository<Category>
   {
-    public int Id { get; set; }
-    public string Name { get; set; }
+    Category GetById(int id)
+    {
+      return GetById(() => (cat => cat.Id == id);
+    }
   }
-
-...
-
-  categoryRepository.GetById(new CategoryFilter { Id = 123 });
-
-...
-
-  categoryRepository.Find(new CategoryFilter { Name = "My category" });
 ~~~~
 
 ## How To Use RepositoryFramework.Dapper?
@@ -316,3 +313,56 @@ Tp specify GET parameters, alternative resource path and entity ID property:
         (post => post.Id));
       var result = apiRepository.Find(new UserIdFilter { UserId = 1 });
 ~~~~
+
+## How To Use RepositoryFramework.MongoDB
+  ~~~~
+  // Given this model:
+	
+  public class TestDocument
+  {
+    public string TestDocumentId { get; set; }
+
+    public string StringTest { get; set; }
+
+    public int IntTest { get; set; }
+  }
+
+  ...
+
+  // To create an entity:
+  mongoRepository = new MongoRepository<TestDocument>(GetDatabase(), 
+    d =>
+    {
+      d.AutoMap();
+      d.MapIdMember(c => c.TestDocumentId)
+        .SetIdGenerator(StringObjectIdGenerator.Instance);
+    });
+  var doc = new TestDocument
+  {
+    StringTest = "A",
+    IntTest = 1,
+  };
+  mongoRepository.Create(doc);
+
+  ...
+
+  // To read an entity by:
+  categoryRepository.GetById(doc.TestDocumentId);
+
+  ...
+
+  // To update an entity:
+  mongoRepository.Update(doc);
+  ...
+
+  // To delete an entity:
+  mongoRepository.Delete(doc);
+
+  ...
+
+  // To read a list of entities with a filter expression , sorting and paging:
+  mongoRepository.Find(doc => doc.IntTest < 100),
+      new Sortable<TestDocument>().SortBy(td => td.IntTest),
+      new Pageable<TestDocument>().Page(1, 2));
+
+  ~~~~

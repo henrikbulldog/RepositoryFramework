@@ -2464,6 +2464,18 @@
           "lib/net45/MongoDB.Driver.Core.dll": {}
         }
       },
+      "System.Linq.Expressions/4.3.0": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "System.Core"
+        ],
+        "compile": {
+          "ref/net45/_._": {}
+        },
+        "runtime": {
+          "lib/net45/_._": {}
+        }
+      },
       "System.Runtime.InteropServices.RuntimeInformation/4.0.0": {
         "type": "package",
         "compile": {
@@ -7543,7 +7555,8 @@
     "": [
       "Microsoft.DotNet.InternalAbstractions >= 1.0.500-preview2-1-003177",
       "MongoDB.Driver >= 2.4.3",
-      "RepositoryFramework.Interfaces >= 1.0.4"
+      "RepositoryFramework.Interfaces >= 1.0.4",
+      "System.Linq.Expressions >= 4.3.0"
     ],
     ".NETCoreApp,Version=v1.1": [
       "Microsoft.NETCore.App >= 1.1.0"

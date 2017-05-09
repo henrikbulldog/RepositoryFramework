@@ -85,7 +85,7 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="constraints">Query constraints for expansion, paging and sorting</param>
     /// <returns>Current instance</returns>
     public virtual IQueryResult<TEntity> Find(
-      Func<IQueryable<TEntity>, IQueryable<TEntity>> filter,
+      Func<System.Linq.IQueryable<TEntity>, System.Linq.IQueryable<TEntity>> filter,
       IQueryConstraints<TEntity> constraints)
     {
       var query = Filter(filter);
@@ -101,7 +101,7 @@ namespace RepositoryFramework.EntityFramework
         items = query.ToList();
       }
 
-      var count = query.Count();
+      var count = items.Count();
 
       return new QueryResult<TEntity>(items, count);
     }
@@ -130,7 +130,7 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="filter">Filter expression</param>
     /// <returns>Current instance</returns>
-    public virtual IQueryResult<TEntity> Find(Func<IQueryable<TEntity>, IQueryable<TEntity>> filter)
+    public virtual IQueryResult<TEntity> Find(Func<System.Linq.IQueryable<TEntity>, System.Linq.IQueryable<TEntity>> filter)
     {
       return Find(filter, null);
     }
@@ -169,7 +169,7 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="filter">Filter expression</param>
     /// <returns>Entity</returns>
-    public virtual TEntity GetById(Func<IQueryable<TEntity>, IQueryable<TEntity>> filter)
+    public virtual TEntity GetById(Func<System.Linq.IQueryable<TEntity>, System.Linq.IQueryable<TEntity>> filter)
     {
       return GetById(filter, null);
     }
@@ -180,7 +180,7 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="filter">Filter expression</param>
     /// <param name="includes">Query constraints for exapanding (eager loading) navigatinal properties and collections</param>
     /// <returns>Entity</returns>
-    public virtual TEntity GetById(Func<IQueryable<TEntity>, IQueryable<TEntity>> filter, IExpandable<TEntity> includes)
+    public virtual TEntity GetById(Func<System.Linq.IQueryable<TEntity>, System.Linq.IQueryable<TEntity>> filter, IExpandable<TEntity> includes)
     {
       var query = Filter(filter);
       if (includes != null)
@@ -191,9 +191,9 @@ namespace RepositoryFramework.EntityFramework
       return query.SingleOrDefault();
     }
 
-    private IQueryable<TEntity> Filter(Func<IQueryable<TEntity>, IQueryable<TEntity>> filter)
+    private IQueryable<TEntity> Filter(Func<System.Linq.IQueryable<TEntity>, System.Linq.IQueryable<TEntity>> filter)
     {
-      IQueryable<TEntity> query;
+      System.Linq.IQueryable<TEntity> query;
 
       if (filter != null)
       {
