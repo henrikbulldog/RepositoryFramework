@@ -347,7 +347,7 @@ Tp specify GET parameters, alternative resource path and entity ID property:
   ...
 
   // To read an entity by:
-  categoryRepository.GetById(doc.TestDocumentId);
+  var doc = categoryRepository.GetById("key");
 
   ...
 
