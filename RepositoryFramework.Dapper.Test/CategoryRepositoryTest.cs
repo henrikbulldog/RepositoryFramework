@@ -23,6 +23,8 @@ CREATE TABLE Category
 (
   Id INTEGER PRIMARY KEY,
   Name NVARCHAR(100),
+  NullField NVARCHAR(100) DEFAULT NULL,
+  DateTimeField DATETIME,
   Description NVARCHAR(100)
 );
 
@@ -155,44 +157,8 @@ CREATE TABLE Product
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(categories, result.TotalCount);
-        foreach (var category in result.Items)
-        {
-          Assert.Equal(products, category.Products.Count);
-        }
-      }
-    }
-
-    [Theory]
-    [InlineData(100, 2, "Name 1", null, 1)]
-    [InlineData(100, 2, "Name 1", "Description 1", 1)]
-    [InlineData(100, 2, null, "Description 1", 10)]
-    public void FindFilter(int categories, int products, string name, string description, int expectedRows)
-    {
-      using (var connection = new SqliteConnection("Data Source=:memory:"))
-      {
-        InitializeDatabase(connection);
-
-        // Arrange
-        var categoryRepository = new CategoryRepository(connection, "SELECT last_insert_rowid()");
-        for (int i = 0; i < categories; i++)
-        {
-          var category = new Category
-          {
-            Name = $"Name {i}",
-            Description = $"Description {i % 10}",
-            Products = CreateProducts(products)
-          };
-          categoryRepository.Create(category);
-        }
-
-        // Act
-        var result = categoryRepository.Find(new CategoryFilter { Name = name, Description = description });
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(expectedRows, result.TotalCount);
-        foreach (var category in result.Items)
+        Assert.Equal(categories, result.Count());
+        foreach (var category in result)
         {
           Assert.Equal(products, category.Products.Count);
         }
@@ -207,37 +173,6 @@ CREATE TABLE Product
         productList.Add(new Product { Name = $"Product {n}" });
       }
       return productList;
-    }
-
-    [Theory]
-    [InlineData(10, "Name 1", null, 1)]
-    [InlineData(10, "Name 1", "Description 1", 1)]
-    [InlineData(10, null, "Description 1", 5)]
-    public void FindFilter(int categories, string name, string description, int expectedRows)
-    {
-      using (var connection = new SqliteConnection("Data Source=:memory:"))
-      {
-        InitializeDatabase(connection);
-
-        // Arrange
-        var categoryRepository = new CategoryRepository(connection, "SELECT last_insert_rowid()");
-        for (int i = 0; i < categories; i++)
-        {
-          var category = new Category
-          {
-            Name = $"Name {i}",
-            Description = $"Description {i % 2}"
-          };
-          categoryRepository.Create(category);
-        }
-
-        // Act
-        var result = categoryRepository.Find(new CategoryFilter { Name = name, Description = description });
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(expectedRows, result.TotalCount);
-      }
     }
 
     private void Include_AssertProduct(ICollection<Product> products, int expectedProductRows, int expectedPartRows)

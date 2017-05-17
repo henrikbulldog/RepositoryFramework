@@ -21,16 +21,21 @@ namespace RepositoryFramework.MongoDB.Test
     public Mongo2GoTest(MongoDBFixture mongoDBFixture)
     {
       this.mongoDBFixture = mongoDBFixture;
-
       if (!BsonClassMap.IsClassMapRegistered(typeof(TestDocument)))
       {
-        BsonClassMap.RegisterClassMap<TestDocument>(
-      d =>
-      {
-        d.AutoMap();
-        d.MapIdMember(c => c.TestDocumentId)
-          .SetIdGenerator(StringObjectIdGenerator.Instance); ;
-      });
+        try
+        {
+          BsonClassMap.RegisterClassMap<TestDocument>(
+            map =>
+            {
+              map.AutoMap();
+              map.MapIdMember(c => c.TestDocumentId)
+                .SetIdGenerator(StringObjectIdGenerator.Instance);
+            });
+        }
+        catch
+        {
+        }
       }
     }
 
@@ -46,17 +51,17 @@ namespace RepositoryFramework.MongoDB.Test
       var collection = mongoDBFixture.Database
         .GetCollection<TestDocument>(collectionName);
 
-      List<TestDocument> queryResult;
+      List<TestDocument> IEnumerable;
 
       collection.InsertOne(TestDocument.DummyData1());
       collection.InsertOne(TestDocument.DummyData2());
       collection.InsertOne(TestDocument.DummyData3());
 
-      queryResult = (from c in collection.AsQueryable()
+      IEnumerable = (from c in collection.AsQueryable()
                      where c.StringTest == TestDocument.DummyData2().StringTest || c.StringTest == TestDocument.DummyData3().StringTest
                      select c).ToList();
 
-      Assert.Equal(2, queryResult.Count());
+      Assert.Equal(2, IEnumerable.Count());
     }
   }
 }

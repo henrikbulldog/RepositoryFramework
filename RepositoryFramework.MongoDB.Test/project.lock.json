@@ -3000,10 +3000,11 @@
           "lib/netstandard1.1/xunit.runner.utility.dotnet.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/1.0.4": {
+      "RepositoryFramework.Interfaces/2.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
+          "System.Dynamic.Runtime": "4.3.0",
           "System.Linq.Queryable": "4.0.1",
           "System.Reflection.TypeExtensions": "4.3.0",
           "System.Runtime.InteropServices": "4.1.0"
@@ -3015,14 +3016,14 @@
           "netcoreapp1.1/RepositoryFramework.Interfaces.dll": {}
         }
       },
-      "RepositoryFramework.MongoDB/1.0.0": {
+      "RepositoryFramework.MongoDB/2.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
           "Microsoft.DotNet.InternalAbstractions": "1.0.500-preview2-1-003177",
           "Microsoft.NETCore.App": "1.1.0",
           "MongoDB.Driver": "2.4.3",
-          "RepositoryFramework.Interfaces": "1.0.4",
+          "RepositoryFramework.Interfaces": "2.0.0",
           "System.Linq.Expressions": "4.3.0"
         },
         "compile": {
@@ -3370,6 +3371,18 @@
           "lib/net45/_._": {}
         }
       },
+      "System.Dynamic.Runtime/4.3.0": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "System.Core"
+        ],
+        "compile": {
+          "ref/net45/_._": {}
+        },
+        "runtime": {
+          "lib/net45/_._": {}
+        }
+      },
       "System.Linq.Expressions/4.3.0": {
         "type": "package",
         "frameworkAssemblies": [
@@ -3520,9 +3533,12 @@
           "lib/net45/xunit.runner.utility.desktop.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/1.0.4": {
+      "RepositoryFramework.Interfaces/2.0.0": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
+        "dependencies": {
+          "System.Dynamic.Runtime": "4.3.0"
+        },
         "compile": {
           "net452/RepositoryFramework.Interfaces.dll": {}
         },
@@ -3530,13 +3546,13 @@
           "net452/RepositoryFramework.Interfaces.dll": {}
         }
       },
-      "RepositoryFramework.MongoDB/1.0.0": {
+      "RepositoryFramework.MongoDB/2.0.0": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
           "Microsoft.DotNet.InternalAbstractions": "1.0.500-preview2-1-003177",
           "MongoDB.Driver": "2.4.3",
-          "RepositoryFramework.Interfaces": "1.0.4",
+          "RepositoryFramework.Interfaces": "2.0.0",
           "System.Linq.Expressions": "4.3.0"
         },
         "compile": {
@@ -9606,12 +9622,12 @@
         "xunit.runner.utility.nuspec"
       ]
     },
-    "RepositoryFramework.Interfaces/1.0.4": {
+    "RepositoryFramework.Interfaces/2.0.0": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"
     },
-    "RepositoryFramework.MongoDB/1.0.0": {
+    "RepositoryFramework.MongoDB/2.0.0": {
       "type": "project",
       "path": "../RepositoryFramework.MongoDB/project.json",
       "msbuildProject": "../RepositoryFramework.MongoDB/RepositoryFramework.MongoDB.xproj"

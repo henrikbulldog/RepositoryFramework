@@ -1,18 +1,19 @@
 {
   "title": "RepositoryFramework.Interfaces",
-	"version": "1.0.4",
+  "version": "2.0.0",
   "dependencies": {
     "StyleCop.Analyzers": {
       "version": "1.0.0",
       "type": "build"
-    }
+    },
+    "System.Dynamic.Runtime": "4.3.0"
   },
   "buildOptions": {
     "additionalArguments": [ "/ruleset:../RULES.ruleset", "/additionalfile:../stylecop.json" ],
     "xmlDoc": "true"
   },
-	"frameworks": {
-		"netcoreapp1.1": {
+  "frameworks": {
+    "netcoreapp1.1": {
       "imports": [
         "dotnet5.6"
       ],
@@ -21,8 +22,8 @@
         "System.Linq.Queryable": "4.0.1",
         "System.Runtime.InteropServices": "4.1.0"
       }
-		},
-		"net452": {
-		}
-	}
+    },
+    "net452": {
+    }
+  }
 }

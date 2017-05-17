@@ -9,15 +9,16 @@ using System;
 
 namespace RepositoryFramework.Dapper.Test
 {
-  public class CategoryRepository : Repository<Category, CategoryFilter>
+  public class CategoryRepository : DapperRepository<Category>
   {
-    private Repository<Product, ProductFilter> productRepository = null;
     public CategoryRepository(IDbConnection connection,
       string lastRowIdCommand = "SELECT @@IDENTITY")
       : base(connection, lastRowIdCommand)
     {
-      productRepository = new Repository<Product, ProductFilter>(connection, lastRowIdCommand);
+      productRepository = new ProductRepository(connection, lastRowIdCommand);
     }
+
+    private ProductRepository productRepository = null;
 
     public override void Create(Category entity)
     {
@@ -33,9 +34,9 @@ namespace RepositoryFramework.Dapper.Test
       }
     }
 
-    public override Category GetById(string filter)
+    public override Category GetById(object id)
     {
-      var category = base.GetById(filter);
+      var category = base.GetById(id);
 
       if (category == null)
       {
@@ -43,11 +44,12 @@ namespace RepositoryFramework.Dapper.Test
       }
 
       category.Products = new List<Product>();
-      var products = productRepository.Find(new ProductFilter { CategoryId = category.Id });
+      var products = productRepository
+        .FindByCategoryId(id);
 
-      if(products.TotalCount > 0)
+      if(products.Count() > 0)
       {
-        foreach(var product in products.Items)
+        foreach(var product in products)
         {
           category.Products.Add(product);
         }
@@ -56,28 +58,7 @@ namespace RepositoryFramework.Dapper.Test
       return category;
     }
 
-    public override IQueryResult<Category> Find()
-    {
-      if (Connection.State != ConnectionState.Open)
-      {
-        Connection.Open();
-      }
-
-      var findQuery = $@"
-SELECT * FROM Category c
-OUTER LEFT JOIN Product p ON p.CategoryId = c.Id";
-
-      var lookup = new Dictionary<int?, Category>();
-      IEnumerable<Category> result = SqlMapper.Query<Category, Product, Category>(
-        Connection, 
-        findQuery, 
-        (category, product) => Map(category, product, lookup));
-
-      var categories = lookup.Values.AsEnumerable();
-      return new QueryResult<Category>(categories, categories.Count());
-    }
-
-    public override IQueryResult<Category> Find(CategoryFilter filter)
+    public override IEnumerable<Category> Find()
     {
       if (Connection.State != ConnectionState.Open)
       {
@@ -87,18 +68,15 @@ OUTER LEFT JOIN Product p ON p.CategoryId = c.Id";
       var findQuery = $@"
 SELECT * FROM Category
 OUTER LEFT JOIN Product 
-  ON Product.CategoryId = Category.Id
-{CreateWhere(filter)}";
+  ON Product.CategoryId = Category.Id";
 
       var lookup = new Dictionary<int?, Category>();
       IEnumerable<Category> result = SqlMapper.Query<Category, Product, Category>(
         Connection,
         findQuery,
-        (category, product) => Map(category, product, lookup),
-        filter);
+        (category, product) => Map(category, product, lookup));
 
-      var categories = lookup.Values.AsEnumerable();
-      return new QueryResult<Category>(categories, categories.Count());
+      return lookup.Values.AsEnumerable();
     }
 
     private Category Map(Category category, Product product, Dictionary<int?, Category> lookup)

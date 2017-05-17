@@ -1,0 +1,356 @@
+﻿using Dapper;
+using RepositoryFramework.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Threading.Tasks;
+
+namespace RepositoryFramework.Dapper
+{
+  /// <summary>
+  /// Repository that uses the Dapper micro-ORM framework, see https://github.com/StackExchange/Dapper
+  /// </summary>
+  /// <typeparam name="TEntity"></typeparam>
+  public class DapperRepository<TEntity> :
+    GenericRepositoryBase<TEntity>,
+    IDapperRepository<TEntity>
+    where TEntity : class
+  {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DapperRepository{TEntity}"/> class
+    /// </summary>
+    /// <param name="connection">Database connection</param>
+    /// <param name="lastRowIdCommand">SQL command tpo get Id of the last row inserted. Defaults to TSQL syntax: SELECT @@IDENTITY</param>
+    /// <param name="tableName">Table name. Defaults to entity type name</param>
+    /// <param name="limitOffsetPattern">Limit and offset pattern. Must contain paceholders {PageNumber} and {PageSize}. Defaults to TSQL syntax: OFFSET ({PageNumber} - 1) * {PageSize} ROWS FETCH NEXT {PageSize} ROWS ONLY</param>
+    public DapperRepository(
+      IDbConnection connection,
+      string lastRowIdCommand = "SELECT @@IDENTITY",
+      string limitOffsetPattern = "OFFSET ({PageNumber} - 1) * {PageSize} ROWS FETCH NEXT {PageSize} ROWS ONLY",
+      string tableName = null)
+    {
+      Connection = connection;
+
+      if (tableName != null)
+      {
+        TableName = tableName;
+      }
+      else
+      {
+        TableName = EntityTypeName;
+      }
+
+      LastRowIdCommand = lastRowIdCommand;
+      LimitOffsetPattern = limitOffsetPattern;
+    }
+
+    /// <summary>
+    /// Gets number of items per page (when paging is used)
+    /// </summary>
+    public virtual int PageSize { get; private set; } = 0;
+
+    /// <summary>
+    /// Gets page number (one based index)
+    /// </summary>
+    public virtual int PageNumber { get; private set; } = 1;
+
+    /// <summary>
+    /// Gets the kind of sort order
+    /// </summary>
+    public virtual SortOrder SortOrder { get; private set; } = SortOrder.Unspecified;
+
+    /// <summary>
+    /// Gets property name for the property to sort by.
+    /// </summary>
+    public virtual string SortPropertyName { get; private set; } = null;
+
+    /// <summary>
+    /// Gets database connection
+    /// </summary>
+    protected virtual IDbConnection Connection { get; private set; }
+
+    /// <summary>
+    /// Gets SQL command to get Id of last row inserted
+    /// </summary>
+    protected virtual string LastRowIdCommand { get; private set; }
+
+    /// <summary>
+    /// Gets limit and offset pattern. Must contain paceholders {limit} and {offset}. Defaults to TSQL syntax: OFFSET {offset} ROWS FETCH NEXT {limit} ROWS ONLY
+    /// </summary>
+    protected virtual string LimitOffsetPattern { get; private set; }
+
+    /// <summary>
+    /// Gets table name
+    /// </summary>
+    protected virtual string TableName { get; private set; }
+
+    /// <summary>
+    /// Clear paging
+    /// </summary>
+    /// <returns>Current instance</returns>
+    public IRepository<TEntity> ClearPaging()
+    {
+      PageSize = 0;
+      PageNumber = 1;
+      return this;
+    }
+
+    /// <summary>
+    /// Clear sorting
+    /// </summary>
+    /// <returns>Current instance</returns>
+    public IRepository<TEntity> ClearSorting()
+    {
+      SortPropertyName = null;
+      SortOrder = SortOrder.Unspecified;
+      return this;
+    }
+
+    /// <summary>
+    /// Create a new entity
+    /// </summary>
+    /// <param name="entity">Entity</param>
+    public override async Task CreateAsync(TEntity entity)
+    {
+      if (Connection.State != ConnectionState.Open)
+      {
+        Connection.Open();
+      }
+
+      var insertColumns = EntityColumns.Where(c => c != IdPropertyName);
+
+      var insertQuery = $@"
+INSERT INTO {TableName} ({string.Join(",", insertColumns)})
+VALUES (@{string.Join(",@", insertColumns)});
+{LastRowIdCommand}";
+
+      IEnumerable<int> result = await Connection.QueryAsync<int>(insertQuery, entity);
+      EntityType.GetProperty(IdPropertyName)?
+        .SetValue(entity, result.First());
+    }
+
+    /// <summary>
+    /// Create a list of new entities
+    /// </summary>
+    /// <param name="entities">List of entities</param>
+    public override async Task CreateManyAsync(IEnumerable<TEntity> entities)
+    {
+      if (Connection.State != ConnectionState.Open)
+      {
+        Connection.Open();
+      }
+
+      var insertColumns = EntityColumns.Where(c => c != IdPropertyName);
+
+      var insertCommand = $@"
+INSERT INTO {TableName} ({string.Join(",", insertColumns)}) 
+VALUES (@{string.Join(",@", insertColumns)})";
+
+      await Connection.ExecuteAsync(insertCommand, entities.ToList());
+    }
+
+    /// <summary>
+    /// Delete an existing entity
+    /// </summary>
+    /// <param name="entity">Entity</param>
+    public override async Task DeleteAsync(TEntity entity)
+    {
+      if (Connection.State != ConnectionState.Open)
+      {
+        Connection.Open();
+      }
+
+      var deleteQCommand = $@"
+DELETE FROM {TableName}
+WHERE {IdPropertyName}=@{IdPropertyName}";
+
+      await Connection.ExecuteAsync(deleteQCommand, entity);
+    }
+
+    /// <summary>
+    /// Delete a list of existing entities
+    /// </summary>
+    /// <param name="entities">Entity list</param>
+    public override async Task DeleteManyAsync(IEnumerable<TEntity> entities)
+    {
+      if (Connection.State != ConnectionState.Open)
+      {
+        Connection.Open();
+      }
+
+      var deleteCommand = $@"
+DELETE FROM {TableName}
+WHERE {IdPropertyName} IN (@Id)";
+
+      var ids = new List<object>();
+      foreach (var entity in entities)
+      {
+        ids.Add(EntityType.GetProperty(IdPropertyName).GetValue(entity));
+      }
+
+      await Connection.ExecuteAsync(deleteCommand, ids.Select(i => new { Id = i }).ToList());
+    }
+
+    /// <summary>
+    /// Get a list of entities
+    /// </summary>
+    /// <returns>Query result</returns>
+    public override async Task<IEnumerable<TEntity>> FindAsync()
+    {
+      if (Connection.State != ConnectionState.Open)
+      {
+        Connection.Open();
+      }
+
+      var orderBy = string.Empty;
+      if (SortOrder != SortOrder.Unspecified
+        && !string.IsNullOrWhiteSpace(SortPropertyName))
+      {
+        var order = SortOrder == SortOrder.Descending ? " DESC" : string.Empty;
+        orderBy = $"ORDER BY {SortPropertyName}{order}";
+      }
+
+      var offset = string.Empty;
+      if(PageNumber > 1 || PageSize > 0)
+      {
+        offset = LimitOffsetPattern.Replace("{PageNumber}", $"{PageNumber}").Replace("{PageSize}", $"{PageSize}");
+      }
+
+      var findQuery = $@"
+SELECT * FROM {TableName}
+{orderBy}
+{offset}";
+
+      return await Connection.QueryAsync<TEntity>(findQuery);
+    }
+
+    /// <summary>
+    /// Gets an entity by id.
+    /// </summary>
+    /// <param name="id">Filter to find a single item</param>
+    /// <returns>Entity</returns>
+    public override async Task<TEntity> GetByIdAsync(object id)
+    {
+      if (Connection.State != ConnectionState.Open)
+      {
+        Connection.Open();
+      }
+
+      var findQuery = $@"
+SELECT * FROM {TableName}
+WHERE {IdPropertyName}=@{IdPropertyName}";
+
+      return await Connection.QueryFirstOrDefaultAsync<TEntity>(findQuery, new { Id = id });
+    }
+
+    /// <summary>
+    /// Use paging
+    /// </summary>
+    /// <param name="pageNumber">Page to get (one based index).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <returns>Current instance</returns>
+    public IRepository<TEntity> Page(int pageNumber, int pageSize)
+    {
+      PageSize = pageSize;
+      PageNumber = pageNumber;
+      return this;
+    }
+
+    /// <summary>
+    /// Property to sort by (ascending)
+    /// </summary>
+    /// <param name="property">The property.</param>
+    /// <returns>Current instance</returns>
+    public IRepository<TEntity> SortBy(Expression<Func<TEntity, object>> property)
+    {
+      if (property == null)
+      {
+        throw new ArgumentNullException(nameof(property));
+      }
+
+      var name = GetPropertyName(property);
+      SortBy(name);
+      return this;
+    }
+
+    /// <summary>
+    /// Sort ascending by a property
+    /// </summary>
+    /// <param name="propertyName">Name of the property.</param>
+    /// <returns>Current instance</returns>
+    public IRepository<TEntity> SortBy(string propertyName)
+    {
+      if (propertyName == null)
+      {
+        throw new ArgumentNullException(nameof(propertyName));
+      }
+
+      ValidatePropertyName(propertyName, out propertyName);
+
+      SortOrder = SortOrder.Ascending;
+      SortPropertyName = propertyName;
+      return this;
+    }
+
+    /// <summary>
+    /// Property to sort by (descending)
+    /// </summary>
+    /// <param name="property">The property</param>
+    /// <returns>Current instance</returns>
+    public IRepository<TEntity> SortByDescending(Expression<Func<TEntity, object>> property)
+    {
+      if (property == null)
+      {
+        throw new ArgumentNullException(nameof(property));
+      }
+
+      var name = GetPropertyName(property);
+      SortByDescending(name);
+      return this;
+    }
+
+    /// <summary>
+    /// Sort descending by a property.
+    /// </summary>
+    /// <param name="propertyName">Name of the property.</param>
+    /// <returns>Current instance</returns>
+    public IRepository<TEntity> SortByDescending(string propertyName)
+    {
+      if (propertyName == null)
+      {
+        throw new ArgumentNullException(nameof(propertyName));
+      }
+
+      ValidatePropertyName(propertyName, out propertyName);
+
+      SortOrder = SortOrder.Descending;
+      SortPropertyName = propertyName;
+      return this;
+    }
+
+    /// <summary>
+    /// Update an existing entity
+    /// </summary>
+    /// <param name="entity">Entity</param>
+    public override async Task UpdateAsync(TEntity entity)
+    {
+      if (Connection.State != ConnectionState.Open)
+      {
+        Connection.Open();
+      }
+
+      var columns = EntityColumns.Where(s => s != IdPropertyName);
+      var parameters = columns.Select(name => name + "=@" + name).ToList();
+
+      var updateQuery = $@"
+UPDATE {TableName} 
+SET {string.Join(",", parameters)}
+WHERE {IdPropertyName}=@{IdPropertyName}";
+
+      await Connection.ExecuteAsync(updateQuery, entity);
+    }
+  }
+}

@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Threading;
-using Newtonsoft.Json;
+using System.Threading.Tasks;
 using RepositoryFramework.Interfaces;
 using RestSharp;
-using RestSharp.Authenticators;
+using System.Reflection;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
+using System.IO;
 using RestSharp.Extensions;
+using Newtonsoft.Json;
+using RestSharp.Authenticators;
 
 namespace RepositoryFramework.Api
 {
@@ -18,11 +18,9 @@ namespace RepositoryFramework.Api
   /// Repository abstraction of a ReSTful API
   /// </summary>
   /// <typeparam name="TEntity">Entity type</typeparam>
-  public class ApiRepository<TEntity>
-    : IRepository<TEntity>,
-    ICreateList<TEntity>,
-    IGet<TEntity, string>,
-    IFind<TEntity>
+  public class ApiRepository<TEntity> :
+    GenericRepositoryBase<TEntity>,
+    IApiRepository<TEntity>
     where TEntity : class
   {
     /// <summary>
@@ -31,18 +29,15 @@ namespace RepositoryFramework.Api
     /// <param name="configuration">Configuration</param>
     /// <param name="basePath">The base path.</param>
     /// <param name="entityPath">Path excluding the base path. May contain path paramater placeholders in the format {someParm}</param>
-    /// <param name="entityIdProperty">Entity Id property expression</param>
     public ApiRepository(
       Configuration configuration,
       string basePath,
-      string entityPath = null,
-      Expression<Func<TEntity, object>> entityIdProperty = null)
+      string entityPath = null)
     {
       this.Configuration = configuration;
       BasePath = basePath;
       RestClient = new RestClient(BasePath);
 
-      EntityTypeName = EntityType.Name;
       if (string.IsNullOrEmpty(entityPath))
       {
         EntityPath = $"/{FirstCharacterToLower(EntityTypeName)}s";
@@ -50,15 +45,6 @@ namespace RepositoryFramework.Api
       else
       {
         EntityPath = entityPath;
-      }
-
-      if (entityIdProperty != null)
-      {
-        EntityIdPropertyName = GetName(entityIdProperty);
-      }
-      else
-      {
-        EntityIdPropertyName = FindIdProperty();
       }
 
       PathParameters = GetParametersFromPath(EntityPath);
@@ -71,6 +57,11 @@ namespace RepositoryFramework.Api
     public string BasePath { get; private set; }
 
     /// <summary>
+    /// Gets entity path, for example /posts in https://jsonplaceholder.typicode.com/posts
+    /// </summary>
+    protected string EntityPath { get; private set; }
+
+    /// <summary>
     /// Gets configuration object
     /// </summary>
     protected Configuration Configuration { get; private set; } = null;
@@ -80,32 +71,6 @@ namespace RepositoryFramework.Api
     /// </summary>
     protected Dictionary<string, string> DefaultHeaderMap { get; private set; }
       = new Dictionary<string, string>();
-
-    /// <summary>
-    /// Gets entity type
-    /// </summary>
-    protected Type EntityType
-    {
-      get
-      {
-        return typeof(TEntity);
-      }
-    }
-
-    /// <summary>
-    /// Gets entity type name
-    /// </summary>
-    protected string EntityTypeName { get; private set; }
-
-    /// <summary>
-    /// Gets entity path, for example /posts in https://jsonplaceholder.typicode.com/posts
-    /// </summary>
-    protected string EntityPath { get; private set; }
-
-    /// <summary>
-    /// Gets entity Id property used to identify the resource in the path, for example Post.Id for /posts/{id}
-    /// </summary>
-    protected string EntityIdPropertyName { get; private set; }
 
     /// <summary>
     /// Gets a list path parameters, for example { "Id" } /posts/{id}
@@ -127,10 +92,25 @@ namespace RepositoryFramework.Api
     }
 
     /// <summary>
+    /// Parameters
+    /// </summary>
+    public IDictionary<string, object> Parameters { get; private set; } = new Dictionary<string, object>();
+
+    /// <summary>
+    /// Clear parameters
+    /// </summary>
+    /// <returns>Current instance</returns>
+    public IRepository<TEntity> ClearParameters()
+    {
+      Parameters.Clear();
+      return this;
+    }
+
+    /// <summary>
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public virtual void Create(TEntity entity)
+    public override async Task CreateAsync(TEntity entity)
     {
       if (entity == null)
       {
@@ -169,17 +149,23 @@ namespace RepositoryFramework.Api
               $"Path parameter {pathParmeter} cannot be null when calling APIRepository<{EntityTypeName}>.Create()",
               "POST",
               BasePath,
-              path,
-              null,
-              entity);
+              path);
           }
 
           pathParams.Add(pathParmeter, parameterValue);
         }
       }
 
-      IRestResponse response = (IRestResponse)CallApi(
-          path, Method.POST, pathParams, queryParams, postBody, headerParams, formParams, fileParams);
+      var task = CallApiAsync(
+          path,
+          Method.POST,
+          pathParams,
+          queryParams,
+          postBody,
+          headerParams,
+          formParams,
+          fileParams);
+      var response = await task;
 
       if (((int)response.StatusCode) >= 400)
       {
@@ -189,8 +175,6 @@ namespace RepositoryFramework.Api
           "POST",
           BasePath,
           EntityPath,
-          null,
-          entity,
           response.Content);
       }
       else if (((int)response.StatusCode) == 0)
@@ -200,9 +184,7 @@ namespace RepositoryFramework.Api
           $"Error calling APIRepository<{EntityTypeName}>.Update: {response.ErrorMessage}",
           "POST",
           BasePath,
-          EntityPath,
-          null,
-          entity);
+          EntityPath);
       }
 
       DeserializeAndPopulate(response.Content, ref entity, response.Headers);
@@ -212,7 +194,7 @@ namespace RepositoryFramework.Api
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
-    public void Create(IEnumerable<TEntity> entities)
+    public override async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
       if (entities == null)
       {
@@ -235,8 +217,17 @@ namespace RepositoryFramework.Api
       var fileParams = new Dictionary<string, FileParameter>();
       string postBody = Serialize(entities);
 
-      IRestResponse response = (IRestResponse)CallApi(
-          path, Method.POST, pathParams, queryParams, postBody, headerParams, formParams, fileParams);
+      var task = CallApiAsync(
+          path,
+          Method.POST,
+          pathParams,
+          queryParams,
+          postBody,
+          headerParams,
+          formParams,
+          fileParams);
+
+      var response = await task;
 
       if (((int)response.StatusCode) >= 400)
       {
@@ -246,8 +237,6 @@ namespace RepositoryFramework.Api
           "POST",
           BasePath,
           EntityPath,
-          null,
-          entities,
           response.Content);
       }
       else if (((int)response.StatusCode) == 0)
@@ -257,9 +246,7 @@ namespace RepositoryFramework.Api
          $"Error calling APIRepository<{EntityTypeName}>.Update: {response.ErrorMessage}",
          "POST",
          BasePath,
-         EntityPath,
-         null,
-         entities);
+         EntityPath);
       }
 
       DeserializeAndPopulate(response.Content, ref entities, response.Headers);
@@ -269,7 +256,7 @@ namespace RepositoryFramework.Api
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public virtual void Delete(TEntity entity)
+    public override async Task DeleteAsync(TEntity entity)
     {
       if (entity == null)
       {
@@ -278,9 +265,7 @@ namespace RepositoryFramework.Api
           $"Missing required parameter entity when calling APIRepository<{EntityTypeName}>.Update()",
           "DELETE",
           BasePath,
-          EntityPath,
-          null,
-          entity);
+          EntityPath);
       }
 
       var path = EntityPath;
@@ -291,7 +276,6 @@ namespace RepositoryFramework.Api
       }
 
       path = path.Replace("{format}", "json");
-
       var pathParams = new Dictionary<string, string>();
       var queryParams = new Dictionary<string, string>();
       var headerParams = new Dictionary<string, string>();
@@ -317,8 +301,16 @@ namespace RepositoryFramework.Api
         }
       }
 
-      IRestResponse response = (IRestResponse)CallApi(
-      path, Method.DELETE, pathParams, queryParams, postBody, headerParams, formParams, fileParams);
+      var task = CallApiAsync(
+        path,
+        Method.DELETE,
+        pathParams,
+        queryParams,
+        postBody,
+        headerParams,
+        formParams,
+        fileParams);
+      var response = await task;
 
       if (((int)response.StatusCode) >= 400)
       {
@@ -328,8 +320,6 @@ namespace RepositoryFramework.Api
           "DELETE",
           BasePath,
           EntityPath,
-          null,
-          entity,
           response.Content);
       }
       else if (((int)response.StatusCode) == 0)
@@ -339,9 +329,19 @@ namespace RepositoryFramework.Api
          $"Error calling APIRepository<{EntityTypeName}>.Delete: {response.ErrorMessage}",
          "DELETE",
          EntityPath,
-         null,
-         entity,
          response.Content);
+      }
+    }
+
+    /// <summary>
+    /// Delete a list of existing entities
+    /// </summary>
+    /// <param name="entities">Entity list</param>
+    public override async Task DeleteManyAsync(IEnumerable<TEntity> entities)
+    {
+      foreach (var entity in entities)
+      {
+        await DeleteAsync(entity);
       }
     }
 
@@ -349,7 +349,7 @@ namespace RepositoryFramework.Api
     /// Get a list of entities
     /// </summary>
     /// <returns>Query result</returns>
-    public virtual IQueryResult<TEntity> Find()
+    public override async Task<IEnumerable<TEntity>> FindAsync()
     {
       var path = EntityPath;
       path = path.Replace("{format}", "json");
@@ -361,17 +361,51 @@ namespace RepositoryFramework.Api
       var fileParams = new Dictionary<string, FileParameter>();
       string postBody = null;
 
-      IRestResponse response = (IRestResponse)CallApi(
-        path, Method.GET, pathParams, queryParams, postBody, headerParams, formParams, fileParams);
+      if (Parameters.Count != 0)
+      {
+        foreach (string parameter in Parameters.Keys)
+        {
+          var parameterValue = ParameterToString(Parameters[parameter]);
+          var pathParmeter = PathParameters.FirstOrDefault(p => p.ToLower() == parameter.ToLower());
+          if (pathParmeter != null)
+          {
+            if (parameterValue == null)
+            {
+              throw new Exception($"Path parameter {pathParmeter} cannot be null");
+            }
+
+            pathParams.Add(pathParmeter, parameterValue);
+          }
+          else
+          {
+            if (parameterValue != null)
+            {
+              queryParams.Add(FirstCharacterToLower(parameter), parameterValue);
+            }
+          }
+        }
+      }
+
+      var task = CallApiAsync(
+        path,
+        Method.GET,
+        pathParams,
+        queryParams,
+        postBody,
+        headerParams,
+        formParams,
+        fileParams);
+      var response = await task;
 
       if (((int)response.StatusCode) >= 400)
       {
         throw new ApiException(
           (int)response.StatusCode,
-         "GET",
-         path,
-         $"Error calling {EntityType}Repository.Find()",
-         response.Content);
+          $"Error calling {EntityType}Repository.Find(): {response.Content}",
+          "GET",
+          BasePath,
+          path,
+          response.Content);
       }
       else if (((int)response.StatusCode) == 0)
       {
@@ -379,23 +413,22 @@ namespace RepositoryFramework.Api
           (int)response.StatusCode,
           $"Error calling {EntityType}Repository.Find(): {response.ErrorMessage}",
           "GET",
-          null,
-          null,
-          response.Content);
+          BasePath,
+          path,
+          response.ErrorMessage);
       }
 
-      var result = (List<TEntity>)Deserialize(response.Content, typeof(List<TEntity>), response.Headers);
-      return new QueryResult<TEntity>(result, result.Count);
+      return (List<TEntity>)Deserialize(response.Content, typeof(List<TEntity>), response.Headers);
     }
 
     /// <summary>
     /// Gets an entity by id.
     /// </summary>
-    /// <param name="filter">Filter</param>
+    /// <param name="id">Filter</param>
     /// <returns>Entity</returns>
-    public virtual TEntity GetById(string filter)
+    public override async Task<TEntity> GetByIdAsync(object id)
     {
-      if (filter == null)
+      if (id == null)
       {
         throw new ApiException(
           400,
@@ -403,10 +436,10 @@ namespace RepositoryFramework.Api
           "GET",
           BasePath,
           EntityPath,
-          filter);
+          id);
       }
 
-      var path = $"{EntityPath}/{filter}";
+      var path = $"{EntityPath}/{id}";
       path = path.Replace("{format}", "json");
 
       var pathParams = new Dictionary<string, string>();
@@ -416,8 +449,16 @@ namespace RepositoryFramework.Api
       var fileParams = new Dictionary<string, FileParameter>();
       string postBody = null;
 
-      IRestResponse response = (IRestResponse)CallApi(
-        path, Method.GET, pathParams, queryParams, postBody, headerParams, formParams, fileParams);
+      var task = CallApiAsync(
+        path,
+        Method.GET,
+        pathParams,
+        queryParams,
+        postBody,
+        headerParams,
+        formParams,
+        fileParams);
+      var response = await task;
 
       if (((int)response.StatusCode) >= 400)
       {
@@ -427,7 +468,6 @@ namespace RepositoryFramework.Api
           "GET",
           BasePath,
           path,
-          filter,
           response.Content);
       }
       else if (((int)response.StatusCode) == 0)
@@ -438,7 +478,6 @@ namespace RepositoryFramework.Api
           "GET",
           BasePath,
           path,
-          filter,
           response.Content);
       }
 
@@ -446,10 +485,39 @@ namespace RepositoryFramework.Api
     }
 
     /// <summary>
+    /// Gets parameter value
+    /// </summary>
+    /// <param name="name">Parameter name</param>
+    /// <returns>Parameter value</returns>
+    public object GetParameter(string name)
+    {
+      return Parameters[name];
+    }
+
+    /// <summary>
+    /// Adds a parameter to queries
+    /// </summary>
+    /// <param name="name">Parameter name</param>
+    /// <param name="value">Parameter value</param>
+    /// <returns>Current instance</returns>
+    public IRepository<TEntity> SetParameter(string name, object value)
+    {
+      if (!Parameters.Keys.Contains(name))
+      {
+        Parameters.Add(name, value);
+      }
+      else
+      {
+        Parameters[name] = value;
+      }
+      return this;
+    }
+
+    /// <summary>
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public virtual void Update(TEntity entity)
+    public override async Task UpdateAsync(TEntity entity)
     {
       if (entity == null)
       {
@@ -458,9 +526,7 @@ namespace RepositoryFramework.Api
           $"Missing required parameter entity when calling APIRepository<{EntityTypeName}>.Update()",
           "PUT",
           BasePath,
-          EntityPath,
-          null,
-          entity);
+          EntityPath);
       }
 
       var path = EntityPath;
@@ -497,8 +563,16 @@ namespace RepositoryFramework.Api
         }
       }
 
-      IRestResponse response = (IRestResponse)CallApi(
-        path, Method.PUT, pathParams, queryParams, postBody, headerParams, formParams, fileParams);
+      var task = CallApiAsync(
+        path,
+        Method.PUT,
+        pathParams,
+        queryParams,
+        postBody,
+        headerParams,
+        formParams,
+        fileParams);
+      var response = await task;
 
       if (((int)response.StatusCode) >= 400)
       {
@@ -508,8 +582,6 @@ namespace RepositoryFramework.Api
           "PUT",
           BasePath,
           path,
-          null,
-          entity,
           response.Content);
       }
       else if (((int)response.StatusCode) == 0)
@@ -520,230 +592,10 @@ namespace RepositoryFramework.Api
           "PUT",
           BasePath,
           path,
-          null,
-          entity,
           response.Content);
       }
 
       DeserializeAndPopulate(response.Content, ref entity, response.Headers);
-    }
-
-    /// <summary>
-    /// Deserialize and populate response content
-    /// </summary>
-    /// <param name="content">Response content</param>
-    /// <param name="entity">Entity reference</param>
-    /// <param name="headers">List of headers</param>
-    protected void DeserializeAndPopulate(string content, ref TEntity entity, IList<Parameter> headers)
-    {
-      if (EntityType == typeof(object)
-        || EntityType == typeof(Stream)
-        || EntityType.Name.StartsWith("System.Nullable`1[[System.DateTime")
-        || EntityType == typeof(string)
-        || EntityType.Name.StartsWith("System.Nullable"))
-      {
-        entity = (TEntity)Deserialize(content, typeof(TEntity), headers);
-        return;
-      }
-
-      if (!string.IsNullOrWhiteSpace(content))
-      {
-        JsonConvert.PopulateObject(content, entity);
-      }
-    }
-
-    /// <summary>
-    /// Get the name of a property from an expression
-    /// </summary>
-    /// <param name="propertyExpression">Property expression</param>
-    /// <returns>Property name</returns>
-    protected string GetName(Expression<Func<TEntity, object>> propertyExpression)
-    {
-      var body = propertyExpression.Body as MemberExpression;
-
-      if (body != null)
-      {
-        return body.Member.Name;
-      }
-
-      var ubody = (UnaryExpression)propertyExpression.Body;
-      body = ubody.Operand as MemberExpression;
-
-      return body?.Member.Name ?? string.Empty;
-    }
-
-    /// <summary>
-    /// Get a list of property names from an entity path. For example { "Id" } from /posts/{id}
-    /// </summary>
-    /// <param name="entityPath">Entity path</param>
-    /// <returns>List of property names</returns>
-    protected List<string> GetParametersFromPath(string entityPath)
-    {
-      var matches = Regex.Matches(entityPath, @"\{\w*\}");
-      var result = new List<string>();
-      foreach (var m in matches)
-      {
-        result.Add(m.ToString()
-          .Replace("{", string.Empty)
-          .Replace("}", string.Empty));
-      }
-
-      return result;
-    }
-
-    /// <summary>
-    /// Find the Id property of the entity type looking for properties with name Id or (entity type name)Id
-    /// </summary>
-    /// <returns>Id property name or null if none could befound</returns>
-    protected virtual string FindIdProperty()
-    {
-      var properties = EntityType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-      var idProperty = properties
-        .FirstOrDefault(p => p.Name.ToLower() == $"{EntityTypeName.ToLower()}id");
-      if (idProperty == null)
-      {
-        idProperty = properties
-          .FirstOrDefault(p => p.Name.ToLower() == "id");
-      }
-
-      if (idProperty == null)
-      {
-        return null;
-      }
-
-      return idProperty.Name;
-    }
-
-    /// <summary>
-    /// Deserialize and populate response content
-    /// </summary>
-    /// <param name="content">Response content</param>
-    /// <param name="entities">List of entities</param>
-    /// <param name="headers">List of headers</param>
-    protected void DeserializeAndPopulate(string content, ref IEnumerable<TEntity> entities, IList<Parameter> headers)
-    {
-      if (EntityType == typeof(object)
-        || EntityType == typeof(Stream)
-        || EntityType.Name.StartsWith("System.Nullable`1[[System.DateTime")
-        || EntityType == typeof(string)
-        || EntityType.Name.StartsWith("System.Nullable"))
-      {
-        entities = (IEnumerable<TEntity>)Deserialize(content, typeof(IEnumerable<TEntity>), headers);
-        return;
-      }
-
-      if (!string.IsNullOrWhiteSpace(content))
-      {
-        JsonConvert.PopulateObject(content, entities);
-      }
-    }
-
-    /// <summary>
-    /// Get Id property value of en entity instance
-    /// </summary>
-    /// <param name="entity">Entity instance</param>
-    /// <returns>Id property value</returns>
-    protected object GetIdPropertyValue(TEntity entity)
-    {
-      if (string.IsNullOrEmpty(EntityIdPropertyName))
-      {
-        return null;
-      }
-
-      return EntityType.GetProperty(EntityIdPropertyName)?.GetValue(entity, null);
-    }
-
-    /// <summary>
-    /// Makes the HTTP request (Sync).
-    /// </summary>
-    /// <param name="path">URL path.</param>
-    /// <param name="method">HTTP method.</param>
-    /// <param name="pathParams">Path parameters</param>
-    /// <param name="queryParams">Query parameters.</param>
-    /// <param name="postBody">HTTP body (POST request).</param>
-    /// <param name="headerParams">Header parameters.</param>
-    /// <param name="formParams">Form parameters.</param>
-    /// <param name="fileParams">File parameters.</param>
-    /// <returns>Object</returns>
-    protected object CallApi(
-      string path,
-      RestSharp.Method method,
-      Dictionary<string, string> pathParams,
-      Dictionary<string, string> queryParams,
-      string postBody,
-      Dictionary<string, string> headerParams,
-      Dictionary<string, string> formParams,
-      Dictionary<string, FileParameter> fileParams)
-    {
-      var request = new RestRequest(path, method);
-
-      UpdateParamsForAuth(headerParams);
-
-      // add default header, if any
-      foreach (var defaultHeader in DefaultHeaderMap)
-      {
-        request.AddHeader(defaultHeader.Key, defaultHeader.Value);
-      }
-
-      // add header parameter, if any
-      foreach (var param in headerParams)
-      {
-        request.AddHeader(param.Key, param.Value);
-      }
-
-      // add path parameter, if any
-      foreach (var param in pathParams)
-      {
-        request.AddParameter(param.Key, param.Value, ParameterType.UrlSegment);
-      }
-
-      // add query parameter, if any
-      foreach (var param in queryParams)
-      {
-        request.AddParameter(param.Key, param.Value, ParameterType.GetOrPost);
-      }
-
-      // add form parameter, if any
-      foreach (var param in formParams)
-      {
-        request.AddParameter(param.Key, param.Value, ParameterType.GetOrPost);
-      }
-
-      // add file parameter, if any
-      foreach (var param in fileParams)
-      {
-#if NET452
-        request.AddFile(
-        param.Value.Name,
-        param.Value.Writer,
-        param.Value.FileName,
-        param.Value.ContentType);
-#else
-        request.AddFile(
-          param.Value.Name,
-          param.Value.Writer,
-          param.Value.FileName,
-          param.Value.ContentLength,
-          param.Value.ContentType);
-#endif
-      }
-
-      // http body (model) parameter
-      if (postBody != null)
-      {
-        request.AddParameter("application/json", postBody, ParameterType.RequestBody);
-      }
-
-      EventWaitHandle handle = new AutoResetEvent(false);
-      object result = null;
-      RestClient.ExecuteAsync<object>(request, r =>
-      {
-        result = r;
-        handle.Set();
-      });
-      handle.WaitOne();
-
-      return result;
     }
 
     /// <summary>
@@ -955,6 +807,192 @@ namespace RepositoryFramework.Api
       }
 
       return char.ToLowerInvariant(str[0]) + str.Substring(1);
+    }
+
+    /// <summary>
+    /// Deserialize and populate response content
+    /// </summary>
+    /// <param name="content">Response content</param>
+    /// <param name="entity">Entity reference</param>
+    /// <param name="headers">List of headers</param>
+    protected void DeserializeAndPopulate(string content, ref TEntity entity, IList<Parameter> headers)
+    {
+      if (EntityType == typeof(object)
+        || EntityType == typeof(Stream)
+        || EntityType.Name.StartsWith("System.Nullable`1[[System.DateTime")
+        || EntityType == typeof(string)
+        || EntityType.Name.StartsWith("System.Nullable"))
+      {
+        entity = (TEntity)Deserialize(content, typeof(TEntity), headers);
+        return;
+      }
+
+      if (!string.IsNullOrWhiteSpace(content))
+      {
+        JsonConvert.PopulateObject(content, entity);
+      }
+    }
+
+    /// <summary>
+    /// Deserialize and populate response content
+    /// </summary>
+    /// <param name="content">Response content</param>
+    /// <param name="entities">List of entities</param>
+    /// <param name="headers">List of headers</param>
+    protected void DeserializeAndPopulate(string content, ref IEnumerable<TEntity> entities, IList<Parameter> headers)
+    {
+      if (EntityType == typeof(object)
+        || EntityType == typeof(Stream)
+        || EntityType.Name.StartsWith("System.Nullable`1[[System.DateTime")
+        || EntityType == typeof(string)
+        || EntityType.Name.StartsWith("System.Nullable"))
+      {
+        entities = (IEnumerable<TEntity>)Deserialize(content, typeof(IEnumerable<TEntity>), headers);
+        return;
+      }
+
+      if (!string.IsNullOrWhiteSpace(content))
+      {
+        JsonConvert.PopulateObject(content, entities);
+      }
+    }
+
+    /// <summary>
+    /// Get the name of a property from an expression
+    /// </summary>
+    /// <param name="propertyExpression">Property expression</param>
+    /// <returns>Property name</returns>
+    protected string GetName(Expression<Func<TEntity, object>> propertyExpression)
+    {
+      var body = propertyExpression.Body as MemberExpression;
+
+      if (body != null)
+      {
+        return body.Member.Name;
+      }
+
+      var ubody = (UnaryExpression)propertyExpression.Body;
+      body = ubody.Operand as MemberExpression;
+
+      return body?.Member.Name ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Get a list of property names from an entity path. For example { "Id" } from /posts/{id}
+    /// </summary>
+    /// <param name="entityPath">Entity path</param>
+    /// <returns>List of property names</returns>
+    protected List<string> GetParametersFromPath(string entityPath)
+    {
+      var matches = Regex.Matches(entityPath, @"\{\w*\}");
+      var result = new List<string>();
+      foreach (var m in matches)
+      {
+        result.Add(m.ToString()
+          .Replace("{", string.Empty)
+          .Replace("}", string.Empty));
+      }
+
+      return result;
+    }
+
+    /// <summary>
+    /// Makes the HTTP request (Sync).
+    /// </summary>
+    /// <param name="path">URL path.</param>
+    /// <param name="method">HTTP method.</param>
+    /// <param name="pathParams">Path parameters</param>
+    /// <param name="queryParams">Query parameters.</param>
+    /// <param name="postBody">HTTP body (POST request).</param>
+    /// <param name="headerParams">Header parameters.</param>
+    /// <param name="formParams">Form parameters.</param>
+    /// <param name="fileParams">File parameters.</param>
+    /// <returns>Object</returns>
+    public Task<IRestResponse> CallApiAsync(string path,
+      RestSharp.Method method,
+      Dictionary<string, string> pathParams,
+      Dictionary<string, string> queryParams,
+      string postBody,
+      Dictionary<string, string> headerParams,
+      Dictionary<string, string> formParams,
+      Dictionary<string, FileParameter> fileParams)
+    {
+      var request = new RestRequest(path, method);
+
+      UpdateParamsForAuth(headerParams);
+
+      // add default header, if any
+      foreach (var defaultHeader in DefaultHeaderMap)
+      {
+        request.AddHeader(defaultHeader.Key, defaultHeader.Value);
+      }
+
+      // add header parameter, if any
+      foreach (var param in headerParams)
+      {
+        request.AddHeader(param.Key, param.Value);
+      }
+
+      // add path parameter, if any
+      foreach (var param in pathParams)
+      {
+        request.AddParameter(param.Key, param.Value, ParameterType.UrlSegment);
+      }
+
+      // add query parameter, if any
+      foreach (var param in queryParams)
+      {
+        request.AddParameter(param.Key, param.Value, ParameterType.GetOrPost);
+      }
+
+      // add form parameter, if any
+      foreach (var param in formParams)
+      {
+        request.AddParameter(param.Key, param.Value, ParameterType.GetOrPost);
+      }
+
+      // add file parameter, if any
+      foreach (var param in fileParams)
+      {
+#if NET452
+        request.AddFile(
+        param.Value.Name,
+        param.Value.Writer,
+        param.Value.FileName,
+        param.Value.ContentType);
+#else
+        request.AddFile(
+          param.Value.Name,
+          param.Value.Writer,
+          param.Value.FileName,
+          param.Value.ContentLength,
+          param.Value.ContentType);
+#endif
+      }
+
+      // http body (model) parameter
+      if (postBody != null)
+      {
+        request.AddParameter("application/json", postBody, ParameterType.RequestBody);
+      }
+      var taskCompletionSource = new TaskCompletionSource<IRestResponse>();
+      RestClient.ExecuteAsync(request, (response) => taskCompletionSource.SetResult(response));
+      return taskCompletionSource.Task;
+    }
+
+    /// <summary>
+    /// Get Id property value of en entity instance
+    /// </summary>
+    /// <param name="entity">Entity instance</param>
+    /// <returns>Id property value</returns>
+    protected object GetIdPropertyValue(TEntity entity)
+    {
+      if (string.IsNullOrEmpty(IdPropertyName))
+      {
+        return null;
+      }
+
+      return EntityType.GetProperty(IdPropertyName)?.GetValue(entity, null);
     }
   }
 }

@@ -4,46 +4,13 @@ using Xunit;
 using RepositoryFramework.Test.Models;
 using System;
 using RepositoryFramework.Test.Filters;
+using Microsoft.Data.Sqlite;
 using System.Data;
-using System.Data.SqlClient;
-using System.Text.RegularExpressions;
 
 namespace RepositoryFramework.Dapper.Test
 {
-  public class StoredProcedureRepositoryTest
+  public class DapperRepositoryTest
   {
-    [Theory]
-    [InlineData(100, "Name", "Name 1", 1)]
-    [InlineData(100, "Description", "Description 1", 10)]
-    public void FindFilter(int categories, string parameterName, object parameterValue, int expectedRows)
-    {
-      using (var connection = CreateConnection())
-      {
-        InitializeDatabase(connection, "RepositoryTest_FindFilter");
-
-        // Arrange
-        var categoryRepository = CreateCategoryRepository(connection);
-        for (int i = 0; i < categories; i++)
-        {
-          var category = new Category
-          {
-            Name = $"Name {i}",
-            Description = $"Description {i % 10}"
-          };
-          categoryRepository.Create(category);
-        }
-
-        // Act
-        var result = categoryRepository
-          .SetParameter(parameterName, parameterValue)
-          .Find();
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(expectedRows, result.Count());
-      }
-    }
-
     [Fact]
     public void GetById()
     {
@@ -196,57 +163,190 @@ namespace RepositoryFramework.Dapper.Test
 
     [Theory]
     [InlineData(100)]
-    public void Find(int categories)
+    public void Find(int rows)
     {
       using (var connection = CreateConnection())
       {
         InitializeDatabase(connection, "RepositoryTest_Find");
 
         // Arrange
-        var categoryRepository = CreateCategoryRepository(connection);
-        for (int i = 0; i < categories; i++)
+        var categories = new List<Category>();
+        for (int i = 0; i < rows; i++)
         {
           var category = new Category
           {
             Name = i.ToString(),
             Description = i.ToString()
           };
-          categoryRepository.Create(category);
+          categories.Add(category);
         }
+        var categoryRepository = CreateCategoryRepository(connection);
+        categoryRepository.CreateMany(categories);
 
         // Act
         var result = categoryRepository.Find();
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(categories, result.Count());
+        Assert.Equal(rows, result.Count());
       }
     }
-    private IStoredProcedureDapperRepository<Category> CreateCategoryRepository(IDbConnection connection)
-    {
-      return new StoredProcedureDapperRepository<Category>(connection);
-    }
-    private IDbConnection CreateConnection()
-    {
-      return new SqlConnection(@"Server=(LocalDb)\MSSQLLocalDB;Database=master;Trusted_Connection=True;");
-    }
 
-    private static void RunScript(IDbConnection connection, string script)
+    [Fact]
+    public void Combine_Page_Sort_Find()
     {
-      Regex regex = new Regex(@"\r{0,1}\nGO\r{0,1}\n");
-      string[] commands = regex.Split(script);
-
-      for (int i = 0; i < commands.Length; i++)
+      using (var connection = CreateConnection())
       {
-        if (commands[i] != string.Empty)
+        InitializeDatabase(connection, "RepositoryTest_Find");
+
+        // Arrange
+        var categories = new List<Category>();
+        for (int i = 0; i < 100; i++)
         {
-          using (var command = connection.CreateCommand())
+          var category = new Category
           {
-            command.CommandText = commands[i];
-            command.ExecuteNonQuery();
+            Name = i.ToString(),
+            Description = i.ToString()
+          };
+          categories.Add(category);
+        }
+        var categoryRepository = CreateCategoryRepository(connection);
+        categoryRepository.CreateMany(categories);
+
+        // Act
+        var result = categoryRepository
+          .Page(2, 40)
+          .SortBy(c => c.Id)
+          .Find();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(40, result.Count());
+      }
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void SortBy(bool descendingOrder, bool useExpression)
+    {
+      // Create new empty database
+      using (var connection = CreateConnection())
+      {
+        InitializeDatabase(connection, "RepositoryTest_SortBy");
+
+        // Arrange
+        var categories = new List<Category>();
+        for (int i = 0; i < 100; i++)
+        {
+          var category = new Category
+          {
+            Name = $"{i % 10}",
+            Description = i.ToString()
+          };
+          categories.Add(category);
+        }
+        var categoryRepository = CreateCategoryRepository(connection);
+        categoryRepository.CreateMany(categories);
+
+        // Act
+        if (descendingOrder)
+        {
+          if (useExpression)
+          {
+            categoryRepository.SortByDescending("Name");
+          }
+          else
+          {
+            categoryRepository.SortByDescending(p => p.Name);
           }
         }
+        else
+        if (useExpression)
+        {
+          categoryRepository.SortBy("Name");
+        }
+        else
+        {
+          categoryRepository.SortBy(p => p.Name);
+        }
+
+        var result = categoryRepository.Find().ToList();
+
+        // Assert
+        var sortedCategories = descendingOrder
+          ? result.OrderByDescending(p => p.Name)
+          : result.OrderBy(p => p.Name);
+        Assert.NotNull(result);
+        Assert.Equal(result, sortedCategories);
+
+        // Act
+        result = categoryRepository
+          .ClearSorting()
+          .Find()
+          .ToList();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotEqual(result, sortedCategories);
       }
+    }
+
+    [Theory]
+    [InlineData(1, 40, 100, 40)]
+    [InlineData(2, 40, 100, 40)]
+    [InlineData(3, 40, 100, 20)]
+    [InlineData(4, 40, 100, 0)]
+    public void Page(int page, int pageSize, int totalRows, int expectedRows)
+    {
+      // Create new empty database
+      using (var connection = CreateConnection())
+      {
+        InitializeDatabase(connection, "RepositoryTest_Page");
+
+        // Arrange
+        var categories = new List<Category>();
+        for (int i = 0; i < totalRows; i++)
+        {
+          var category = new Category
+          {
+            Name = $"{i % 10}",
+            Description = i.ToString()
+          };
+          categories.Add(category);
+        }
+        var categoryRepository = CreateCategoryRepository(connection);
+        categoryRepository.CreateMany(categories);
+
+        // Act
+        var pageItems = categoryRepository
+          .Page(page, pageSize)
+          .Find();
+
+        // Assert
+        Assert.NotNull(pageItems);
+        Assert.Equal(expectedRows, pageItems.Count());
+
+        // Assert
+        Assert.NotNull(pageItems);
+        Assert.Equal(expectedRows, pageItems.Count());
+
+        // Act
+        pageItems = categoryRepository
+          .ClearPaging()
+          .Find();
+
+        // Assert
+        Assert.NotNull(pageItems);
+        Assert.Equal(totalRows, pageItems.Count());
+      }
+    }
+
+    private IDbConnection CreateConnection()
+    {
+      return new SqliteConnection("Data Source=:memory:");
     }
 
     private void InitializeDatabase(IDbConnection connection, string database)
@@ -256,114 +356,26 @@ namespace RepositoryFramework.Dapper.Test
         connection.Open();
       }
 
-      var script = $@"
-USE master
-IF EXISTS(SELECT * FROM sys.databases WHERE NAME='{database}')
-	DROP DATABASE [{database}]
-GO
-
-CREATE DATABASE [{database}]
-GO
-
-USE [{database}]
-IF OBJECT_ID ('Category') IS NOT NULL 
-  DROP TABLE Category
-GO
-
+      var command = connection.CreateCommand();
+      command.CommandText = @"
 CREATE TABLE Category (
-  Id INTEGER IDENTITY,
-  Name NVARCHAR(100),
-  NullField NVARCHAR(100) DEFAULT NULL,
-  DateTimeField DATETIME,
-  Description NVARCHAR(100)
+Id INTEGER PRIMARY KEY,
+Name NVARCHAR(100),
+NullField NVARCHAR(100) DEFAULT NULL,
+DateTimeField DATETIME,
+Description NVARCHAR(100)
 )
-GO
-
-IF OBJECT_ID ('CreateCategory') IS NOT NULL 
-  DROP PROCEDURE CreateCategory
-GO
-
-CREATE PROCEDURE CreateCategory
-  @Name NVARCHAR(100) = NULL,
-  @NullField NVARCHAR(100) = NULL,
-  @DateTimeField DATETIME = NULL,
-  @Description NVARCHAR(100) = NULL
-AS
-BEGIN
-  INSERT INTO Category (Name, NullField, DateTimeField, Description)
-  VALUES(@Name, @NullField, @DateTimeField, @Description)
-
-  SELECT @@IDENTITY
-END
-GO
-
-IF OBJECT_ID ('GetCategory') IS NOT NULL 
-  DROP PROCEDURE GetCategory
-GO
-  
-CREATE PROCEDURE GetCategory
-  @Id INTEGER
-AS
-BEGIN
-  SELECT * 
-  FROM Category
-  WHERE Id = @Id
-END
-GO
-
-IF OBJECT_ID ('FindCategory') IS NOT NULL 
-  DROP PROCEDURE FindCategory
-GO
-  
-CREATE PROCEDURE FindCategory
-  @Name NVARCHAR(100) = NULL,
-  @Description NVARCHAR(100) = NULL
-AS
-BEGIN
-  SELECT * 
-  FROM Category
-  WHERE (Name = @Name OR @Name IS NULL)
-    AND (Description = @Description OR @Description IS NULL)
-END
-GO
-
-IF OBJECT_ID ('DeleteCategory') IS NOT NULL 
-  DROP PROCEDURE DeleteCategory
-GO
-  
-CREATE PROCEDURE DeleteCategory
-  @Id INTEGER
-AS
-BEGIN
-  DELETE 
-  FROM Category
-  WHERE Id = @Id
-END
-GO
-
-IF OBJECT_ID ('UpdateCategory') IS NOT NULL 
-  DROP PROCEDURE UpdateCategory
-GO
-  
-CREATE PROCEDURE UpdateCategory
-  @Id INTEGER,
-  @Name NVARCHAR(100),
-  @NullField NVARCHAR(100),
-  @DateTimeField DATETIME,
-  @Description NVARCHAR(100)
-AS
-BEGIN
-  UPDATE Category
-  SET Name = @Name,
-    Description = @Description,
-    NullField = @NullField,
-    DateTimeField = @DateTimeField
-  WHERE Id = @Id
-END
 ";
 
-      RunScript(connection, script);
+      command.ExecuteNonQuery();
     }
 
+    private IDapperRepository<Category> CreateCategoryRepository(IDbConnection connection)
+    {
+      return new DapperRepository<Category>(
+        connection,
+        "SELECT last_insert_rowid()",
+        "LIMIT {PageSize} OFFSET ({PageNumber} - 1) * {PageSize}");
+    }
   }
 }

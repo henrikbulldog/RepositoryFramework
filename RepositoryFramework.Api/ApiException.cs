@@ -23,8 +23,6 @@ namespace RepositoryFramework.Api
     /// <param name="method">Method</param>
     /// <param name="basePath">Base path</param>
     /// <param name="path">Entity path</param>
-    /// <param name="filter">request filter</param>
-    /// <param name="entity">Entity</param>
     /// <param name="errorContent">Error content</param>
     public ApiException(
       int errorCode,
@@ -32,8 +30,6 @@ namespace RepositoryFramework.Api
       string method,
       string basePath,
       string path,
-      object filter = null,
-      object entity = null,
       object errorContent = null)
       : base(message)
     {
@@ -41,8 +37,6 @@ namespace RepositoryFramework.Api
       Method = method;
       BasePath = basePath;
       Path = path;
-      Filter = filter;
-      Entity = entity;
       ErrorContent = errorContent;
     }
 
@@ -74,22 +68,12 @@ namespace RepositoryFramework.Api
     public string Path { get; private set; }
 
     /// <summary>
-    /// Gets request parameters filter object
-    /// </summary>
-    public object Filter { get; private set; }
-
-    /// <summary>
-    /// Gets Entity used in request
-    /// </summary>
-    public object Entity { get; private set; }
-
-    /// <summary>
     /// Convert to string
     /// </summary>
     /// <returns>String</returns>
     public override string ToString()
     {
-      return $"{base.ToString()}\nErrorCode: {ErrorCode}\nErrorContent: {ErrorContent}\nMethod: {Method}\nBasePath: {BasePath}\nPath: {Path}\nFilter: {JsonConvert.SerializeObject(Filter)}\nEntity: {JsonConvert.SerializeObject(Entity)}";
+      return $"{base.ToString()}\nErrorCode: {ErrorCode}\nErrorContent: {ErrorContent}\nMethod: {Method}\nBasePath: {BasePath}\nPath: {Path}";
     }
   }
 }

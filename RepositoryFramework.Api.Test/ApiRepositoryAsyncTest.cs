@@ -1,11 +1,12 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace RepositoryFramework.Api.Test
 {
-  public class ApiRepositoryTest
+  public class ApiRepositoryAsyncTest
   {
     private Configuration configuration =
       new Configuration
@@ -14,65 +15,65 @@ namespace RepositoryFramework.Api.Test
       };
 
     [Fact]
-    public void Find_Parameter()
+    public async Task FindAsync_Parameter()
     {
       var apiRepository = new ApiRepository<Post>(
         configuration,
         "https://jsonplaceholder.typicode.com",
         "posts");
-      var result = apiRepository
+      var result = await apiRepository
         .SetParameter("UserId", 1)
-        .Find();
+        .FindAsync();
       Assert.True(result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
       Assert.False(result.Any(p => p.UserId != 1));
     }
 
     [Fact]
-    public void Find_SubEntities()
+    public async Task FindAsync_SubEntities()
     {
       var apiRepository = new ApiRepository<Comment>(
         configuration,
         "https://jsonplaceholder.typicode.com",
         "posts/{postId}/comments");
-      var result = apiRepository
+      var result = await apiRepository
         .SetParameter("PostId", 1)
-        .Find();
+        .FindAsync();
       Assert.True(result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
       Assert.False(result.Any(p => p.PostId != 1));
     }
 
     [Fact]
-    public void Find_Infer_Entity_Name_And_Id()
+    public async Task FindAsync_Infer_Entity_Name_And_Id()
     {
       var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
-      var result = apiRepository
+      var result = await apiRepository
         .SetParameter("UserId", 1)
-        .Find();
+        .FindAsync();
       Assert.True(result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
       Assert.False(result.Any(p => p.UserId != 1));
     }
 
     [Fact]
-    public void Find()
+    public async Task FindAsync()
     {
       var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
-      var result = apiRepository.Find();
+      var result = await apiRepository.FindAsync();
       Assert.True(result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
     }
 
     [Fact]
-    public void Find_Invalid_Path()
+    public async Task FindAsync_Invalid_Path()
     {
       var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com", "bad_path");
       try
       {
-        apiRepository
+        await apiRepository
           .SetParameter("UserId", 1)
-          .Find();
+          .FindAsync();
       }
       catch (ApiException exc)
       {
@@ -84,16 +85,16 @@ namespace RepositoryFramework.Api.Test
     }
 
     [Fact]
-    public void GetById()
+    public async Task GetByIdAsync()
     {
       var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
-      var result = apiRepository.GetById("1");
+      var result = await apiRepository.GetByIdAsync("1");
       Assert.NotNull(result);
       Assert.Equal(1, result.Id);
     }
 
     [Fact]
-    public void Update()
+    public async Task UpdateAsync()
     {
       var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
@@ -103,23 +104,23 @@ namespace RepositoryFramework.Api.Test
         Title = "New title",
         Body = "New body"
       };
-      apiRepository.Update(post);
+      await apiRepository.UpdateAsync(post);
       Assert.Equal(1, post.Id);
     }
 
     [Fact]
-    public void Delete()
+    public async Task DeleteAsync()
     {
       var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
         Id = 1
       };
-      apiRepository.Delete(post);
+      await apiRepository.DeleteAsync(post);
     }
 
     [Fact]
-    public void DeleteMany()
+    public async Task DeleteManyAsync()
     {
       var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
 
@@ -135,11 +136,11 @@ namespace RepositoryFramework.Api.Test
         },
       };
 
-      apiRepository.DeleteMany(posts);
+      await apiRepository.DeleteManyAsync(posts);
     }
 
     [Fact]
-    public void Create()
+    public async Task CreateAsync()
     {
       var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
@@ -148,12 +149,12 @@ namespace RepositoryFramework.Api.Test
         Title = "New title",
         Body = "New body"
       };
-      apiRepository.Create(post);
+      await apiRepository.CreateAsync(post);
       Assert.NotEqual(1, post.Id);
     }
 
     [Fact]
-    public void CreateMany()
+    public async Task CreateManyAsync()
     {
       var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var posts = new List<Post>
@@ -171,7 +172,7 @@ namespace RepositoryFramework.Api.Test
           Body = "New body 2"
         },
       };
-      apiRepository.CreateMany(posts);
+      await apiRepository.CreateManyAsync(posts);
       Assert.NotEqual(1, posts[0].Id);
     }
   }

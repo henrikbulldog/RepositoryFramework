@@ -3,16 +3,16 @@
 namespace RepositoryFramework.Interfaces
 {
   /// <summary>
-  /// Finds a list of entites.
+  /// Creates a list of new entities.
   /// </summary>
   /// <typeparam name="TEntity">Entity type</typeparam>
-  public interface IFind<TEntity>
+  public interface ICreateMany<TEntity>
     where TEntity : class
   {
     /// <summary>
-    /// Get a list of entities
+    /// Create a list of new entities
     /// </summary>
-    /// <returns>Query result</returns>
-    IEnumerable<TEntity> Find();
+    /// <param name="entities">List of entities</param>
+    void CreateMany(IEnumerable<TEntity> entities);
   }
 }

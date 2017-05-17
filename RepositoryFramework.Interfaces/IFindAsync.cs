@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RepositoryFramework.Interfaces
 {
@@ -6,13 +7,13 @@ namespace RepositoryFramework.Interfaces
   /// Finds a list of entites.
   /// </summary>
   /// <typeparam name="TEntity">Entity type</typeparam>
-  public interface IFind<TEntity>
+  public interface IFindAsync<TEntity>
     where TEntity : class
   {
     /// <summary>
     /// Get a list of entities
     /// </summary>
     /// <returns>Query result</returns>
-    IEnumerable<TEntity> Find();
+    Task<IEnumerable<TEntity>> FindAsync();
   }
 }

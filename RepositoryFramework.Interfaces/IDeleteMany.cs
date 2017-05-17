@@ -3,16 +3,16 @@
 namespace RepositoryFramework.Interfaces
 {
   /// <summary>
-  /// Finds a list of entites.
+  /// Deletes an entity.
   /// </summary>
   /// <typeparam name="TEntity">Entity type</typeparam>
-  public interface IFind<TEntity>
+  public interface IDeleteMany<TEntity>
     where TEntity : class
   {
     /// <summary>
-    /// Get a list of entities
+    /// Delete a list of existing entities
     /// </summary>
-    /// <returns>Query result</returns>
-    IEnumerable<TEntity> Find();
+    /// <param name="entities">Entity list</param>
+    void DeleteMany(IEnumerable<TEntity> entities);
   }
 }
