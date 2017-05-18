@@ -43,14 +43,12 @@ Currently there are 4 implementations of the interfaces in separate packages on 
   * Data access against a ReSTful API using RestSharp, see http://restsharp.org/
   * Generic repository ApiRepository   
     * Additional methods:
-      * SetParameter() - set parameters to filter the result of result of Find()
+      * SetParameter() - set parameters for API calls
 *  RepositoryFramework.MongoDB
   *  Data access against a No-SQL document database using the MongoDB C# driver, see https://github.com/mongodb/mongo-csharp-driver
   * Generic repository MongoDBRepository   
     * Addtional methods:
       * AsQueryable() - Gets a queryable collection of entities
-      * SaveChanges() - Data is not modified until you call this method
-      * DetatchAll() - Detach all entites from the repository
       * Page() - Skip and limit result of Find()
       * SortBy() / SortBydescending() - Sort result of Find()
 

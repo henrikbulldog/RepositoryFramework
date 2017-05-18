@@ -98,7 +98,7 @@ namespace RepositoryFramework.EntityFramework
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override void Create(TEntity entity)
+    public virtual void Create(TEntity entity)
     {
       if (entity == null)
       {
@@ -109,10 +109,19 @@ namespace RepositoryFramework.EntityFramework
     }
 
     /// <summary>
+    /// Create a new entity
+    /// </summary>
+    /// <param name="entity">Entity</param>
+    public async Task CreateAsync(TEntity entity)
+    {
+      await Task.Run(() => Create(entity));
+    }
+
+    /// <summary>
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
-    public override void CreateMany(IEnumerable<TEntity> entities)
+    public virtual void CreateMany(IEnumerable<TEntity> entities)
     {
       if (entities == null)
       {
@@ -123,10 +132,19 @@ namespace RepositoryFramework.EntityFramework
     }
 
     /// <summary>
+    /// Create a list of new entities
+    /// </summary>
+    /// <param name="entities">List of entities</param>
+    public async Task CreateManyAsync(IEnumerable<TEntity> entities)
+    {
+      await Task.Run(() => CreateMany(entities));
+    }
+
+    /// <summary>
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override void Delete(TEntity entity)
+    public virtual void Delete(TEntity entity)
     {
       if (entity == null)
       {
@@ -140,17 +158,16 @@ namespace RepositoryFramework.EntityFramework
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override async Task DeleteAsync(TEntity entity)
+    public virtual async Task DeleteAsync(TEntity entity)
     {
-      var task = Task.Run(() => Delete(entity));
-      await task;
+      await Task.Run(() => Delete(entity));
     }
 
     /// <summary>
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
-    public override void DeleteMany(IEnumerable<TEntity> entities)
+    public virtual void DeleteMany(IEnumerable<TEntity> entities)
     {
       if (entities == null)
       {
@@ -164,17 +181,16 @@ namespace RepositoryFramework.EntityFramework
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
-    public override async Task DeleteManyAsync(IEnumerable<TEntity> entities)
+    public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities)
     {
-      var task = Task.Run(() => DeleteMany(entities));
-      await task;
+      await Task.Run(() => DeleteMany(entities));
     }
 
     /// <summary>
     /// Get a list of entities
     /// </summary>
     /// <returns>Query result</returns>
-    public override IEnumerable<TEntity> Find()
+    public virtual IEnumerable<TEntity> Find()
     {
       return GetQuery().ToList();
     }
@@ -183,7 +199,7 @@ namespace RepositoryFramework.EntityFramework
     /// Get a list of entities
     /// </summary>
     /// <returns>Query result</returns>
-    public override async Task<IEnumerable<TEntity>> FindAsync()
+    public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
       return await GetQuery().ToListAsync();
     }
@@ -193,7 +209,7 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="id">Filter to find a single item</param>
     /// <returns>Entity</returns>
-    public override TEntity GetById(object id)
+    public virtual TEntity GetById(object id)
     {
       var p = Expression.Parameter(EntityType);
       var prop = Expression.Property(p, IdPropertyName);
@@ -208,6 +224,15 @@ namespace RepositoryFramework.EntityFramework
       }
 
       return query.SingleOrDefault(idCompare);
+    }
+
+    /// <summary>
+    /// Gets an entity by id.
+    /// </summary>
+    /// <param name="id">Filter to find a single item</param>
+    public async Task<TEntity> GetByIdAsync(object id)
+    {
+      return await Task<TEntity>.Run(() => GetById(id));
     }
 
     /// <summary>
@@ -367,7 +392,7 @@ namespace RepositoryFramework.EntityFramework
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override void Update(TEntity entity)
+    public virtual void Update(TEntity entity)
     {
       if (entity == null)
       {
@@ -375,6 +400,15 @@ namespace RepositoryFramework.EntityFramework
       }
 
       DbContext.Set<TEntity>().Update(entity);
+    }
+
+    /// <summary>
+    /// Update an existing entity
+    /// </summary>
+    /// <param name="entity">Entity</param>
+    public async Task UpdateAsync(TEntity entity)
+    {
+      await Task.Run(() => Update(entity));
     }
 
     /// <summary>

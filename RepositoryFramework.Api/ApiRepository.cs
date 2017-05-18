@@ -46,8 +46,6 @@ namespace RepositoryFramework.Api
       {
         EntityPath = entityPath;
       }
-
-      PathParameters = GetParametersFromPath(EntityPath);
     }
 
     /// <summary>
@@ -71,11 +69,6 @@ namespace RepositoryFramework.Api
     /// </summary>
     protected Dictionary<string, string> DefaultHeaderMap { get; private set; }
       = new Dictionary<string, string>();
-
-    /// <summary>
-    /// Gets a list path parameters, for example { "Id" } /posts/{id}
-    /// </summary>
-    protected List<string> PathParameters { get; private set; }
 
     /// <summary>
     /// Gets the RestClient.
@@ -110,7 +103,16 @@ namespace RepositoryFramework.Api
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override async Task CreateAsync(TEntity entity)
+    public virtual void Create(TEntity entity)
+    {
+      CreateAsync(entity).WaitSync();
+    }
+
+    /// <summary>
+    /// Create a new entity
+    /// </summary>
+    /// <param name="entity">Entity</param>
+    public virtual async Task CreateAsync(TEntity entity)
     {
       if (entity == null)
       {
@@ -126,37 +128,14 @@ namespace RepositoryFramework.Api
       var path = EntityPath;
       path = path.Replace("{format}", "json");
 
-      var pathParams = new Dictionary<string, string>();
-      var queryParams = new Dictionary<string, string>();
+      var pathParams = GetPathParameters(path);
+      var queryParams = GetQueryParameters(path);
       var headerParams = new Dictionary<string, string>();
       var formParams = new Dictionary<string, string>();
       var fileParams = new Dictionary<string, FileParameter>();
       string postBody = Serialize(entity);
 
-      foreach (string property in entity
-        .GetType()
-        .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-        .Select(p => p.Name))
-      {
-        var parameterValue = ParameterToString(entity.GetType().GetProperty(property).GetValue(entity));
-        var pathParmeter = PathParameters.FirstOrDefault(p => p.ToLower() == property.ToLower());
-        if (pathParmeter != null)
-        {
-          if (parameterValue == null)
-          {
-            throw new ApiException(
-              400,
-              $"Path parameter {pathParmeter} cannot be null when calling APIRepository<{EntityTypeName}>.Create()",
-              "POST",
-              BasePath,
-              path);
-          }
-
-          pathParams.Add(pathParmeter, parameterValue);
-        }
-      }
-
-      var task = CallApiAsync(
+      var response = await CallApiAsync(
           path,
           Method.POST,
           pathParams,
@@ -165,7 +144,6 @@ namespace RepositoryFramework.Api
           headerParams,
           formParams,
           fileParams);
-      var response = await task;
 
       if (((int)response.StatusCode) >= 400)
       {
@@ -194,7 +172,16 @@ namespace RepositoryFramework.Api
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
-    public override async Task CreateManyAsync(IEnumerable<TEntity> entities)
+    public virtual void CreateMany(IEnumerable<TEntity> entities)
+    {
+      CreateManyAsync(entities).WaitSync();
+    }
+
+    /// <summary>
+    /// Create a list of new entities
+    /// </summary>
+    /// <param name="entities">List of entities</param>
+    public virtual async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
       if (entities == null)
       {
@@ -210,8 +197,8 @@ namespace RepositoryFramework.Api
       var path = EntityPath;
       path = path.Replace("{format}", "json");
 
-      var pathParams = new Dictionary<string, string>();
-      var queryParams = new Dictionary<string, string>();
+      var pathParams = GetPathParameters(path);
+      var queryParams = GetQueryParameters(path);
       var headerParams = new Dictionary<string, string>();
       var formParams = new Dictionary<string, string>();
       var fileParams = new Dictionary<string, FileParameter>();
@@ -256,7 +243,16 @@ namespace RepositoryFramework.Api
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override async Task DeleteAsync(TEntity entity)
+    public virtual void Delete(TEntity entity)
+    {
+      DeleteAsync(entity).WaitSync();
+    }
+
+    /// <summary>
+    /// Delete an existing entity
+    /// </summary>
+    /// <param name="entity">Entity</param>
+    public virtual async Task DeleteAsync(TEntity entity)
     {
       if (entity == null)
       {
@@ -276,30 +272,12 @@ namespace RepositoryFramework.Api
       }
 
       path = path.Replace("{format}", "json");
-      var pathParams = new Dictionary<string, string>();
-      var queryParams = new Dictionary<string, string>();
+      var pathParams = GetPathParameters(path);
+      var queryParams = GetQueryParameters(path);
       var headerParams = new Dictionary<string, string>();
       var formParams = new Dictionary<string, string>();
       var fileParams = new Dictionary<string, FileParameter>();
       string postBody = Serialize(entity);
-
-      foreach (string property in entity
-        .GetType()
-        .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-        .Select(p => p.Name))
-      {
-        var parameterValue = ParameterToString(entity.GetType().GetProperty(property).GetValue(entity));
-        var pathParmeter = PathParameters.FirstOrDefault(p => p.ToLower() == property.ToLower());
-        if (pathParmeter != null)
-        {
-          if (parameterValue == null)
-          {
-            throw new Exception($"Path parameter {pathParmeter} cannot be null");
-          }
-
-          pathParams.Add(pathParmeter, parameterValue);
-        }
-      }
 
       var task = CallApiAsync(
         path,
@@ -337,7 +315,16 @@ namespace RepositoryFramework.Api
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
-    public override async Task DeleteManyAsync(IEnumerable<TEntity> entities)
+    public virtual void DeleteMany(IEnumerable<TEntity> entities)
+    {
+      DeleteManyAsync(entities).WaitSync();
+    }
+
+    /// <summary>
+    /// Delete a list of existing entities
+    /// </summary>
+    /// <param name="entities">Entity list</param>
+    public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities)
     {
       foreach (var entity in entities)
       {
@@ -349,42 +336,28 @@ namespace RepositoryFramework.Api
     /// Get a list of entities
     /// </summary>
     /// <returns>Query result</returns>
-    public override async Task<IEnumerable<TEntity>> FindAsync()
+    public virtual IEnumerable<TEntity> Find()
+    {
+      var task = FindAsync();
+      task.WaitSync();
+      return task.Result;
+    }
+
+    /// <summary>
+    /// Get a list of entities
+    /// </summary>
+    /// <returns>Query result</returns>
+    public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
       var path = EntityPath;
       path = path.Replace("{format}", "json");
 
-      var pathParams = new Dictionary<string, string>();
-      var queryParams = new Dictionary<string, string>();
+      var pathParams = GetPathParameters(path);
+      var queryParams = GetQueryParameters(path);
       var headerParams = new Dictionary<string, string>();
       var formParams = new Dictionary<string, string>();
       var fileParams = new Dictionary<string, FileParameter>();
       string postBody = null;
-
-      if (Parameters.Count != 0)
-      {
-        foreach (string parameter in Parameters.Keys)
-        {
-          var parameterValue = ParameterToString(Parameters[parameter]);
-          var pathParmeter = PathParameters.FirstOrDefault(p => p.ToLower() == parameter.ToLower());
-          if (pathParmeter != null)
-          {
-            if (parameterValue == null)
-            {
-              throw new Exception($"Path parameter {pathParmeter} cannot be null");
-            }
-
-            pathParams.Add(pathParmeter, parameterValue);
-          }
-          else
-          {
-            if (parameterValue != null)
-            {
-              queryParams.Add(FirstCharacterToLower(parameter), parameterValue);
-            }
-          }
-        }
-      }
 
       var task = CallApiAsync(
         path,
@@ -426,7 +399,19 @@ namespace RepositoryFramework.Api
     /// </summary>
     /// <param name="id">Filter</param>
     /// <returns>Entity</returns>
-    public override async Task<TEntity> GetByIdAsync(object id)
+    public virtual TEntity GetById(object id)
+    {
+      var task = GetByIdAsync(id);
+      task.WaitSync();
+      return task.Result;
+    }
+
+    /// <summary>
+    /// Gets an entity by id.
+    /// </summary>
+    /// <param name="id">Filter</param>
+    /// <returns>Entity</returns>
+    public virtual async Task<TEntity> GetByIdAsync(object id)
     {
       if (id == null)
       {
@@ -442,8 +427,8 @@ namespace RepositoryFramework.Api
       var path = $"{EntityPath}/{id}";
       path = path.Replace("{format}", "json");
 
-      var pathParams = new Dictionary<string, string>();
-      var queryParams = new Dictionary<string, string>();
+      var pathParams = GetPathParameters(path);
+      var queryParams = GetQueryParameters(path);
       var headerParams = new Dictionary<string, string>();
       var formParams = new Dictionary<string, string>();
       var fileParams = new Dictionary<string, FileParameter>();
@@ -517,7 +502,16 @@ namespace RepositoryFramework.Api
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override async Task UpdateAsync(TEntity entity)
+    public virtual void Update(TEntity entity)
+    {
+      UpdateAsync(entity).WaitSync();
+    }
+
+    /// <summary>
+    /// Update an existing entity
+    /// </summary>
+    /// <param name="entity">Entity</param>
+    public virtual async Task UpdateAsync(TEntity entity)
     {
       if (entity == null)
       {
@@ -538,30 +532,12 @@ namespace RepositoryFramework.Api
 
       path = path.Replace("{format}", "json");
 
-      var pathParams = new Dictionary<string, string>();
-      var queryParams = new Dictionary<string, string>();
+      var pathParams = GetPathParameters(path);
+      var queryParams = GetQueryParameters(path);
       var headerParams = new Dictionary<string, string>();
       var formParams = new Dictionary<string, string>();
       var fileParams = new Dictionary<string, FileParameter>();
       string postBody = Serialize(entity);
-
-      foreach (string property in entity
-        .GetType()
-        .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-        .Select(p => p.Name))
-      {
-        var parameterValue = ParameterToString(entity.GetType().GetProperty(property).GetValue(entity));
-        var pathParmeter = PathParameters.FirstOrDefault(p => p.ToLower() == property.ToLower());
-        if (pathParmeter != null)
-        {
-          if (parameterValue == null)
-          {
-            throw new Exception($"Path parameter {pathParmeter} cannot be null");
-          }
-
-          pathParams.Add(pathParmeter, parameterValue);
-        }
-      }
 
       var task = CallApiAsync(
         path,
@@ -596,6 +572,52 @@ namespace RepositoryFramework.Api
       }
 
       DeserializeAndPopulate(response.Content, ref entity, response.Headers);
+    }
+
+    /// <summary>
+    /// Gets path parameters
+    /// </summary>
+    /// <param name="path">Path</param>
+    /// <returns>Path parameters</returns>
+    protected Dictionary<string, string> GetPathParameters(string path)
+    {
+      var pathParameters = new Dictionary<string, string>();
+      if (Parameters.Count != 0)
+      {
+        var pathParameterNames = GetParameterNamesFromPath(path);
+        foreach (string parameter in Parameters.Keys)
+        {
+          var pathParmeterName = pathParameterNames.FirstOrDefault(p => p.ToLower() == parameter.ToLower());
+          if (pathParmeterName != null)
+          {
+            pathParameters.Add(pathParmeterName, ParameterToString(Parameters[parameter]));
+          }
+        }
+      }
+      return pathParameters;
+    }
+
+    /// <summary>
+    /// Gets query parameters
+    /// </summary>
+    /// <param name="path">Path</param>
+    /// <returns>Query parameters</returns>
+    protected Dictionary<string, string> GetQueryParameters(string path)
+    {
+      var queryParameters = new Dictionary<string, string>();
+      if (Parameters.Count != 0)
+      {
+        var pathParameterNames = GetParameterNamesFromPath(path);
+        foreach (string parameter in Parameters.Keys)
+        {
+          var pathParmeterName = pathParameterNames.FirstOrDefault(p => p.ToLower() == parameter.ToLower());
+          if (pathParmeterName == null)
+          {
+            queryParameters.Add(FirstCharacterToLower(parameter), ParameterToString(Parameters[parameter]));
+          }
+        }
+      }
+      return queryParameters;
     }
 
     /// <summary>
@@ -878,13 +900,13 @@ namespace RepositoryFramework.Api
     }
 
     /// <summary>
-    /// Get a list of property names from an entity path. For example { "Id" } from /posts/{id}
+    /// Get a list of parameter names from an entity path. For example { "Id" } from /posts/{id}
     /// </summary>
-    /// <param name="entityPath">Entity path</param>
+    /// <param name="path">Entity path</param>
     /// <returns>List of property names</returns>
-    protected List<string> GetParametersFromPath(string entityPath)
+    protected List<string> GetParameterNamesFromPath(string path)
     {
-      var matches = Regex.Matches(entityPath, @"\{\w*\}");
+      var matches = Regex.Matches(path, @"\{\w*\}");
       var result = new List<string>();
       foreach (var m in matches)
       {

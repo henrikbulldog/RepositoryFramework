@@ -53,7 +53,16 @@ namespace RepositoryFramework.Dapper
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override async Task CreateAsync(TEntity entity)
+    public virtual void Create(TEntity entity)
+    {
+      CreateAsync(entity).WaitSync();
+    }
+
+    /// <summary>
+    /// Create a new entity
+    /// </summary>
+    /// <param name="entity">Entity</param>
+    public virtual async Task CreateAsync(TEntity entity)
     {
       if (Connection.State != ConnectionState.Open)
       {
@@ -78,7 +87,16 @@ namespace RepositoryFramework.Dapper
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
-    public override async Task CreateManyAsync(IEnumerable<TEntity> entities)
+    public virtual void CreateMany(IEnumerable<TEntity> entities)
+    {
+      CreateManyAsync(entities).WaitSync();
+    }
+
+    /// <summary>
+    /// Create a list of new entities
+    /// </summary>
+    /// <param name="entities">List of entities</param>
+    public virtual async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
       if (Connection.State != ConnectionState.Open)
       {
@@ -98,7 +116,16 @@ namespace RepositoryFramework.Dapper
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override async Task DeleteAsync(TEntity entity)
+    public virtual void Delete(TEntity entity)
+    {
+      DeleteAsync(entity).WaitSync();
+    }
+
+    /// <summary>
+    /// Delete an existing entity
+    /// </summary>
+    /// <param name="entity">Entity</param>
+    public virtual async Task DeleteAsync(TEntity entity)
     {
       if (Connection.State != ConnectionState.Open)
       {
@@ -114,7 +141,16 @@ namespace RepositoryFramework.Dapper
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
-    public override async Task DeleteManyAsync(IEnumerable<TEntity> entities)
+    public virtual void DeleteMany(IEnumerable<TEntity> entities)
+    {
+      DeleteManyAsync(entities).WaitSync();
+    }
+
+    /// <summary>
+    /// Delete a list of existing entities
+    /// </summary>
+    /// <param name="entities">Entity list</param>
+    public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities)
     {
       if (Connection.State != ConnectionState.Open)
       {
@@ -130,7 +166,16 @@ namespace RepositoryFramework.Dapper
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override async Task UpdateAsync(TEntity entity)
+    public virtual void Update(TEntity entity)
+    {
+      UpdateAsync(entity).WaitSync();
+    }
+
+    /// <summary>
+    /// Update an existing entity
+    /// </summary>
+    /// <param name="entity">Entity</param>
+    public virtual async Task UpdateAsync(TEntity entity)
     {
       if (Connection.State != ConnectionState.Open)
       {
@@ -147,9 +192,21 @@ namespace RepositoryFramework.Dapper
     /// <summary>
     /// Gets an entity by id.
     /// </summary>
+    /// <param name="id">Filter</param>
+    /// <returns>Entity</returns>
+    public virtual TEntity GetById(object id)
+    {
+      var task = GetByIdAsync(id);
+      task.WaitSync();
+      return task.Result;
+    }
+
+    /// <summary>
+    /// Gets an entity by id.
+    /// </summary>
     /// <param name="id">Filter to find a single item</param>
     /// <returns>Entity</returns>
-    public override async Task<TEntity> GetByIdAsync(object id)
+    public virtual async Task<TEntity> GetByIdAsync(object id)
     {
       if (Connection.State != ConnectionState.Open)
       {
@@ -167,7 +224,18 @@ namespace RepositoryFramework.Dapper
     /// Get a list of entities
     /// </summary>
     /// <returns>Query result</returns>
-    public override async Task<IEnumerable<TEntity>> FindAsync()
+    public virtual IEnumerable<TEntity> Find()
+    {
+      var task = FindAsync();
+      task.WaitSync();
+      return task.Result;
+    }
+
+    /// <summary>
+    /// Get a list of entities
+    /// </summary>
+    /// <returns>Query result</returns>
+    public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
       if (Connection.State != ConnectionState.Open)
       {

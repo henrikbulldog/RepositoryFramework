@@ -93,7 +93,7 @@ namespace RepositoryFramework.MongoDB
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override void Create(TEntity entity)
+    public virtual void Create(TEntity entity)
     {
       Collection.InsertOne(entity);
     }
@@ -102,7 +102,7 @@ namespace RepositoryFramework.MongoDB
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override async Task CreateAsync(TEntity entity)
+    public virtual async Task CreateAsync(TEntity entity)
     {
       await Collection.InsertOneAsync(entity);
     }
@@ -111,7 +111,7 @@ namespace RepositoryFramework.MongoDB
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
-    public override void CreateMany(IEnumerable<TEntity> entities)
+    public virtual void CreateMany(IEnumerable<TEntity> entities)
     {
       Collection.InsertMany(entities);
     }
@@ -120,7 +120,7 @@ namespace RepositoryFramework.MongoDB
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
-    public override async Task CreateManyAsync(IEnumerable<TEntity> entities)
+    public virtual async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
       await Collection.InsertManyAsync(entities);
     }
@@ -129,7 +129,7 @@ namespace RepositoryFramework.MongoDB
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override void Delete(TEntity entity)
+    public virtual void Delete(TEntity entity)
     {
       var builder = Builders<TEntity>.Filter;
       var filter = builder.Eq(IdPropertyName, entity.GetType().GetProperty(IdPropertyName).GetValue(entity));
@@ -140,7 +140,7 @@ namespace RepositoryFramework.MongoDB
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override async Task DeleteAsync(TEntity entity)
+    public virtual async Task DeleteAsync(TEntity entity)
     {
       var builder = Builders<TEntity>.Filter;
       var filter = builder.Eq(IdPropertyName, entity.GetType().GetProperty(IdPropertyName).GetValue(entity));
@@ -151,7 +151,7 @@ namespace RepositoryFramework.MongoDB
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
-    public override void DeleteMany(IEnumerable<TEntity> list)
+    public virtual void DeleteMany(IEnumerable<TEntity> list)
     {
       var builder = Builders<TEntity>.Filter;
       var filter = builder.In(IdPropertyName, list);
@@ -162,7 +162,7 @@ namespace RepositoryFramework.MongoDB
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
-    public override async Task DeleteManyAsync(IEnumerable<TEntity> list)
+    public virtual async Task DeleteManyAsync(IEnumerable<TEntity> list)
     {
       var builder = Builders<TEntity>.Filter;
       var filter = builder.In(IdPropertyName, list);
@@ -174,7 +174,7 @@ namespace RepositoryFramework.MongoDB
     /// </summary>
     /// <param name="expr">Filter expression</param>
     /// <returns>List of items</returns>
-    public override IEnumerable<TEntity> Find()
+    public virtual IEnumerable<TEntity> Find()
     {
       IQueryable<TEntity> query = Collection.AsQueryable();
 
@@ -189,7 +189,7 @@ namespace RepositoryFramework.MongoDB
     /// </summary>
     /// <param name="expr">Filter expression</param>
     /// <returns>List of items</returns>
-    public override async Task<IEnumerable<TEntity>> FindAsync()
+    public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
       var find = Collection
         .Find("{}");
@@ -216,7 +216,7 @@ namespace RepositoryFramework.MongoDB
     /// </summary>
     /// <param name="id">Filter to find a single item</param>
     /// <returns>Entity</returns>
-    public override TEntity GetById(object id)
+    public virtual TEntity GetById(object id)
     {
       var builder = Builders<TEntity>.Filter;
       var filter = builder.Eq(IdPropertyName, id);
@@ -228,7 +228,7 @@ namespace RepositoryFramework.MongoDB
     /// </summary>
     /// <param name="id">Filter to find a single item</param>
     /// <returns>Entity</returns>
-    public override async Task<TEntity> GetByIdAsync(object id)
+    public virtual async Task<TEntity> GetByIdAsync(object id)
     {
       var builder = Builders<TEntity>.Filter;
       var filter = builder.Eq(IdPropertyName, id);
@@ -324,7 +324,7 @@ namespace RepositoryFramework.MongoDB
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override void Update(TEntity entity)
+    public virtual void Update(TEntity entity)
     {
       var builder = Builders<TEntity>.Filter;
       var filter = builder.Eq(IdPropertyName, entity.GetType().GetProperty(IdPropertyName).GetValue(entity));
@@ -335,7 +335,7 @@ namespace RepositoryFramework.MongoDB
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public override async Task UpdateAsync(TEntity entity)
+    public virtual async Task UpdateAsync(TEntity entity)
     {
       var builder = Builders<TEntity>.Filter;
       var filter = builder.Eq(IdPropertyName, entity.GetType().GetProperty(IdPropertyName).GetValue(entity));
