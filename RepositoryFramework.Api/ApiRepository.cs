@@ -610,10 +610,12 @@ namespace RepositoryFramework.Api
         var pathParameterNames = GetParameterNamesFromPath(path);
         foreach (string parameter in Parameters.Keys)
         {
-          var pathParmeterName = pathParameterNames.FirstOrDefault(p => p.ToLower() == parameter.ToLower());
-          if (pathParmeterName == null)
+          if (!pathParameterNames.Exists(p => p.ToLower() == parameter.ToLower()))
           {
-            queryParameters.Add(FirstCharacterToLower(parameter), ParameterToString(Parameters[parameter]));
+            if (Parameters[parameter] != null)
+            {
+              queryParameters.Add(FirstCharacterToLower(parameter), ParameterToString(Parameters[parameter]));
+            }
           }
         }
       }

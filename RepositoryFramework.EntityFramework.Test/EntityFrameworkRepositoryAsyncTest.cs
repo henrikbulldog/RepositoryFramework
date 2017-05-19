@@ -16,6 +16,7 @@ namespace RepositoryFramework.Test
     [InlineData("Products", 100, 100, 0)]
     [InlineData("pRoducts", 100, 100, 0)]
     [InlineData("Products.Parts", 100, 100, 100)]
+    [InlineData("Products.Parts,Products.Parts.Product", 100, 100, 100)]
     public async Task IncludeAsync(string includes, int productRows, int expectedProductRows, int expectedPartRows)
     {
       // Create new empty database
@@ -25,16 +26,14 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> categoryRepository = new EntityFrameworkRepository<Category>(db);
         var category = CreateCategory(productRows);
         await categoryRepository.CreateAsync(category);
-        await categoryRepository.SaveChangesAsync();
 
         // Detach all to avoid expansions already cached in the context
         await categoryRepository.DetachAllAsync();
 
         // Act
-        var findTask = await categoryRepository
+        category = await categoryRepository
           .Include(includes)
-          .FindAsync();
-        category = findTask.First();
+          .GetByIdAsync(category.Id);
 
         // Assert
         Assert.NotNull(category);
@@ -76,7 +75,6 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var c = CreateCategory(100);
         cr.Create(c);
-        cr.SaveChanges();
 
         // Act
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
@@ -134,7 +132,6 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var category = CreateCategory(totalRows);
         cr.Create(category);
-        cr.SaveChanges();
 
         // Act
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
@@ -167,7 +164,6 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var category = CreateCategory(100);
         cr.Create(category);
-        cr.SaveChanges();
 
         // Act
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
@@ -193,7 +189,6 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var category = CreateCategory(100);
         cr.Create(category);
-        cr.SaveChanges();
 
         // Act
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
@@ -222,7 +217,6 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var category = CreateCategory(100);
         cr.Create(category);
-        cr.SaveChanges();
 
         // Act
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
@@ -236,6 +230,29 @@ namespace RepositoryFramework.Test
         // Assert
         Assert.NotNull(pageItems);
         Assert.Equal(40, pageItems.Count());
+      }
+    }
+
+    [Fact]
+    public async Task FindWhereAsync()
+    {
+      // Create new empty database
+      using (var db = new SQLiteContext())
+      {
+        // Arrange
+        IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
+        var category = CreateCategory(100);
+        cr.Create(category);
+
+        // Act
+        IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
+        var pageItems = await pr
+          .Include("Parts")
+          .FindAsync(p => p.Id > 50);
+
+        // Assert
+        Assert.NotNull(pageItems);
+        Assert.Equal(50, pageItems.Count());
       }
     }
 

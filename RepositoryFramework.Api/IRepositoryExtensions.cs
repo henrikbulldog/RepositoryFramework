@@ -22,13 +22,13 @@ namespace RepositoryFramework.Api
       object value)
       where TEntity : class
     {
-      var dapperRepository = instance as ApiRepository<TEntity>;
-      if (dapperRepository == null)
+      var apiRepository = instance as ApiRepository<TEntity>;
+      if (apiRepository == null)
       {
         throw new NotImplementedException();
       }
 
-      dapperRepository.SetParameter(name, value);
+      apiRepository.SetParameter(name, value);
       return instance;
     }
 
@@ -43,13 +43,13 @@ namespace RepositoryFramework.Api
       string name)
       where TEntity : class
     {
-      var dapperRepository = instance as ApiRepository<TEntity>;
-      if (dapperRepository == null)
+      var apiRepository = instance as ApiRepository<TEntity>;
+      if (apiRepository == null)
       {
         throw new NotImplementedException();
       }
 
-      return dapperRepository.GetParameter(name);
+      return apiRepository.GetParameter(name);
     }
 
     /// <summary>
@@ -61,13 +61,13 @@ namespace RepositoryFramework.Api
       this IRepository<TEntity> instance)
       where TEntity : class
     {
-      var dapperRepository = instance as ApiRepository<TEntity>;
-      if (dapperRepository == null)
+      var apiRepository = instance as ApiRepository<TEntity>;
+      if (apiRepository == null)
       {
         throw new NotImplementedException();
       }
 
-      return dapperRepository.ClearParameters();
+      return apiRepository.ClearParameters();
     }
   }
 }

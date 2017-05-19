@@ -161,10 +161,10 @@ namespace RepositoryFramework.Dapper.Test
       }
     }
 
-    [Theory]
-    [InlineData(100)]
-    public void Find(int rows)
+    [Fact]
+    public void Find()
     {
+      var rows = 100;
       using (var connection = CreateConnection())
       {
         InitializeDatabase(connection, "RepositoryTest_Find");
@@ -189,6 +189,38 @@ namespace RepositoryFramework.Dapper.Test
         // Assert
         Assert.NotNull(result);
         Assert.Equal(rows, result.Count());
+      }
+    }
+
+    [Fact]
+    public void FindFilter()
+    {
+      var rows = 100;
+      using (var connection = CreateConnection())
+      {
+        InitializeDatabase(connection, "RepositoryTest_Find");
+
+        // Arrange
+        var categories = new List<Category>();
+        for (int i = 0; i < rows; i++)
+        {
+          var category = new Category
+          {
+            Name = i.ToString(),
+            Description = i.ToString()
+          };
+          categories.Add(category);
+        }
+        var categoryRepository = CreateCategoryRepository(connection);
+        categoryRepository.CreateMany(categories);
+
+        // Act
+        var result = categoryRepository.Find();
+        var filtered = categoryRepository.Find($"WHERE Id = {result.First().Id}");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(1, filtered.Count());
       }
     }
 

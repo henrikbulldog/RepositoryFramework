@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace RepositoryFramework.MongoDB
 {
@@ -24,7 +25,7 @@ namespace RepositoryFramework.MongoDB
       int pageSize)
       where TEntity : class
     {
-      var mongoDBRepository = instance as MongoDBRepository<TEntity>;
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
       if (mongoDBRepository == null)
       {
         throw new NotImplementedException();
@@ -43,7 +44,7 @@ namespace RepositoryFramework.MongoDB
       this IRepository<TEntity> instance)
       where TEntity : class
     {
-      var mongoDBRepository = instance as MongoDBRepository<TEntity>;
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
       if (mongoDBRepository == null)
       {
         throw new NotImplementedException();
@@ -64,7 +65,7 @@ namespace RepositoryFramework.MongoDB
       Expression<Func<TEntity, object>> property)
       where TEntity : class
     {
-      var mongoDBRepository = instance as MongoDBRepository<TEntity>;
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
       if (mongoDBRepository == null)
       {
         throw new NotImplementedException();
@@ -85,7 +86,7 @@ namespace RepositoryFramework.MongoDB
       string propertyName)
       where TEntity : class
     {
-      var mongoDBRepository = instance as MongoDBRepository<TEntity>;
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
       if (mongoDBRepository == null)
       {
         throw new NotImplementedException();
@@ -106,7 +107,7 @@ namespace RepositoryFramework.MongoDB
       Expression<Func<TEntity, object>> property)
       where TEntity : class
     {
-      var mongoDBRepository = instance as MongoDBRepository<TEntity>;
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
       if (mongoDBRepository == null)
       {
         throw new NotImplementedException();
@@ -127,7 +128,7 @@ namespace RepositoryFramework.MongoDB
       string propertyName)
       where TEntity : class
     {
-      var mongoDBRepository = instance as MongoDBRepository<TEntity>;
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
       if (mongoDBRepository == null)
       {
         throw new NotImplementedException();
@@ -135,6 +136,46 @@ namespace RepositoryFramework.MongoDB
 
       mongoDBRepository.SortByDescending(propertyName);
       return instance;
+    }
+
+    /// <summary>
+    /// Filters a sequence of entities using a predicate
+    /// </summary>
+    /// <param name="instance">Current instance</param>
+    /// <param name="predicate">Predicate</param>
+    /// <returns>Current instance</returns>
+    public static IEnumerable<TEntity> Find<TEntity>(
+      this IRepository<TEntity> instance,
+      Func<TEntity, bool> predicate)
+      where TEntity : class
+    {
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
+      if (mongoDBRepository == null)
+      {
+        throw new NotImplementedException();
+      }
+
+      return mongoDBRepository.Find(predicate);
+    }
+
+    /// <summary>
+    /// Filters a sequence of entities using a predicate
+    /// </summary>
+    /// <param name="instance">Current instance</param>
+    /// <param name="predicate">Predicate</param>
+    /// <returns>Current instance</returns>
+    public static async Task<IEnumerable<TEntity>> FindAsync<TEntity>(
+      this IRepository<TEntity> instance,
+      Func<TEntity, bool> predicate)
+      where TEntity : class
+    {
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
+      if (mongoDBRepository == null)
+      {
+        throw new NotImplementedException();
+      }
+
+      return await mongoDBRepository.FindAsync(predicate);
     }
 
     /// <summary>
@@ -148,7 +189,7 @@ namespace RepositoryFramework.MongoDB
       List<string> propertyPaths)
       where TEntity : class
     {
-      var mongoDBRepository = instance as MongoDBRepository<TEntity>;
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
       if (mongoDBRepository == null)
       {
         throw new NotImplementedException();
@@ -167,7 +208,7 @@ namespace RepositoryFramework.MongoDB
       this IRepository<TEntity> instance)
       where TEntity : class
     {
-      var mongoDBRepository = instance as MongoDBRepository<TEntity>;
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
       if (mongoDBRepository == null)
       {
         throw new NotImplementedException();
@@ -186,13 +227,53 @@ namespace RepositoryFramework.MongoDB
       this IRepository<TEntity> instance)
       where TEntity : class
     {
-      var mongoDBRepository = instance as MongoDBRepository<TEntity>;
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
       if (mongoDBRepository == null)
       {
         throw new NotImplementedException();
       }
 
       return mongoDBRepository.AsQueryable();
+    }
+
+    /// <summary>
+    /// Filters a collection of entities
+    /// </summary>
+    /// <param name="instance">Current instance</param>
+    /// <param name="filter">Filter</param>
+    /// <returns>Filtered collection of entities</returns>
+    public static IEnumerable<TEntity> Find<TEntity>(
+      this IRepository<TEntity> instance,
+      string filter)
+      where TEntity : class
+    {
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
+      if (mongoDBRepository == null)
+      {
+        throw new NotImplementedException();
+      }
+
+      return mongoDBRepository.Find(filter);
+    }
+
+    /// <summary>
+    /// Filters a collection of entities
+    /// </summary>
+    /// <param name="instance">Current instance</param>
+    /// <param name="filter">Filter</param>
+    /// <returns>Filtered collection of entities</returns>
+    public static async Task<IEnumerable<TEntity>> FindAsync<TEntity>(
+      this IRepository<TEntity> instance,
+      string filter)
+      where TEntity : class
+    {
+      var mongoDBRepository = instance as IMongoDBRepository<TEntity>;
+      if (mongoDBRepository == null)
+      {
+        throw new NotImplementedException();
+      }
+
+      return await mongoDBRepository.FindAsync(filter);
     }
   }
 }

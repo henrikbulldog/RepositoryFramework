@@ -32,7 +32,7 @@ namespace RepositoryFramework.Dapper
       string limitOffsetPattern = "OFFSET ({PageNumber} - 1) * {PageSize} ROWS FETCH NEXT {PageSize} ROWS ONLY",
       string tableName = null)
     {
-      Connection = connection;
+      this.connection = connection;
 
       if (tableName != null)
       {
@@ -46,6 +46,8 @@ namespace RepositoryFramework.Dapper
       LastRowIdCommand = lastRowIdCommand;
       LimitOffsetPattern = limitOffsetPattern;
     }
+
+    private IDbConnection connection;
 
     /// <summary>
     /// Gets number of items per page (when paging is used)
@@ -70,7 +72,22 @@ namespace RepositoryFramework.Dapper
     /// <summary>
     /// Gets database connection
     /// </summary>
-    protected virtual IDbConnection Connection { get; private set; }
+    protected virtual IDbConnection Connection
+    {
+      get
+      {
+        if (connection.State != ConnectionState.Open)
+        {
+          connection.Open();
+        }
+        return connection;
+      }
+
+      private set
+      {
+        connection = value;
+      }
+    }
 
     /// <summary>
     /// Gets SQL command to get Id of last row inserted
@@ -124,11 +141,6 @@ namespace RepositoryFramework.Dapper
     /// <param name="entity">Entity</param>
     public virtual async Task CreateAsync(TEntity entity)
     {
-      if (Connection.State != ConnectionState.Open)
-      {
-        Connection.Open();
-      }
-
       var insertColumns = EntityColumns.Where(c => c != IdPropertyName);
 
       var insertQuery = $@"
@@ -156,11 +168,6 @@ VALUES (@{string.Join(",@", insertColumns)});
     /// <param name="entities">List of entities</param>
     public virtual async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
-      if (Connection.State != ConnectionState.Open)
-      {
-        Connection.Open();
-      }
-
       var insertColumns = EntityColumns.Where(c => c != IdPropertyName);
 
       var insertCommand = $@"
@@ -185,11 +192,6 @@ VALUES (@{string.Join(",@", insertColumns)})";
     /// <param name="entity">Entity</param>
     public virtual async Task DeleteAsync(TEntity entity)
     {
-      if (Connection.State != ConnectionState.Open)
-      {
-        Connection.Open();
-      }
-
       var deleteQCommand = $@"
 DELETE FROM {TableName}
 WHERE {IdPropertyName}=@{IdPropertyName}";
@@ -212,11 +214,6 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
     /// <param name="entities">Entity list</param>
     public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities)
     {
-      if (Connection.State != ConnectionState.Open)
-      {
-        Connection.Open();
-      }
-
       var deleteCommand = $@"
 DELETE FROM {TableName}
 WHERE {IdPropertyName} IN (@Id)";
@@ -236,9 +233,7 @@ WHERE {IdPropertyName} IN (@Id)";
     /// <returns>Query result</returns>
     public virtual IEnumerable<TEntity> Find()
     {
-      var task = FindAsync();
-      task.WaitSync();
-      return task.Result;
+      return Connection.Query<TEntity>(GetQuery());
     }
 
     /// <summary>
@@ -247,33 +242,28 @@ WHERE {IdPropertyName} IN (@Id)";
     /// <returns>Query result</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
-      if (Connection.State != ConnectionState.Open)
-      {
-        Connection.Open();
-      }
-
-      var orderBy = string.Empty;
-      if (SortOrder != SortOrder.Unspecified
-        && !string.IsNullOrWhiteSpace(SortPropertyName))
-      {
-        var order = SortOrder == SortOrder.Descending ? " DESC" : string.Empty;
-        orderBy = $"ORDER BY {SortPropertyName}{order}";
-      }
-
-      var offset = string.Empty;
-      if(PageNumber > 1 || PageSize > 0)
-      {
-        offset = LimitOffsetPattern.Replace("{PageNumber}", $"{PageNumber}").Replace("{PageSize}", $"{PageSize}");
-      }
-
-      var findQuery = $@"
-SELECT * FROM {TableName}
-{orderBy}
-{offset}";
-
-      return await Connection.QueryAsync<TEntity>(findQuery);
+      return await Connection.QueryAsync<TEntity>(GetQuery());
     }
 
+    /// <summary>
+    /// Filters a collection of entities from a filter definition
+    /// </summary>
+    /// <param name="filter">Filter definition</param>
+    /// <returns>Filtered collection of entities</returns>
+    public IEnumerable<TEntity> Find(string filter)
+    {
+      return Connection.Query<TEntity>(GetQuery(filter));
+    }
+
+    /// <summary>
+    /// Filters a collection of entities from a filter definition
+    /// </summary>
+    /// <param name="filter">Filter definition</param>
+    /// <returns>Filtered collection of entities</returns>
+    public async Task<IEnumerable<TEntity>> FindAsync(string filter)
+    {
+      return await Connection.QueryAsync<TEntity>(GetQuery(filter));
+    }
     /// <summary>
     /// Gets an entity by id.
     /// </summary>
@@ -419,6 +409,38 @@ SET {string.Join(",", parameters)}
 WHERE {IdPropertyName}=@{IdPropertyName}";
 
       await Connection.ExecuteAsync(updateQuery, entity);
+    }
+
+    /// <summary>
+    /// Gets query string
+    /// </summary>
+    /// <param name="where">Optional where statement</param>
+    /// <returns>Query string</returns>
+    protected virtual string GetQuery(string where = null)
+    {
+      if (string.IsNullOrWhiteSpace(where))
+      {
+        where = string.Empty;
+      }
+      var orderBy = string.Empty;
+      if (SortOrder != SortOrder.Unspecified
+        && !string.IsNullOrWhiteSpace(SortPropertyName))
+      {
+        var order = SortOrder == SortOrder.Descending ? " DESC" : string.Empty;
+        orderBy = $"ORDER BY {SortPropertyName}{order}";
+      }
+
+      var offset = string.Empty;
+      if (PageNumber > 1 || PageSize > 0)
+      {
+        offset = LimitOffsetPattern.Replace("{PageNumber}", $"{PageNumber}").Replace("{PageSize}", $"{PageSize}");
+      }
+
+      return $@"
+SELECT * FROM {TableName}
+{where}
+{orderBy}
+{offset}";
     }
   }
 }

@@ -17,7 +17,9 @@ namespace RepositoryFramework.EntityFramework
     IPageableRepository<TEntity>,
     IQueryableRepository<TEntity>,
     IUnitOfWorkRepository<TEntity>,
-    IUnitOfWorkRepositoryAsync<TEntity>
+    IUnitOfWorkRepositoryAsync<TEntity>,
+    IFindWhere<TEntity>,
+    IFindWhereAsync<TEntity>
   where TEntity : class
   {
   }

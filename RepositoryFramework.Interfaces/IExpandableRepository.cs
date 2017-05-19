@@ -17,11 +17,11 @@ namespace RepositoryFramework.Interfaces
     List<string> Includes { get; }
 
     /// <summary>
-    /// Include referenced property
+    /// Include referenced properties
     /// </summary>
-    /// <param name="propertyPath">Property path</param>
+    /// <param name="propertyPaths">Comma-separated list of property paths</param>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> Include(string propertyPath);
+    IRepository<TEntity> Include(string propertyPaths);
 
     /// <summary>
     /// Include referenced property
@@ -29,13 +29,6 @@ namespace RepositoryFramework.Interfaces
     /// <param name="property">Property expression</param>
     /// <returns>Current instance</returns>
     IRepository<TEntity> Include(Expression<Func<TEntity, object>> property);
-
-    /// <summary>
-    /// Include list of referenced properties
-    /// </summary>
-    /// <param name="propertyPaths">Property paths</param>
-    /// <returns>Current instance</returns>
-    IRepository<TEntity> Include(List<string> propertyPaths);
 
     /// <summary>
     /// Clear includes

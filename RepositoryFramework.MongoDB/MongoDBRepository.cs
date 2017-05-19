@@ -176,12 +176,7 @@ namespace RepositoryFramework.MongoDB
     /// <returns>List of items</returns>
     public virtual IEnumerable<TEntity> Find()
     {
-      IQueryable<TEntity> query = Collection.AsQueryable();
-
-      return query
-        .Sort(this)
-        .Page(this)
-        .ToList();
+      return ApplyConstraints(Collection.Find("{}")).ToList();
     }
 
     /// <summary>
@@ -191,24 +186,42 @@ namespace RepositoryFramework.MongoDB
     /// <returns>List of items</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
-      var find = Collection
-        .Find("{}");
+      return await ApplyConstraints(Collection.Find("{}")).ToListAsync();
+    }
 
-      if (SortOrder == SortOrder.Ascending)
-      {
-        find = find.SortBy(GetPropertySelector(SortPropertyName));
-      }
-      if (SortOrder == SortOrder.Descending)
-      {
-        find = find.SortByDescending(GetPropertySelector(SortPropertyName));
-      }
-      if (PageNumber > 1 || PageSize > 0)
-      {
-        find = find
-          .Skip((PageNumber - 1) * PageSize)
-          .Limit(PageSize);
-      }
-      return await find.ToListAsync();
+    /// <summary>
+    /// Filters a collection of entities using a predicate
+    /// </summary>
+    /// <param name="where">Where predicate</param>
+    /// <returns>Filtered collection of entities</returns>
+    public IEnumerable<TEntity> Find(Func<TEntity, bool> where)
+    {
+      return AsQueryable().Where(where).ToList();
+    }
+
+    /// <summary>
+    /// Filters a collection of entities using a predicate
+    /// </summary>
+    /// <param name="where">Where predicate</param>
+    /// <returns>Filtered collection of entities</returns>
+    public virtual async Task<IEnumerable<TEntity>> FindAsync(Func<TEntity, bool> where)
+    {
+      return await Task.Run(() => AsQueryable().Where(where).ToList());
+    }
+
+    /// <summary>
+    /// Filters a collection of entities
+    /// </summary>
+    /// <param name="filter">Filter</param>
+    /// <returns>Filtered collection of entities</returns>
+    public IEnumerable<TEntity> Find(string filter)
+    {
+      return ApplyConstraints(Collection.Find(filter)).ToList();
+    }
+
+    public async Task<IEnumerable<TEntity>> FindAsync(string filter)
+    {
+      return await ApplyConstraints(Collection.Find(filter)).ToListAsync();
     }
 
     /// <summary>
@@ -353,6 +366,30 @@ namespace RepositoryFramework.MongoDB
       return query
         .Sort(this)
         .Page(this);
+    }
+
+    /// <summary>
+    /// Applies sorting and paging constraints to a query
+    /// </summary>
+    /// <param name="findFluent">Find fluent query</param>
+    /// <returns>Sorted and paged query</returns>
+    protected virtual IFindFluent<TEntity, TEntity> ApplyConstraints(IFindFluent<TEntity, TEntity> findFluent)
+    {
+      if (SortOrder == SortOrder.Ascending)
+      {
+        findFluent = findFluent.SortBy(GetPropertySelector(SortPropertyName));
+      }
+      if (SortOrder == SortOrder.Descending)
+      {
+        findFluent = findFluent.SortByDescending(GetPropertySelector(SortPropertyName));
+      }
+      if (PageNumber > 1 || PageSize > 0)
+      {
+        findFluent = findFluent
+          .Skip((PageNumber - 1) * PageSize)
+          .Limit(PageSize);
+      }
+      return findFluent;
     }
   }
 }

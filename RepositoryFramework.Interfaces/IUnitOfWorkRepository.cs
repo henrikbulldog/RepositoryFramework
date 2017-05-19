@@ -10,6 +10,11 @@ namespace RepositoryFramework.Interfaces
     where TEntity : class
   {
     /// <summary>
+    /// Automatically save changes when data is modified
+    /// </summary>
+    bool AutoCommit { get; }
+
+    /// <summary>
     /// Persist all changes to the data storage
     /// <returns>Current instance</returns>
     /// </summary>

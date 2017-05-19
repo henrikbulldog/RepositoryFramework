@@ -162,10 +162,10 @@ namespace RepositoryFramework.Dapper.Test
       }
     }
 
-    [Theory]
-    [InlineData(100)]
-    public async Task FindAsync(int rows)
+    [Fact]
+    public async Task FindAsync()
     {
+      var rows = 100;
       using (var connection = CreateConnection())
       {
         InitializeDatabase(connection, "RepositoryTest_Find");
@@ -190,6 +190,38 @@ namespace RepositoryFramework.Dapper.Test
         // Assert
         Assert.NotNull(result);
         Assert.Equal(rows, result.Count());
+      }
+    }
+
+    [Fact]
+    public async Task FindFilter()
+    {
+      var rows = 100;
+      using (var connection = CreateConnection())
+      {
+        InitializeDatabase(connection, "RepositoryTest_Find");
+
+        // Arrange
+        var categories = new List<Category>();
+        for (int i = 0; i < rows; i++)
+        {
+          var category = new Category
+          {
+            Name = i.ToString(),
+            Description = i.ToString()
+          };
+          categories.Add(category);
+        }
+        var categoryRepository = CreateCategoryRepository(connection);
+        await categoryRepository.CreateManyAsync(categories);
+
+        // Act
+        var result = await categoryRepository.FindAsync();
+        var filtered = await categoryRepository.FindAsync($"WHERE Id = {result.First().Id}");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(1, filtered.Count());
       }
     }
 

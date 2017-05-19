@@ -16,6 +16,7 @@ namespace RepositoryFramework.Test
     [InlineData("Products", 100, 100, 0)]
     [InlineData("pRoducts", 100, 100, 0)]
     [InlineData("Products.Parts", 100, 100, 100)]
+    [InlineData("Products.Parts,Products.Parts.Product", 100, 100, 100)]
     public void Include(string includes, int productRows, int expectedProductRows, int expectedPartRows)
     {
       // Create new empty database
@@ -25,7 +26,6 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> categoryRepository = new EntityFrameworkRepository<Category>(db);
         var category = CreateCategory(productRows);
         categoryRepository.Create(category);
-        categoryRepository.SaveChanges();
 
         // Detach all to avoid expansions already cached in the context
         categoryRepository.DetachAll();
@@ -97,7 +97,6 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var c = CreateCategory(100);
         cr.Create(c);
-        cr.SaveChanges();
 
         // Act
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
@@ -158,7 +157,6 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var category = CreateCategory(totalRows);
         cr.Create(category);
-        cr.SaveChanges();
 
         // Act
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
@@ -191,7 +189,6 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var category = CreateCategory(100);
         cr.Create(category);
-        cr.SaveChanges();
 
         // Act
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
@@ -208,6 +205,29 @@ namespace RepositoryFramework.Test
     }
 
     [Fact]
+    public void FindWhere()
+    {
+      // Create new empty database
+      using (var db = new SQLiteContext())
+      {
+        // Arrange
+        IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
+        var category = CreateCategory(100);
+        cr.Create(category);
+
+        // Act
+        IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
+        var pageItems = pr
+          .Include("Parts")
+          .Find(p => p.Id > 50);
+
+        // Assert
+        Assert.NotNull(pageItems);
+        Assert.Equal(50, pageItems.Count());
+      }
+    }
+
+    [Fact]
     public void AsQueryable()
     {
       // Create new empty database
@@ -217,7 +237,6 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var category = CreateCategory(100);
         cr.Create(category);
-        cr.SaveChanges();
 
         // Act
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
@@ -245,7 +264,6 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var category = CreateCategory(100);
         cr.Create(category);
-        cr.SaveChanges();
 
         // Act
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using RepositoryFramework.Interfaces;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace RepositoryFramework.EntityFramework
 {
@@ -12,8 +12,8 @@ namespace RepositoryFramework.EntityFramework
   /// Repository that uses Entity Framework Core 
   /// </summary>
   /// <typeparam name="TEntity">Entity type</typeparam>
-  public class EntityFrameworkRepository<TEntity> : 
-    GenericRepositoryBase<TEntity>, 
+  public class EntityFrameworkRepository<TEntity> :
+    GenericRepositoryBase<TEntity>,
     IEntityFrameworkRepository<TEntity>
     where TEntity : class
   {
@@ -21,8 +21,10 @@ namespace RepositoryFramework.EntityFramework
     /// Initializes a new instance of the <see cref="EntityFrameworkRepository{TEntity}"/> class
     /// </summary>
     /// <param name="dbContext">Database context</param>
+    /// <param name="autoCommit">Automatically save changes when data is modified</param>
     public EntityFrameworkRepository(
-      DbContext dbContext)
+      DbContext dbContext,
+      bool autoCommit = true)
     {
       if (dbContext == null)
       {
@@ -30,7 +32,13 @@ namespace RepositoryFramework.EntityFramework
       }
 
       DbContext = dbContext;
+      AutoCommit = autoCommit;
     }
+
+    /// <summary>
+    /// Automatically save changes when data is modified
+    /// </summary>
+    public bool AutoCommit { get; private set; }
 
     /// <summary>
     /// Gets the database context
@@ -106,6 +114,10 @@ namespace RepositoryFramework.EntityFramework
       }
 
       DbContext.Set<TEntity>().Add(entity);
+      if(AutoCommit)
+      {
+        SaveChanges();
+      }
     }
 
     /// <summary>
@@ -114,7 +126,16 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="entity">Entity</param>
     public async Task CreateAsync(TEntity entity)
     {
-      await Task.Run(() => Create(entity));
+      if (entity == null)
+      {
+        throw new ArgumentNullException(nameof(entity));
+      }
+
+      DbContext.Set<TEntity>().Add(entity);
+      if (AutoCommit)
+      {
+        await SaveChangesAsync();
+      }
     }
 
     /// <summary>
@@ -129,6 +150,10 @@ namespace RepositoryFramework.EntityFramework
       }
 
       DbContext.Set<TEntity>().AddRange(entities);
+      if (AutoCommit)
+      {
+        SaveChanges();
+      }
     }
 
     /// <summary>
@@ -137,7 +162,16 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="entities">List of entities</param>
     public async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
-      await Task.Run(() => CreateMany(entities));
+      if (entities == null)
+      {
+        throw new ArgumentNullException(nameof(entities));
+      }
+
+      DbContext.Set<TEntity>().AddRange(entities);
+      if (AutoCommit)
+      {
+        await SaveChangesAsync();
+      }
     }
 
     /// <summary>
@@ -152,6 +186,10 @@ namespace RepositoryFramework.EntityFramework
       }
 
       DbContext.Set<TEntity>().Remove(entity);
+      if (AutoCommit)
+      {
+        SaveChanges();
+      }
     }
 
     /// <summary>
@@ -160,7 +198,16 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="entity">Entity</param>
     public virtual async Task DeleteAsync(TEntity entity)
     {
-      await Task.Run(() => Delete(entity));
+      if (entity == null)
+      {
+        throw new ArgumentNullException(nameof(entity));
+      }
+
+      DbContext.Set<TEntity>().Remove(entity);
+      if (AutoCommit)
+      {
+        await SaveChangesAsync();
+      }
     }
 
     /// <summary>
@@ -175,6 +222,10 @@ namespace RepositoryFramework.EntityFramework
       }
 
       DbContext.Set<TEntity>().RemoveRange(entities);
+      if (AutoCommit)
+      {
+        SaveChanges();
+      }
     }
 
     /// <summary>
@@ -183,7 +234,16 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="entities">Entity list</param>
     public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities)
     {
-      await Task.Run(() => DeleteMany(entities));
+      if (entities == null)
+      {
+        throw new ArgumentNullException(nameof(entities));
+      }
+
+      DbContext.Set<TEntity>().RemoveRange(entities);
+      if (AutoCommit)
+      {
+        await SaveChangesAsync();
+      }
     }
 
     /// <summary>
@@ -205,25 +265,38 @@ namespace RepositoryFramework.EntityFramework
     }
 
     /// <summary>
+    /// Filters a collection of entities using a predicate
+    /// </summary>
+    /// <param name="where">Where predicate</param>
+    /// <returns>Filtered collection of entities</returns>
+    public virtual IEnumerable<TEntity> Find(Func<TEntity, bool> where)
+    {
+      return GetQuery()
+        .Where(where)
+        .ToList();
+    }
+
+    /// <summary>
+    /// Filters a collection of entities using a predicate
+    /// </summary>
+    /// <param name="where">Where predicate</param>
+    /// <returns>Filtered collection of entities</returns>
+    public virtual async Task<IEnumerable<TEntity>> FindAsync(Func<TEntity, bool> where)
+    {
+      return await Task.Run(() => GetQuery()
+        .Where(where)
+        // ToListAsync() not supported after call to Where()
+        .ToList());
+    }
+
+    /// <summary>
     /// Gets an entity by id.
     /// </summary>
     /// <param name="id">Filter to find a single item</param>
     /// <returns>Entity</returns>
     public virtual TEntity GetById(object id)
     {
-      var p = Expression.Parameter(EntityType);
-      var prop = Expression.Property(p, IdPropertyName);
-      var body = Expression.Equal(prop, Expression.Constant(id));
-      var exp = Expression.Lambda(body, p);
-      var idCompare = (Func<TEntity, bool>)exp.Compile();
-
-      IQueryable<TEntity> query = DbContext.Set<TEntity>();
-      foreach (var propertyName in Includes)
-      {
-        query = query.Include(propertyName);
-      }
-
-      return query.SingleOrDefault(idCompare);
+      return GetByIdQuery(id).SingleOrDefault();
     }
 
     /// <summary>
@@ -232,7 +305,7 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="id">Filter to find a single item</param>
     public async Task<TEntity> GetByIdAsync(object id)
     {
-      return await Task<TEntity>.Run(() => GetById(id));
+      return await GetByIdQuery(id).SingleOrDefaultAsync();
     }
 
     /// <summary>
@@ -242,40 +315,45 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Current instance</returns>
     public IRepository<TEntity> Include(List<string> propertyPaths)
     {
-      if (propertyPaths == null)
+      if (propertyPaths != null)
       {
-        throw new ArgumentNullException(nameof(propertyPaths));
-      }
-
-      foreach (var propertyPath in propertyPaths)
-      {
-        Include(propertyPath);
+        foreach (var propertyPath in propertyPaths)
+        {
+          Include(propertyPath);
+        }
       }
 
       return this;
     }
 
     /// <summary>
-    /// Include reference property
+    /// Include referenced properties
     /// </summary>
-    /// <param name="propertyPath">Property path</param>
+    /// <param name="propertyPaths">Comma-separated list of property paths</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> Include(string propertyPath)
+    public IRepository<TEntity> Include(string propertyPaths)
     {
-      if (!string.IsNullOrEmpty(propertyPath))
+      if (!string.IsNullOrEmpty(propertyPaths))
       {
-        var validatedPropertyPath = propertyPath;
-        if (!TryCheckPropertyPath(propertyPath, out validatedPropertyPath))
+        var propertyPathList = propertyPaths
+          .Split(',')
+          .Select(r => r.Trim())
+          .Where(s => !string.IsNullOrWhiteSpace(s));
+        foreach (var propertyPath in propertyPathList)
         {
-          throw new ArgumentException(
-            string.Format(
-              "'{0}' is not a valid property path of '{1}'.",
-              propertyPath,
-              EntityTypeName));
-        }
-        if (!Includes.Contains(validatedPropertyPath))
-        {
-          Includes.Add(validatedPropertyPath);
+          var validatedPropertyPath = propertyPath;
+          if (!TryCheckPropertyPath(propertyPath, out validatedPropertyPath))
+          {
+            throw new ArgumentException(
+              string.Format(
+                "'{0}' is not a valid property path of '{1}'.",
+                propertyPath,
+                EntityTypeName));
+          }
+          if (!Includes.Contains(validatedPropertyPath))
+          {
+            Includes.Add(validatedPropertyPath);
+          }
         }
       }
 
@@ -400,6 +478,10 @@ namespace RepositoryFramework.EntityFramework
       }
 
       DbContext.Set<TEntity>().Update(entity);
+      if (AutoCommit)
+      {
+        SaveChanges();
+      }
     }
 
     /// <summary>
@@ -408,7 +490,16 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="entity">Entity</param>
     public async Task UpdateAsync(TEntity entity)
     {
-      await Task.Run(() => Update(entity));
+      if (entity == null)
+      {
+        throw new ArgumentNullException(nameof(entity));
+      }
+
+      DbContext.Set<TEntity>().Update(entity);
+      if (AutoCommit)
+      {
+        await SaveChangesAsync();
+      }
     }
 
     /// <summary>
@@ -483,6 +574,27 @@ namespace RepositoryFramework.EntityFramework
       return query
         .Sort(this)
         .Page(this);
+    }
+
+    /// <summary>
+    /// Gets a query to find a single entity by id
+    /// </summary>
+    /// <param name="id">Entoty id</param>
+    /// <returns>Query</returns>
+    protected virtual IQueryable<TEntity> GetByIdQuery(object id)
+    {
+      var p = Expression.Parameter(EntityType);
+      var prop = Expression.Property(p, IdPropertyName);
+      var body = Expression.Equal(prop, Expression.Constant(id));
+      var exp = Expression.Lambda(body, p);
+      var idCompare = (Func<TEntity, bool>)exp.Compile();
+
+      IQueryable<TEntity> query = DbContext.Set<TEntity>();
+      foreach (var propertyName in Includes)
+      {
+        query = query.Include(propertyName);
+      }
+      return query;
     }
   }
 }

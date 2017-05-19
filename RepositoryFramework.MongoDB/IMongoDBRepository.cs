@@ -14,7 +14,11 @@ namespace RepositoryFramework.MongoDB
     IRepository<TEntity>,
     ISortableRepository<TEntity>,
     IPageableRepository<TEntity>,
-    IQueryableRepository<TEntity>
+    IQueryableRepository<TEntity>,
+    IFindWhere<TEntity>,
+    IFindWhereAsync<TEntity>,
+    IFindFilter<TEntity>,
+    IFindFilterAsync<TEntity>
     where TEntity : class
   {
   }

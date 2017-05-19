@@ -5,14 +5,15 @@ using Xunit;
 using MongoDB.Bson.Serialization.IdGenerators;
 using RepositoryFramework.Interfaces;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RepositoryFramework.MongoDB.Test
 {
-  public class MongoDBRepositoryTest : IClassFixture<MongoDBFixture>
+  public class MongoDBRepositoryAsyncTest : IClassFixture<MongoDBFixture>
   {
     private MongoDBFixture mongoDBFixture;
 
-    public MongoDBRepositoryTest(MongoDBFixture mongoDBFixture)
+    public MongoDBRepositoryAsyncTest(MongoDBFixture mongoDBFixture)
     {
       this.mongoDBFixture = mongoDBFixture;
       var mongoDBRepository = CreateMongoDBRepository();
@@ -39,26 +40,26 @@ namespace RepositoryFramework.MongoDB.Test
     }
 
     [Fact]
-    public void GetById()
+    public async Task GetById()
     {
       var getMe = TestDocument.DummyData1();
       var mongoDBRepository = CreateMongoDBRepository();
-      mongoDBRepository.Create(getMe);
+      await mongoDBRepository.CreateAsync(getMe);
       Assert.Equal(getMe.IntTest, mongoDBRepository.GetById(getMe.TestDocumentId).IntTest);
     }
 
     [Fact]
-    public void Find()
+    public async Task Find()
     {
       var mongoDBRepository = CreateMongoDBRepository();
-      var IEnumerable = mongoDBRepository
+      var IEnumerable = await mongoDBRepository
         .ClearPaging()
-        .Find();
+        .FindAsync();
       Assert.True(IEnumerable.Count() > 0);
     }
 
     [Fact]
-    public void FindWhere()
+    public async Task FindWhere()
     {
       var mongoDBRepository = CreateMongoDBRepository();
       var result = mongoDBRepository
@@ -66,23 +67,23 @@ namespace RepositoryFramework.MongoDB.Test
         .Find();
       Assert.True(result.Count() > 0);
 
-      var filtered = mongoDBRepository
-        .Find(doc => doc.TestDocumentId == result.First().TestDocumentId);
+      var filtered = await mongoDBRepository
+        .FindAsync(doc => doc.TestDocumentId == result.First().TestDocumentId);
       Assert.Equal(1, filtered.Count());
     }
 
     [Fact]
-    public void FindFilter()
+    public async Task FindFilter()
     {
       var mongoDBRepository = CreateMongoDBRepository();
-      var result = mongoDBRepository
+      var result = await mongoDBRepository
         .ClearPaging()
-        .Find();
+        .FindAsync();
       Assert.True(result.Count() > 0);
 
       var s = @"{ _id: """ + result.First().TestDocumentId + @""" }";
-      var filtered = mongoDBRepository
-        .Find(s);
+      var filtered = await mongoDBRepository
+        .FindAsync(s);
       Assert.True(1 == filtered.Count(), s);
     }
 
@@ -91,7 +92,7 @@ namespace RepositoryFramework.MongoDB.Test
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public void SortBy(bool descendingOrder, bool useExpression)
+    public async Task SortBy(bool descendingOrder, bool useExpression)
     {
       // Arrange
       var mongoDBRepository = CreateMongoDBRepository();
@@ -118,7 +119,7 @@ namespace RepositoryFramework.MongoDB.Test
         mongoDBRepository.SortBy(doc => doc.StringTest);
       }
 
-      var docs = mongoDBRepository.Find().ToList();
+      var docs = await mongoDBRepository.FindAsync();
 
       var sortedproducts = descendingOrder
         ? docs.OrderByDescending(p => p.StringTest)
@@ -129,9 +130,9 @@ namespace RepositoryFramework.MongoDB.Test
       Assert.Equal(docs, sortedproducts);
 
       // Act
-      docs = mongoDBRepository
+      docs = await mongoDBRepository
         .ClearSorting()
-        .Find().ToList();
+        .FindAsync();
 
       // Assert
       Assert.NotNull(docs);
@@ -142,7 +143,7 @@ namespace RepositoryFramework.MongoDB.Test
     [InlineData(1, 20, 30, 20)]
     [InlineData(2, 20, 30, 10)]
     [InlineData(3, 20, 30, 0)]
-    public void Page(int page, int pageSize, int totalRows, int expectedRows)
+    public async Task Page(int page, int pageSize, int totalRows, int expectedRows)
     {
       // Arrange
       var mongoDBRepository = CreateMongoDBRepository();
@@ -157,9 +158,9 @@ namespace RepositoryFramework.MongoDB.Test
       Assert.Equal(expectedRows, pageItems.Count());
 
       // Act
-      pageItems = mongoDBRepository
+      pageItems = await mongoDBRepository
         .ClearPaging()
-        .Find();
+        .FindAsync();
 
       // Assert
       Assert.NotNull(pageItems);
@@ -167,60 +168,37 @@ namespace RepositoryFramework.MongoDB.Test
     }
 
     [Fact]
-    public void PageAndSort()
+    public async Task PageAndSort()
     {
       var mongoDBRepository = CreateMongoDBRepository();
-      var IEnumerable = mongoDBRepository
+      var IEnumerable = await mongoDBRepository
         .SortBy(doc => doc.StringTest)
         .Page(1, 2)
-        .Find();
+        .FindAsync();
       Assert.Equal(2, IEnumerable.Count());
     }
 
     [Fact]
-    public void PageAndSortAndAsQueryable()
-    {
-      var mongoDBRepository = CreateMongoDBRepository();
-      var IEnumerable = mongoDBRepository
-        .SortBy(doc => doc.StringTest)
-        .Page(1, 2)
-        .AsQueryable();
-      Assert.Equal(2, IEnumerable.Count());
-    }
-
-    [Fact]
-    public void AsQueryable()
-    {
-      var mongoDBRepository = CreateMongoDBRepository();
-      var IEnumerable = mongoDBRepository
-        .AsQueryable()
-        .Where(doc => doc.IntTest > 1)
-        .OrderBy(doc => doc.StringTest)
-        .Take(2);
-      Assert.Equal(2, IEnumerable.Count());
-    }
-
-    [Fact]
-    public void Delete()
+    public async Task Delete()
     {
       var mongoDBRepository = CreateMongoDBRepository();
       var deleteMe = TestDocument.DummyData1();
-      mongoDBRepository.Create(deleteMe);
+      await mongoDBRepository.CreateAsync(deleteMe);
       Assert.NotNull(mongoDBRepository.GetById(deleteMe.TestDocumentId));
 
-      mongoDBRepository.Delete(deleteMe);
+      await mongoDBRepository.DeleteAsync(deleteMe);
       Assert.Null(mongoDBRepository.GetById(deleteMe.TestDocumentId));
     }
 
     [Fact]
-    public void Update()
+    public async Task Update()
     {
       var mongoDBRepository = CreateMongoDBRepository();
       var updateMe = TestDocument.DummyData1();
-      mongoDBRepository.Create(updateMe);
+      await mongoDBRepository.CreateAsync(updateMe);
       var intTest = updateMe.IntTest + 1;
       updateMe.IntTest = intTest;
-      mongoDBRepository.Update(updateMe);
+      await mongoDBRepository.UpdateAsync(updateMe);
 
       Assert.Equal(intTest, mongoDBRepository.GetById(updateMe.TestDocumentId).IntTest);
     }

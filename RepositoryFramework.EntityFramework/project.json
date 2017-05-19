@@ -1,9 +1,9 @@
 ﻿{
-  "version": "2.0.0",
+  "version": "2.0.5",
 
   "dependencies": {
     "Microsoft.EntityFrameworkCore": "1.1.0",
-    "RepositoryFramework.Interfaces": "2.0.0",
+    "RepositoryFramework.Interfaces": "*",
     "StyleCop.Analyzers": {
       "version": "1.0.0",
       "type": "build"

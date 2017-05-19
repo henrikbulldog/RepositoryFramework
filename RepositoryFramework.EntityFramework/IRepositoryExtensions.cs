@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace RepositoryFramework.EntityFramework
 {
@@ -25,7 +26,7 @@ namespace RepositoryFramework.EntityFramework
       int pageSize)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
@@ -44,7 +45,7 @@ namespace RepositoryFramework.EntityFramework
       this IRepository<TEntity> instance)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
@@ -65,7 +66,7 @@ namespace RepositoryFramework.EntityFramework
       Expression<Func<TEntity, object>> property)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
@@ -86,7 +87,7 @@ namespace RepositoryFramework.EntityFramework
       string propertyName)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
@@ -107,7 +108,7 @@ namespace RepositoryFramework.EntityFramework
       Expression<Func<TEntity, object>> property)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
@@ -128,7 +129,7 @@ namespace RepositoryFramework.EntityFramework
       string propertyName)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
@@ -149,7 +150,7 @@ namespace RepositoryFramework.EntityFramework
       List<string> propertyPaths)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
@@ -168,7 +169,7 @@ namespace RepositoryFramework.EntityFramework
       this IRepository<TEntity> instance)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
@@ -189,7 +190,7 @@ namespace RepositoryFramework.EntityFramework
       string propertyPath)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
@@ -210,7 +211,7 @@ namespace RepositoryFramework.EntityFramework
       Expression<Func<TEntity, object>> property)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
@@ -229,7 +230,7 @@ namespace RepositoryFramework.EntityFramework
       this IRepository<TEntity> instance)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
@@ -248,13 +249,53 @@ namespace RepositoryFramework.EntityFramework
       this IRepository<TEntity> instance)
       where TEntity : class
     {
-      var entityFrameworkRepository = instance as EntityFrameworkRepository<TEntity>;
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
       if (entityFrameworkRepository == null)
       {
         throw new NotImplementedException();
       }
 
       return entityFrameworkRepository.AsQueryable();
+    }
+
+    /// <summary>
+    /// Filters a sequence of entities using a predicate
+    /// </summary>
+    /// <param name="instance">Current instance</param>
+    /// <param name="predicate">Predicate</param>
+    /// <returns>Current instance</returns>
+    public static IEnumerable<TEntity> Find<TEntity>(
+      this IRepository<TEntity> instance,
+      Func<TEntity, bool> predicate)
+      where TEntity : class
+    {
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
+      if (entityFrameworkRepository == null)
+      {
+        throw new NotImplementedException();
+      }
+
+      return entityFrameworkRepository.Find(predicate);
+    }
+
+    /// <summary>
+    /// Filters a sequence of entities using a predicate
+    /// </summary>
+    /// <param name="instance">Current instance</param>
+    /// <param name="predicate">Predicate</param>
+    /// <returns>Current instance</returns>
+    public static async Task<IEnumerable<TEntity>> FindAsync<TEntity>(
+      this IRepository<TEntity> instance,
+      Func<TEntity, bool> predicate)
+      where TEntity : class
+    {
+      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
+      if (entityFrameworkRepository == null)
+      {
+        throw new NotImplementedException();
+      }
+
+      return await entityFrameworkRepository.FindAsync(predicate);
     }
   }
 }
