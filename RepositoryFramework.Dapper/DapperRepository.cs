@@ -422,6 +422,10 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
       {
         where = string.Empty;
       }
+      else if(!where.ToLower().Contains("where"))
+      {
+        where = $"WHERE {where}";
+      }
       var orderBy = string.Empty;
       if (SortOrder != SortOrder.Unspecified
         && !string.IsNullOrWhiteSpace(SortPropertyName))

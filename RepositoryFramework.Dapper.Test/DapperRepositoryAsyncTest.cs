@@ -194,7 +194,7 @@ namespace RepositoryFramework.Dapper.Test
     }
 
     [Fact]
-    public async Task FindFilter()
+    public async Task FindFilterAsync()
     {
       var rows = 100;
       using (var connection = CreateConnection())
@@ -217,7 +217,7 @@ namespace RepositoryFramework.Dapper.Test
 
         // Act
         var result = await categoryRepository.FindAsync();
-        var filtered = await categoryRepository.FindAsync($"WHERE Id = {result.First().Id}");
+        var filtered = await categoryRepository.FindAsync($"Id = {result.First().Id}");
 
         // Assert
         Assert.NotNull(result);

@@ -216,7 +216,7 @@ namespace RepositoryFramework.Dapper.Test
 
         // Act
         var result = categoryRepository.Find();
-        var filtered = categoryRepository.Find($"WHERE Id = {result.First().Id}");
+        var filtered = categoryRepository.Find($"Id = {result.First().Id}");
 
         // Assert
         Assert.NotNull(result);
