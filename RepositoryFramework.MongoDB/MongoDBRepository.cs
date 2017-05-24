@@ -19,12 +19,15 @@ namespace RepositoryFramework.MongoDB
   {
     /// <summary>
     /// Initializes a new instance of the <see cref="Repository{TEntity}"/> class
+    /// </summary>
     /// <param name="MongoDB database">Database</param>
     /// <param name="classMapInitializer">Class map initializer</param>
-    /// </summary>
+    /// <param name="idProperty">Id property expression</param>
     public MongoDBRepository(
       IMongoDatabase database,
-      Action<BsonClassMap<TEntity>> classMapInitializer)
+      Action<BsonClassMap<TEntity>> classMapInitializer,
+      Expression<Func<TEntity, object>> idProperty = null)
+      : base(idProperty)
     {
       if (classMapInitializer != null)
       {

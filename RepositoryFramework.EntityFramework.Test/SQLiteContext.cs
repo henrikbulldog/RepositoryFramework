@@ -22,5 +22,15 @@ namespace RepositoryFramework.Test
       Database.EnsureDeleted();
       base.Dispose();
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+      base.OnModelCreating(modelBuilder);
+
+      modelBuilder.Entity<Order>(entity =>
+      {
+        entity.HasKey(e => e.OrderKey);
+      });
+    }
   }
 }

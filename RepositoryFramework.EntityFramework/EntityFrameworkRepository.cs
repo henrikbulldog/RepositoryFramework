@@ -5,6 +5,7 @@ using RepositoryFramework.Interfaces;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace RepositoryFramework.EntityFramework
 {
@@ -22,9 +23,12 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="dbContext">Database context</param>
     /// <param name="autoCommit">Automatically save changes when data is modified</param>
+    /// <param name="idProperty">Id property expression</param>
     public EntityFrameworkRepository(
       DbContext dbContext,
+      Expression<Func<TEntity, object>> idProperty = null,
       bool autoCommit = true)
+      : base(idProperty)
     {
       if (dbContext == null)
       {
@@ -114,7 +118,7 @@ namespace RepositoryFramework.EntityFramework
       }
 
       DbContext.Set<TEntity>().Add(entity);
-      if(AutoCommit)
+      if (AutoCommit)
       {
         SaveChanges();
       }
@@ -124,7 +128,7 @@ namespace RepositoryFramework.EntityFramework
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public async Task CreateAsync(TEntity entity)
+    public virtual async Task CreateAsync(TEntity entity)
     {
       if (entity == null)
       {
@@ -160,7 +164,7 @@ namespace RepositoryFramework.EntityFramework
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
-    public async Task CreateManyAsync(IEnumerable<TEntity> entities)
+    public virtual async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
       if (entities == null)
       {
@@ -296,34 +300,36 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Entity</returns>
     public virtual TEntity GetById(object id)
     {
-      return GetByIdQuery(id).SingleOrDefault();
+      if (string.IsNullOrEmpty(IdPropertyName))
+      {
+        throw new Exception($"Id property must be specified");
+      }
+
+      IQueryable<TEntity> query = DbContext.Set<TEntity>();
+
+      foreach (var propertyName in Includes)
+      {
+        query = query.Include(propertyName);
+      }
+
+      var p = Expression.Parameter(EntityType);
+      var prop = Expression.Property(p, IdPropertyName);
+      var body = Expression.Equal(prop, Expression.Constant(id, ((PropertyInfo)prop.Member).PropertyType));
+      var exp = Expression.Lambda(body, p);
+      var idCompare = (Func<TEntity, bool>)exp.Compile();
+
+      return query
+        .Where(idCompare)
+        .SingleOrDefault();
     }
 
     /// <summary>
     /// Gets an entity by id.
     /// </summary>
     /// <param name="id">Filter to find a single item</param>
-    public async Task<TEntity> GetByIdAsync(object id)
+    public virtual async Task<TEntity> GetByIdAsync(object id)
     {
-      return await GetByIdQuery(id).SingleOrDefaultAsync();
-    }
-
-    /// <summary>
-    /// Include list of reference properties
-    /// </summary>
-    /// <param name="propertyPaths">Property paths</param>
-    /// <returns>Current instance</returns>
-    public IRepository<TEntity> Include(List<string> propertyPaths)
-    {
-      if (propertyPaths != null)
-      {
-        foreach (var propertyPath in propertyPaths)
-        {
-          Include(propertyPath);
-        }
-      }
-
-      return this;
+      return await Task.Run(() => GetById(id));
     }
 
     /// <summary>
@@ -333,7 +339,7 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Current instance</returns>
     public IRepository<TEntity> Include(string propertyPaths)
     {
-      if (!string.IsNullOrEmpty(propertyPaths))
+      if (!string.IsNullOrWhiteSpace(propertyPaths))
       {
         var propertyPathList = propertyPaths
           .Split(',')
@@ -488,7 +494,7 @@ namespace RepositoryFramework.EntityFramework
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public async Task UpdateAsync(TEntity entity)
+    public virtual async Task UpdateAsync(TEntity entity)
     {
       if (entity == null)
       {
@@ -506,7 +512,7 @@ namespace RepositoryFramework.EntityFramework
     /// Persists all changes to the data storage
     /// <returns>Current instance</returns>
     /// </summary>
-    public IRepository<TEntity> SaveChanges()
+    public virtual IRepository<TEntity> SaveChanges()
     {
       DbContext.SaveChanges();
       return this;
@@ -516,7 +522,7 @@ namespace RepositoryFramework.EntityFramework
     /// Persists all changes to the data storage
     /// <returns>Current instance</returns>
     /// </summary>
-    public async Task<IRepository<TEntity>> SaveChangesAsync()
+    public virtual async Task<IRepository<TEntity>> SaveChangesAsync()
     {
       await DbContext.SaveChangesAsync();
       return this;
@@ -526,7 +532,7 @@ namespace RepositoryFramework.EntityFramework
     /// Detaches all entites from the repository
     /// <returns>Current instance</returns>
     /// </summary>
-    public IRepository<TEntity> DetachAll()
+    public virtual IRepository<TEntity> DetachAll()
     {
       foreach (var entityEntry in DbContext.ChangeTracker.Entries().ToArray())
       {
@@ -542,7 +548,7 @@ namespace RepositoryFramework.EntityFramework
     /// Detaches all entites from the repository
     /// <returns>Current instance</returns>
     /// </summary>
-    public async Task<IRepository<TEntity>> DetachAllAsync()
+    public virtual async Task<IRepository<TEntity>> DetachAllAsync()
     {
       Task task = Task.Run(() => DetachAll());
       await task;
@@ -553,7 +559,7 @@ namespace RepositoryFramework.EntityFramework
     /// Gets a queryable collection of entities
     /// </summary>
     /// <returns>Queryable collection of entities</returns>
-    public IQueryable<TEntity> AsQueryable()
+    public virtual IQueryable<TEntity> AsQueryable()
     {
       return GetQuery();
     }
@@ -574,27 +580,6 @@ namespace RepositoryFramework.EntityFramework
       return query
         .Sort(this)
         .Page(this);
-    }
-
-    /// <summary>
-    /// Gets a query to find a single entity by id
-    /// </summary>
-    /// <param name="id">Entoty id</param>
-    /// <returns>Query</returns>
-    protected virtual IQueryable<TEntity> GetByIdQuery(object id)
-    {
-      var p = Expression.Parameter(EntityType);
-      var prop = Expression.Property(p, IdPropertyName);
-      var body = Expression.Equal(prop, Expression.Constant(id));
-      var exp = Expression.Lambda(body, p);
-      var idCompare = (Func<TEntity, bool>)exp.Compile();
-
-      IQueryable<TEntity> query = DbContext.Set<TEntity>();
-      foreach (var propertyName in Includes)
-      {
-        query = query.Include(propertyName);
-      }
-      return query;
     }
   }
 }

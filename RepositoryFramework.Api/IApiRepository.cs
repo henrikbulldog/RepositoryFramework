@@ -15,5 +15,9 @@ namespace RepositoryFramework.Api
   IParameterizedRepository<TEntity>
   where TEntity : class
   {
+    /// <summary>
+    /// Gets configuration object
+    /// </summary>
+    ApiConfiguration Configuration { get; }
   }
 }

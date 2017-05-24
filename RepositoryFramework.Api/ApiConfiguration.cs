@@ -7,7 +7,7 @@ namespace RepositoryFramework.Api
   /// <summary>
   /// Represents a set of configuration settings
   /// </summary>
-  public class Configuration
+  public class ApiConfiguration
   {
     private const string Iso8601DateTimeFormat = "o";
 

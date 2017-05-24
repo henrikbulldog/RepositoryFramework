@@ -29,10 +29,13 @@ namespace RepositoryFramework.Api
     /// <param name="configuration">Configuration</param>
     /// <param name="basePath">The base path.</param>
     /// <param name="entityPath">Path excluding the base path. May contain path paramater placeholders in the format {someParm}</param>
+    /// <param name="idProperty">Id property expression</param>
     public ApiRepository(
-      Configuration configuration,
+      ApiConfiguration configuration,
       string basePath,
-      string entityPath = null)
+      string entityPath = null,
+      Expression<Func<TEntity, object>> idProperty = null)
+      : base(idProperty)
     {
       this.Configuration = configuration;
       BasePath = basePath;
@@ -55,14 +58,15 @@ namespace RepositoryFramework.Api
     public string BasePath { get; private set; }
 
     /// <summary>
+    /// Gets configuration object
+    /// </summary>
+    public ApiConfiguration Configuration { get; private set; } = null;
+
+    /// <summary>
     /// Gets entity path, for example /posts in https://jsonplaceholder.typicode.com/posts
     /// </summary>
     protected string EntityPath { get; private set; }
 
-    /// <summary>
-    /// Gets configuration object
-    /// </summary>
-    protected Configuration Configuration { get; private set; } = null;
 
     /// <summary>
     /// Gets default header map
@@ -709,9 +713,9 @@ namespace RepositoryFramework.Api
 
       if (type == typeof(Stream))
       {
-        var filePath = string.IsNullOrEmpty(Configuration.TempFolderPath)
+        var filePath = string.IsNullOrEmpty(ApiConfiguration.TempFolderPath)
             ? Path.GetTempPath()
-            : Configuration.TempFolderPath;
+            : ApiConfiguration.TempFolderPath;
 
         var fileName = filePath + Guid.NewGuid();
         if (headers != null)

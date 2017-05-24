@@ -1,12 +1,12 @@
 {
   "title": "RepositoryFramework.Interfaces",
-  "version": "2.0.2",
+  "version": "2.0.7",
   "dependencies": {
     "StyleCop.Analyzers": {
       "version": "1.0.0",
       "type": "build"
     },
-    "System.Dynamic.Runtime": "4.3.0"
+    "System.Dynamic.Runtime": "*"
   },
   "buildOptions": {
     "additionalArguments": [ "/ruleset:../RULES.ruleset", "/additionalfile:../stylecop.json" ],

@@ -23,8 +23,11 @@ namespace RepositoryFramework.Dapper
     /// Initializes a new instance of the <see cref="StoredProcedureDapperRepository{TEntity}"/> class
     /// </summary>
     /// <param name="connection">Database connection</param>
+    /// <param name="idProperty">Id property expression</param>
     public StoredProcedureDapperRepository(
-      IDbConnection connection)
+      IDbConnection connection,
+      Expression<Func<TEntity, object>> idProperty = null)
+      : base(idProperty)
     {
       Connection = connection;
     }

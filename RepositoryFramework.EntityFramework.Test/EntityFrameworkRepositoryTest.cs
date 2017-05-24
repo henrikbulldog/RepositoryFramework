@@ -279,6 +279,49 @@ namespace RepositoryFramework.Test
       }
     }
 
+    [Fact]
+    public void GetById()
+    {
+      // Create new empty database
+      using (var db = new SQLiteContext())
+      {
+        // Arrange
+        IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
+        var category = CreateCategory(100);
+        cr.Create(category);
+
+        // Act
+        IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
+
+        var products = pr.Find(p => p.Id == 1);
+        var product = pr.GetById(1);
+
+        // Assert
+        Assert.NotNull(product);
+      }
+    }
+
+    [Fact]
+    public void GetById_Alternative_Key()
+    {
+      // Create new empty database
+      using (var db = new SQLiteContext())
+      {
+        // Arrange
+        IEntityFrameworkRepository<Order> r = 
+          new EntityFrameworkRepository<Order>(db, o => o.OrderKey);
+        var order = new Order { OrderDate = DateTime.Now };
+        r.Create(order);
+
+        // Act
+        var result = r.GetById(order.OrderKey);
+
+        // Assert
+        Assert.True(order.OrderKey > 0);
+        Assert.NotNull(result);
+      }
+    }
+
     private Product CreateProduct(Category c, int partRows=100)
     {
       var p = new Product

@@ -2868,12 +2868,12 @@
           "lib/netstandard1.1/xunit.runner.utility.dotnet.dll": {}
         }
       },
-      "RepositoryFramework.Api/2.0.0": {
+      "RepositoryFramework.Api/2.0.5": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
           "Newtonsoft.Json": "9.0.2-beta2",
-          "RepositoryFramework.Interfaces": "2.0.0",
+          "RepositoryFramework.Interfaces": "1.0.0",
           "RestSharp.NetCore": "105.2.3"
         },
         "compile": {
@@ -2883,11 +2883,11 @@
           "netcoreapp1.1/RepositoryFramework.Api.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.2": {
+      "RepositoryFramework.Interfaces/2.0.7": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
-          "System.Dynamic.Runtime": "4.3.0",
+          "System.Dynamic.Runtime": "1.0.0",
           "System.Linq.Queryable": "4.0.1",
           "System.Reflection.TypeExtensions": "4.3.0",
           "System.Runtime.InteropServices": "4.1.0"
@@ -3312,12 +3312,12 @@
           "lib/net45/xunit.runner.utility.desktop.dll": {}
         }
       },
-      "RepositoryFramework.Api/2.0.0": {
+      "RepositoryFramework.Api/2.0.5": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
           "Newtonsoft.Json": "9.0.2-beta2",
-          "RepositoryFramework.Interfaces": "2.0.0",
+          "RepositoryFramework.Interfaces": "1.0.0",
           "RestSharp": "105.2.3"
         },
         "compile": {
@@ -3327,11 +3327,11 @@
           "net452/RepositoryFramework.Api.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.2": {
+      "RepositoryFramework.Interfaces/2.0.7": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
-          "System.Dynamic.Runtime": "4.3.0"
+          "System.Dynamic.Runtime": "1.0.0"
         },
         "compile": {
           "net452/RepositoryFramework.Interfaces.dll": {}
@@ -9209,12 +9209,12 @@
         "xunit.runner.utility.nuspec"
       ]
     },
-    "RepositoryFramework.Api/2.0.0": {
+    "RepositoryFramework.Api/2.0.5": {
       "type": "project",
       "path": "../RepositoryFramework.Api/project.json",
       "msbuildProject": "../RepositoryFramework.Api/RepositoryFramework.Api.xproj"
     },
-    "RepositoryFramework.Interfaces/2.0.2": {
+    "RepositoryFramework.Interfaces/2.0.7": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"

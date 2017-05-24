@@ -17,7 +17,7 @@ namespace RepositoryFramework.Test
       using (var db = new SQLiteContext())
       {
         // Arrange
-        var cr = new EntityFrameworkRepository<Category>(db);
+        var cr = new EntityFrameworkRepository<Category>(db, null, false);
         var c = CreateCategory(100);
         cr.Create(c);
         cr.SaveChanges();
@@ -42,7 +42,7 @@ namespace RepositoryFramework.Test
       using (var db = new SQLiteContext())
       {
         // Arrange
-        var cr = new EntityFrameworkRepository<Category>(db);
+        var cr = new EntityFrameworkRepository<Category>(db, null, false);
         var c = CreateCategory(100);
         cr.Create(c);
         cr.SaveChanges();
@@ -52,7 +52,7 @@ namespace RepositoryFramework.Test
 
         // Act
         var cdb = cr
-          .Include(new List<string> { "Products.Parts.Product" })
+          .Include("Products.Parts.Product")
           .Find().First();
 
         Assert.NotNull(cdb);
@@ -71,6 +71,30 @@ namespace RepositoryFramework.Test
         }
       }
     }
+
+    [Fact]
+    public void Join_Should_Work_Without_Expansion()
+    {
+      // Create new empty database
+      using (var db = new SQLiteContext())
+      {
+        // Arrange
+        var cr = new EntityFrameworkRepository<Category>(db);
+        var c = CreateCategory(100);
+        cr.Create(c);
+
+        // Act
+        var pr = new EntityFrameworkRepository<Part>(db);
+        var pdb = pr
+          .Find(p => p.Product.Id == 1).First();
+
+        Assert.NotNull(pdb);
+
+        // Assert
+        Assert.NotNull(pdb);
+      }
+    }
+
     private Category CreateCategory(int productRows = 100)
     {
       var c = new Category

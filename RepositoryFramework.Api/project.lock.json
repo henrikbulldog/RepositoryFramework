@@ -1523,11 +1523,11 @@
           "lib/netstandard1.3/System.Xml.XmlSerializer.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.2": {
+      "RepositoryFramework.Interfaces/2.0.7": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
-          "System.Dynamic.Runtime": "4.3.0",
+          "System.Dynamic.Runtime": "1.0.0",
           "System.Linq.Queryable": "4.0.1",
           "System.Reflection.TypeExtensions": "4.3.0",
           "System.Runtime.InteropServices": "4.1.0"
@@ -1574,11 +1574,11 @@
           "lib/net45/_._": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.2": {
+      "RepositoryFramework.Interfaces/2.0.7": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
-          "System.Dynamic.Runtime": "4.3.0"
+          "System.Dynamic.Runtime": "1.0.0"
         },
         "compile": {
           "net452/RepositoryFramework.Interfaces.dll": {}
@@ -5455,7 +5455,7 @@
         "runtimes/aot/lib/netcore50/System.Xml.XmlSerializer.dll"
       ]
     },
-    "RepositoryFramework.Interfaces/2.0.2": {
+    "RepositoryFramework.Interfaces/2.0.7": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"
@@ -5464,7 +5464,7 @@
   "projectFileDependencyGroups": {
     "": [
       "Newtonsoft.Json >= 9.0.2-beta2",
-      "RepositoryFramework.Interfaces >= 2.0.0",
+      "RepositoryFramework.Interfaces",
       "StyleCop.Analyzers >= 1.0.0"
     ],
     ".NETCoreApp,Version=v1.1": [

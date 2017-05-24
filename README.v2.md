@@ -85,34 +85,35 @@ Simply because the code base will be easier to read and navigate.
   var categoryRepository = new EntityFrameworkRepository<Category>(db);
   var category = new Category { Name = "Category1" };
   categoryRepository.Create(category);
-  categoryRepository.SaveChanges();
 
   // To update an entity:
   category.Name = "Changed name";
   categoryRepository.Update(category);
-  categoryRepository.SaveChanges();
 
   // To delete an entity:
   categoryRepository.Delete(category);
-  categoryRepository.SaveChanges();
 
   // To read an entity by id:
-  var result = categoryRepository.GetById(123)
-    .Include("Products"));
+  var result = categoryRepository
+    .GetById(123);
 
-  // To read a list of entities with includes, sorting and paging:
+  // To all entities with includes, sorting and paging:
   var result = categoryRepository
     .SortBy(p => p.Name)
-    .Page(1, 50)
+    .Page(2, 50)
     .Include("Products"))
     .Find();
 
-  // To read a list of entities as a queryable collection:
+  // To read a filtered list:
   var result = categoryRepository
-    .SortBy(p => p.Name)
-    .Page(1, 50)
-    .Include("Products"))
+    .Find(c => c.Name == "Some name");
+
+  // To read entites as a queryable collection:
+  var result = categoryRepository
     .AsQueryable()
+    .OrderBy(p => p.Name)
+    .Skip(50)
+    .Take(50)
     .Where(c => c.Name == "Some name");
   ~~~~
 
@@ -124,18 +125,15 @@ If you don't like Linq parameters, inherit from Repository and do your own imple
   // Create inherited class:
   public class CategoryRepository : EntityFrameworkRepository<Category>
   {
-    Category FindByName(string name)
+    Category FindByName(string name, string sortBy, int pageNumber, int pageSize, string include)
     {
-      return AsQueryable().Where(c => c.Name == "Some name");
+      return AsQueryable()
+        .SortBy(sortBy)
+        .Page(pageNumber, pageSize)
+        .Include(include)
+        .Find(c => c.Name == name);
     }
   }
-
-  // Use the class:
-  var result = new CategoryRepository
-    .SortBy(p => p.Name)
-    .Page(1, 50)
-    .Include("Products"))
-    .FindByName("Some name");
 ~~~~
 
 ## How To Use RepositoryFramework.Dapper?

@@ -9,9 +9,7 @@ namespace RepositoryFramework.Dapper
   public interface IDapperRepository<TEntity> :
     IRepository<TEntity>,
     ISortableRepository<TEntity>,
-    IPageableRepository<TEntity>,
-    IFindFilter<TEntity>,
-    IFindFilterAsync<TEntity>
+    IPageableRepository<TEntity>
     where TEntity : class
   {
   }

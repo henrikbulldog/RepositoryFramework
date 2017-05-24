@@ -140,27 +140,6 @@ namespace RepositoryFramework.EntityFramework
     }
 
     /// <summary>
-    /// Include list of reference properties
-    /// </summary>
-    /// <param name="instance">Current instance</param>
-    /// <param name="propertyPaths">Property paths</param>
-    /// <returns>Current instance</returns>
-    public static IRepository<TEntity> Include<TEntity>(
-      this IRepository<TEntity> instance,
-      List<string> propertyPaths)
-      where TEntity : class
-    {
-      var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
-      if (entityFrameworkRepository == null)
-      {
-        throw new NotImplementedException();
-      }
-
-      entityFrameworkRepository.Include(propertyPaths);
-      return instance;
-    }
-
-    /// <summary>
     /// Clear sorting
     /// </summary>
     /// <param name="instance">Current instance</param>
@@ -201,14 +180,15 @@ namespace RepositoryFramework.EntityFramework
     }
 
     /// <summary>
-    /// Include reference property
+    /// Include referenced properties
+    /// </summary>
     /// </summary>
     /// <param name="instance">Current instance</param>
-    /// <param name="property">Property expression</param>
+    /// <param name="propertyPaths">Comma-separated list of property paths</param>
     /// <returns>Current instance</returns>
     public static IRepository<TEntity> Include<TEntity>(
       this IRepository<TEntity> instance,
-      Expression<Func<TEntity, object>> property)
+      Expression<Func<TEntity, object>> propertyPaths)
       where TEntity : class
     {
       var entityFrameworkRepository = instance as IEntityFrameworkRepository<TEntity>;
@@ -217,7 +197,7 @@ namespace RepositoryFramework.EntityFramework
         throw new NotImplementedException();
       }
 
-      entityFrameworkRepository.Include(property);
+      entityFrameworkRepository.Include(propertyPaths);
       return instance;
     }
 

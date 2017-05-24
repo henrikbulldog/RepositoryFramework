@@ -22,7 +22,7 @@ namespace RepositoryFramework.Dapper
       object value)
       where TEntity : class
     {
-      var dapperRepository = instance as StoredProcedureDapperRepository<TEntity>;
+      var dapperRepository = instance as IStoredProcedureDapperRepository<TEntity>;
       if (dapperRepository == null)
       {
         throw new NotImplementedException();
@@ -43,7 +43,7 @@ namespace RepositoryFramework.Dapper
       string name)
       where TEntity : class
     {
-      var dapperRepository = instance as StoredProcedureDapperRepository<TEntity>;
+      var dapperRepository = instance as IStoredProcedureDapperRepository<TEntity>;
       if (dapperRepository == null)
       {
         throw new NotImplementedException();
@@ -61,7 +61,7 @@ namespace RepositoryFramework.Dapper
       this IRepository<TEntity> instance)
       where TEntity : class
     {
-      var dapperRepository = instance as StoredProcedureDapperRepository<TEntity>;
+      var dapperRepository = instance as IStoredProcedureDapperRepository<TEntity>;
       if (dapperRepository == null)
       {
         throw new NotImplementedException();
@@ -83,7 +83,7 @@ namespace RepositoryFramework.Dapper
       int pageSize)
       where TEntity : class
     {
-      var dapperRepository = instance as DapperRepository<TEntity>;
+      var dapperRepository = instance as IDapperRepository<TEntity>;
       if (dapperRepository == null)
       {
         throw new NotImplementedException();
@@ -102,7 +102,7 @@ namespace RepositoryFramework.Dapper
       this IRepository<TEntity> instance)
       where TEntity : class
     {
-      var dapperRepository = instance as DapperRepository<TEntity>;
+      var dapperRepository = instance as IDapperRepository<TEntity>;
       if (dapperRepository == null)
       {
         throw new NotImplementedException();
@@ -123,7 +123,7 @@ namespace RepositoryFramework.Dapper
       Expression<Func<TEntity, object>> property)
       where TEntity : class
     {
-      var dapperRepository = instance as DapperRepository<TEntity>;
+      var dapperRepository = instance as IDapperRepository<TEntity>;
       if (dapperRepository == null)
       {
         throw new NotImplementedException();
@@ -144,7 +144,7 @@ namespace RepositoryFramework.Dapper
       string propertyName)
       where TEntity : class
     {
-      var dapperRepository = instance as DapperRepository<TEntity>;
+      var dapperRepository = instance as IDapperRepository<TEntity>;
       if (dapperRepository == null)
       {
         throw new NotImplementedException();
@@ -165,7 +165,7 @@ namespace RepositoryFramework.Dapper
       Expression<Func<TEntity, object>> property)
       where TEntity : class
     {
-      var dapperRepository = instance as DapperRepository<TEntity>;
+      var dapperRepository = instance as IDapperRepository<TEntity>;
       if (dapperRepository == null)
       {
         throw new NotImplementedException();
@@ -186,7 +186,7 @@ namespace RepositoryFramework.Dapper
       string propertyName)
       where TEntity : class
     {
-      var dapperRepository = instance as DapperRepository<TEntity>;
+      var dapperRepository = instance as IDapperRepository<TEntity>;
       if (dapperRepository == null)
       {
         throw new NotImplementedException();

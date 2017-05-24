@@ -16,18 +16,18 @@ namespace RepositoryFramework.Interfaces
     where TEntity : class
   {
     /// <summary>
-    /// Sets entity id property
+    /// Initializes a new instance of the <see cref="GenericRepositoryBase{TEntity}" /> class.
     /// </summary>
-    /// <param name="idProperty">Property expression</param>
-    public static void SetIdProperty(Expression<Func<TEntity, object>> idProperty = null)
+    /// <param name="idProperty">Id property expression</param>
+    public GenericRepositoryBase(Expression<Func<TEntity, object>> idProperty = null)
     {
-      if (idProperty == null)
+      if (idProperty != null)
       {
-        IdPropertyName = FindIdProperty();
+        IdPropertyName = GetPropertyName(idProperty);
       }
       else
       {
-        IdPropertyName = GetPropertyName(idProperty);
+        IdPropertyName = FindIdProperty();
       }
     }
 
@@ -55,7 +55,7 @@ namespace RepositoryFramework.Interfaces
     /// <summary>
     /// Gets or sets entity Id property
     /// </summary>
-    protected static string IdPropertyName { get; set; } = FindIdProperty();
+    protected string IdPropertyName { get; private set; }
 
     /// <summary>
     /// Find the Id property of the entity type looking for properties with name Id or (entity type name)Id
@@ -65,15 +65,11 @@ namespace RepositoryFramework.Interfaces
     {
       var idProperty = EntityColumns
         .FirstOrDefault(c => c.ToLower() == $"{EntityTypeName.ToLower()}id");
+
       if (idProperty == null)
       {
         idProperty = EntityColumns
           .FirstOrDefault(c => c.ToLower() == "id");
-      }
-
-      if (idProperty == null)
-      {
-        return null;
       }
 
       return idProperty;

@@ -22,7 +22,7 @@ namespace RepositoryFramework.Api
       object value)
       where TEntity : class
     {
-      var apiRepository = instance as ApiRepository<TEntity>;
+      var apiRepository = instance as IApiRepository<TEntity>;
       if (apiRepository == null)
       {
         throw new NotImplementedException();
@@ -43,7 +43,7 @@ namespace RepositoryFramework.Api
       string name)
       where TEntity : class
     {
-      var apiRepository = instance as ApiRepository<TEntity>;
+      var apiRepository = instance as IApiRepository<TEntity>;
       if (apiRepository == null)
       {
         throw new NotImplementedException();
@@ -61,7 +61,7 @@ namespace RepositoryFramework.Api
       this IRepository<TEntity> instance)
       where TEntity : class
     {
-      var apiRepository = instance as ApiRepository<TEntity>;
+      var apiRepository = instance as IApiRepository<TEntity>;
       if (apiRepository == null)
       {
         throw new NotImplementedException();

@@ -26,11 +26,14 @@ namespace RepositoryFramework.Dapper
     /// <param name="lastRowIdCommand">SQL command tpo get Id of the last row inserted. Defaults to TSQL syntax: SELECT @@IDENTITY</param>
     /// <param name="tableName">Table name. Defaults to entity type name</param>
     /// <param name="limitOffsetPattern">Limit and offset pattern. Must contain paceholders {PageNumber} and {PageSize}. Defaults to TSQL syntax: OFFSET ({PageNumber} - 1) * {PageSize} ROWS FETCH NEXT {PageSize} ROWS ONLY</param>
+    /// <param name="idProperty">Id property expression</param>
     public DapperRepository(
       IDbConnection connection,
       string lastRowIdCommand = "SELECT @@IDENTITY",
       string limitOffsetPattern = "OFFSET ({PageNumber} - 1) * {PageSize} ROWS FETCH NEXT {PageSize} ROWS ONLY",
-      string tableName = null)
+      string tableName = null,
+      Expression<Func<TEntity, object>> idProperty = null)
+      : base(idProperty)
     {
       this.connection = connection;
 
@@ -246,25 +249,6 @@ WHERE {IdPropertyName} IN (@Id)";
     }
 
     /// <summary>
-    /// Filters a collection of entities from a filter definition
-    /// </summary>
-    /// <param name="filter">Filter definition</param>
-    /// <returns>Filtered collection of entities</returns>
-    public IEnumerable<TEntity> Find(string filter)
-    {
-      return Connection.Query<TEntity>(GetQuery(filter));
-    }
-
-    /// <summary>
-    /// Filters a collection of entities from a filter definition
-    /// </summary>
-    /// <param name="filter">Filter definition</param>
-    /// <returns>Filtered collection of entities</returns>
-    public async Task<IEnumerable<TEntity>> FindAsync(string filter)
-    {
-      return await Connection.QueryAsync<TEntity>(GetQuery(filter));
-    }
-    /// <summary>
     /// Gets an entity by id.
     /// </summary>
     /// <param name="id">Filter</param>
@@ -414,18 +398,9 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
     /// <summary>
     /// Gets query string
     /// </summary>
-    /// <param name="where">Optional where statement</param>
     /// <returns>Query string</returns>
-    protected virtual string GetQuery(string where = null)
+    protected virtual string GetQuery()
     {
-      if (string.IsNullOrWhiteSpace(where))
-      {
-        where = string.Empty;
-      }
-      else if(!where.ToLower().Contains("where"))
-      {
-        where = $"WHERE {where}";
-      }
       var orderBy = string.Empty;
       if (SortOrder != SortOrder.Unspecified
         && !string.IsNullOrWhiteSpace(SortPropertyName))
@@ -442,7 +417,6 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
 
       return $@"
 SELECT * FROM {TableName}
-{where}
 {orderBy}
 {offset}";
     }

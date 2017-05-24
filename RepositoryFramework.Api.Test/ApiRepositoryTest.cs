@@ -7,8 +7,8 @@ namespace RepositoryFramework.Api.Test
 {
   public class ApiRepositoryTest
   {
-    private Configuration configuration =
-      new Configuration
+    private ApiConfiguration configuration =
+      new ApiConfiguration
       {
         AuthenticationType = AuthenticationType.Anonymous
       };
