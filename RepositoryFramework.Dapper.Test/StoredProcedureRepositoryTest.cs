@@ -7,6 +7,7 @@ using RepositoryFramework.Test.Filters;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text.RegularExpressions;
+using RepositoryFramework.Interfaces;
 
 namespace RepositoryFramework.Dapper.Test
 {
@@ -15,14 +16,14 @@ namespace RepositoryFramework.Dapper.Test
     [Theory]
     [InlineData(100, "Name", "Name 1", 1)]
     [InlineData(100, "Description", "Description 1", 10)]
-    public void FindFilter(int categories, string parameterName, object parameterValue, int expectedRows)
+    public void FindParameter(int categories, string parameterName, object parameterValue, int expectedRows)
     {
       using (var connection = CreateConnection())
       {
         InitializeDatabase(connection, "RepositoryTest_FindFilter");
 
         // Arrange
-        var categoryRepository = CreateCategoryRepository(connection);
+        IParameterizedRepository<Category> categoryRepository = CreateCategoryRepository(connection);
         for (int i = 0; i < categories; i++)
         {
           var category = new Category

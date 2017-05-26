@@ -172,8 +172,8 @@ namespace RepositoryFramework.MongoDB.Test
     {
       var mongoDBRepository = CreateMongoDBRepository();
       var IEnumerable = await mongoDBRepository
-        .SortBy(doc => doc.StringTest)
         .Page(1, 2)
+        .SortBy(doc => doc.StringTest)
         .FindAsync();
       Assert.Equal(2, IEnumerable.Count());
     }

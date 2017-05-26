@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RepositoryFramework.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task FindAsync_Parameter()
     {
-      var apiRepository = new ApiRepository<Post>(
+      IParameterizedRepository<Post> apiRepository = new ApiRepository<Post>(
         configuration,
         "https://jsonplaceholder.typicode.com",
         "posts");
@@ -32,7 +33,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task FindAsync_SubEntities()
     {
-      var apiRepository = new ApiRepository<Comment>(
+      IApiRepository<Comment> apiRepository = new ApiRepository<Comment>(
         configuration,
         "https://jsonplaceholder.typicode.com",
         "posts/{postId}/comments");
@@ -47,7 +48,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task FindAsync_Infer_Entity_Name_And_Id()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var result = await apiRepository
         .SetParameter("UserId", 1)
         .FindAsync();
@@ -59,7 +61,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task FindAsync()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var result = await apiRepository.FindAsync();
       Assert.True(result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
@@ -68,7 +71,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task FindAsync_Invalid_Path()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com", "bad_path");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com", "bad_path");
       try
       {
         await apiRepository
@@ -87,7 +91,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task GetByIdAsync()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var result = await apiRepository.GetByIdAsync("1");
       Assert.NotNull(result);
       Assert.Equal(1, result.Id);
@@ -96,7 +101,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task UpdateAsync()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
         Id = 1,
@@ -111,7 +117,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task DeleteAsync()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
         Id = 1
@@ -122,7 +129,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task DeleteManyAsync()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
 
       var posts = new List<Post>
       {
@@ -142,7 +150,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task CreateAsync()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
         UserId = 1,
@@ -156,7 +165,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task CreateManyAsync()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var posts = new List<Post>
       {
         new Post

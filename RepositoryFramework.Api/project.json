@@ -1,5 +1,12 @@
 {
-  "version": "2.0.5",
+  "title": "RepositoryFramework.Api",
+  "description": "A repository framework for ReSTful API clients",
+  "version": "2.0.0",
+  "authors": [ "Henrik Thomsen" ],
+  "packOptions": {
+    "projectUrl": "https://github.com/henrikbulldog/RepositoryFramework",
+    "licenseUrl": "https://github.com/henrikbulldog/RepositoryFramework/blob/master/LICENSE"
+  },
 
   "dependencies": {
     "Newtonsoft.Json": "9.0.2-beta2",

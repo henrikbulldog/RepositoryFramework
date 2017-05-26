@@ -111,7 +111,16 @@ namespace RepositoryFramework.Dapper
     /// Clear paging
     /// </summary>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> ClearPaging()
+    IPageableRepository<TEntity> IPageableRepository<TEntity>.ClearPaging()
+    {
+      return ClearPaging();
+    }
+
+    /// <summary>
+    /// Clear paging
+    /// </summary>
+    /// <returns>Current instance</returns>
+    public IDapperRepository<TEntity> ClearPaging()
     {
       PageSize = 0;
       PageNumber = 1;
@@ -122,7 +131,16 @@ namespace RepositoryFramework.Dapper
     /// Clear sorting
     /// </summary>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> ClearSorting()
+    ISortableRepository<TEntity> ISortableRepository<TEntity>.ClearSorting()
+    {
+      return ClearSorting();
+    }
+
+    /// <summary>
+    /// Clear sorting
+    /// </summary>
+    /// <returns>Current instance</returns>
+    public IDapperRepository<TEntity> ClearSorting()
     {
       SortPropertyName = null;
       SortOrder = SortOrder.Unspecified;
@@ -285,7 +303,18 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
     /// <param name="pageNumber">Page to get (one based index).</param>
     /// <param name="pageSize">Number of items per page.</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> Page(int pageNumber, int pageSize)
+    IPageableRepository<TEntity> IPageableRepository<TEntity>.Page(int pageNumber, int pageSize)
+    {
+      return Page(pageNumber, pageSize);
+    }
+
+    /// <summary>
+    /// Use paging
+    /// </summary>
+    /// <param name="pageNumber">Page to get (one based index).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <returns>Current instance</returns>
+    public IDapperRepository<TEntity> Page(int pageNumber, int pageSize)
     {
       PageSize = pageSize;
       PageNumber = pageNumber;
@@ -297,7 +326,17 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
     /// </summary>
     /// <param name="property">The property.</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> SortBy(Expression<Func<TEntity, object>> property)
+    ISortableRepository<TEntity> ISortableRepository<TEntity>.SortBy(Expression<Func<TEntity, object>> property)
+    {
+      return SortBy(property);
+    }
+
+    /// <summary>
+    /// Property to sort by (ascending)
+    /// </summary>
+    /// <param name="property">The property.</param>
+    /// <returns>Current instance</returns>
+    public IDapperRepository<TEntity> SortBy(Expression<Func<TEntity, object>> property)
     {
       if (property == null)
       {
@@ -314,7 +353,17 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
     /// </summary>
     /// <param name="propertyName">Name of the property.</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> SortBy(string propertyName)
+    ISortableRepository<TEntity> ISortableRepository<TEntity>.SortBy(string propertyName)
+    {
+      return SortBy(propertyName);
+    }
+
+    /// <summary>
+    /// Sort ascending by a property
+    /// </summary>
+    /// <param name="propertyName">Name of the property.</param>
+    /// <returns>Current instance</returns>
+    public IDapperRepository<TEntity> SortBy(string propertyName)
     {
       if (propertyName == null)
       {
@@ -333,7 +382,17 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
     /// </summary>
     /// <param name="property">The property</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> SortByDescending(Expression<Func<TEntity, object>> property)
+    ISortableRepository<TEntity> ISortableRepository<TEntity>.SortByDescending(Expression<Func<TEntity, object>> property)
+    {
+      return SortByDescending(property);
+    }
+
+    /// <summary>
+    /// Property to sort by (descending)
+    /// </summary>
+    /// <param name="property">The property</param>
+    /// <returns>Current instance</returns>
+    public IDapperRepository<TEntity> SortByDescending(Expression<Func<TEntity, object>> property)
     {
       if (property == null)
       {
@@ -350,7 +409,17 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
     /// </summary>
     /// <param name="propertyName">Name of the property.</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> SortByDescending(string propertyName)
+    ISortableRepository<TEntity> ISortableRepository<TEntity>.SortByDescending(string propertyName)
+    {
+      return SortByDescending(propertyName);
+    }
+
+    /// <summary>
+    /// Sort descending by a property.
+    /// </summary>
+    /// <param name="propertyName">Name of the property.</param>
+    /// <returns>Current instance</returns>
+    public IDapperRepository<TEntity> SortByDescending(string propertyName)
     {
       if (propertyName == null)
       {

@@ -80,6 +80,7 @@ namespace RepositoryFramework.MongoDB.Test
         .Find();
       Assert.True(result.Count() > 0);
 
+      var s = "{ IntTest: 1 }";
       var s = @"{ _id: """ + result.First().TestDocumentId + @""" }";
       var filtered = mongoDBRepository
         .Find(s);
@@ -94,7 +95,7 @@ namespace RepositoryFramework.MongoDB.Test
     public void SortBy(bool descendingOrder, bool useExpression)
     {
       // Arrange
-      var mongoDBRepository = CreateMongoDBRepository();
+      ISortableRepository<TestDocument> mongoDBRepository = CreateMongoDBRepository();
 
       // Act
       if (descendingOrder)
@@ -145,7 +146,7 @@ namespace RepositoryFramework.MongoDB.Test
     public void Page(int page, int pageSize, int totalRows, int expectedRows)
     {
       // Arrange
-      var mongoDBRepository = CreateMongoDBRepository();
+      IPageableRepository<TestDocument> mongoDBRepository = CreateMongoDBRepository();
 
       // Act
       var pageItems = mongoDBRepository
@@ -171,8 +172,8 @@ namespace RepositoryFramework.MongoDB.Test
     {
       var mongoDBRepository = CreateMongoDBRepository();
       var IEnumerable = mongoDBRepository
-        .SortBy(doc => doc.StringTest)
         .Page(1, 2)
+        .SortBy(doc => doc.StringTest)
         .Find();
       Assert.Equal(2, IEnumerable.Count());
     }
@@ -182,8 +183,8 @@ namespace RepositoryFramework.MongoDB.Test
     {
       var mongoDBRepository = CreateMongoDBRepository();
       var IEnumerable = mongoDBRepository
-        .SortBy(doc => doc.StringTest)
         .Page(1, 2)
+        .SortBy(doc => doc.StringTest)
         .AsQueryable();
       Assert.Equal(2, IEnumerable.Count());
     }

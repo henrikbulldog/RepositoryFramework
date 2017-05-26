@@ -78,7 +78,16 @@ namespace RepositoryFramework.EntityFramework
     /// Clear expansion
     /// </summary>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> ClearIncludes()
+    IExpandableRepository<TEntity> IExpandableRepository<TEntity>.ClearIncludes()
+    {
+      return ClearIncludes();
+    }
+
+    /// <summary>
+    /// Clear expansion
+    /// </summary>
+    /// <returns>Current instance</returns>
+    public IEntityFrameworkRepository<TEntity> ClearIncludes()
     {
       Includes.Clear();
       return this;
@@ -88,7 +97,16 @@ namespace RepositoryFramework.EntityFramework
     /// Clear paging
     /// </summary>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> ClearPaging()
+    IPageableRepository<TEntity> IPageableRepository<TEntity>.ClearPaging()
+    {
+      return ClearPaging();
+    }
+
+    /// <summary>
+    /// Clear paging
+    /// </summary>
+    /// <returns>Current instance</returns>
+    public IEntityFrameworkRepository<TEntity> ClearPaging()
     {
       PageSize = 0;
       PageNumber = 1;
@@ -99,7 +117,16 @@ namespace RepositoryFramework.EntityFramework
     /// Clear sorting
     /// </summary>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> ClearSorting()
+    ISortableRepository<TEntity> ISortableRepository<TEntity>.ClearSorting()
+    {
+      return ClearSorting();
+    }
+
+    /// <summary>
+    /// Clear sorting
+    /// </summary>
+    /// <returns>Current instance</returns>
+    public IEntityFrameworkRepository<TEntity> ClearSorting()
     {
       SortPropertyName = null;
       SortOrder = SortOrder.Unspecified;
@@ -332,12 +359,17 @@ namespace RepositoryFramework.EntityFramework
       return await Task.Run(() => GetById(id));
     }
 
+    IExpandableRepository<TEntity> IExpandableRepository<TEntity>.Include(string propertyPaths)
+    {
+      return Include(propertyPaths);
+    }
+
     /// <summary>
     /// Include referenced properties
     /// </summary>
     /// <param name="propertyPaths">Comma-separated list of property paths</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> Include(string propertyPaths)
+    public IEntityFrameworkRepository<TEntity> Include(string propertyPaths)
     {
       if (!string.IsNullOrWhiteSpace(propertyPaths))
       {
@@ -371,7 +403,18 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="property">Property expression</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> Include(Expression<Func<TEntity, object>> property)
+    IExpandableRepository<TEntity> IExpandableRepository<TEntity>.Include(
+      Expression<Func<TEntity, object>> property)
+    {
+      return Include(property);
+    }
+
+    /// <summary>
+    /// Include reference property
+    /// </summary>
+    /// <param name="property">Property expression</param>
+    /// <returns>Current instance</returns>
+    public IEntityFrameworkRepository<TEntity> Include(Expression<Func<TEntity, object>> property)
     {
       var propertyPath = GetPropertyName(property);
       if (!TryCheckPropertyPath(propertyPath, out propertyPath))
@@ -393,7 +436,18 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="pageNumber">Page to get (one based index).</param>
     /// <param name="pageSize">Number of items per page.</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> Page(int pageNumber, int pageSize)
+    IPageableRepository<TEntity> IPageableRepository<TEntity>.Page(int pageNumber, int pageSize)
+    {
+      return Page(pageNumber, pageSize);
+    }
+
+    /// <summary>
+    /// Use paging
+    /// </summary>
+    /// <param name="pageNumber">Page to get (one based index).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <returns>Current instance</returns>
+    public IEntityFrameworkRepository<TEntity> Page(int pageNumber, int pageSize)
     {
       PageSize = pageSize;
       PageNumber = pageNumber;
@@ -405,7 +459,18 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="property">The property.</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> SortBy(Expression<Func<TEntity, object>> property)
+    ISortableRepository<TEntity> ISortableRepository<TEntity>.SortBy(
+      Expression<Func<TEntity, object>> property)
+    {
+      return SortBy(property);
+    }
+
+    /// <summary>
+    /// Property to sort by (ascending)
+    /// </summary>
+    /// <param name="property">The property.</param>
+    /// <returns>Current instance</returns>
+    public IEntityFrameworkRepository<TEntity> SortBy(Expression<Func<TEntity, object>> property)
     {
       if (property == null)
       {
@@ -422,7 +487,17 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="propertyName">Name of the property.</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> SortBy(string propertyName)
+    ISortableRepository<TEntity> ISortableRepository<TEntity>.SortBy(string propertyName)
+    {
+      return SortBy(propertyName);
+    }
+
+    /// <summary>
+    /// Sort ascending by a property
+    /// </summary>
+    /// <param name="propertyName">Name of the property.</param>
+    /// <returns>Current instance</returns>
+    public IEntityFrameworkRepository<TEntity> SortBy(string propertyName)
     {
       if (propertyName == null)
       {
@@ -441,7 +516,18 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="property">The property</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> SortByDescending(Expression<Func<TEntity, object>> property)
+    ISortableRepository<TEntity> ISortableRepository<TEntity>.SortByDescending(
+      Expression<Func<TEntity, object>> property)
+    {
+      return SortByDescending(property);
+    }
+
+    /// <summary>
+    /// Property to sort by (descending)
+    /// </summary>
+    /// <param name="property">The property</param>
+    /// <returns>Current instance</returns>
+    public IEntityFrameworkRepository<TEntity> SortByDescending(Expression<Func<TEntity, object>> property)
     {
       if (property == null)
       {
@@ -458,7 +544,17 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="propertyName">Name of the property.</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> SortByDescending(string propertyName)
+    ISortableRepository<TEntity> ISortableRepository<TEntity>.SortByDescending(string propertyName)
+    {
+      return SortByDescending(propertyName);
+    }
+
+    /// <summary>
+    /// Sort descending by a property.
+    /// </summary>
+    /// <param name="propertyName">Name of the property.</param>
+    /// <returns>Current instance</returns>
+    public IEntityFrameworkRepository<TEntity> SortByDescending(string propertyName)
     {
       if (propertyName == null)
       {

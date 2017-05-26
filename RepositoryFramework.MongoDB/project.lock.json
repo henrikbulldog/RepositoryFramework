@@ -2403,7 +2403,7 @@
           "lib/netstandard1.3/_._": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.7": {
+      "RepositoryFramework.Interfaces/2.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
@@ -2508,7 +2508,7 @@
           }
         }
       },
-      "RepositoryFramework.Interfaces/2.0.7": {
+      "RepositoryFramework.Interfaces/2.0.0": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
@@ -2932,12 +2932,12 @@
       "path": "MongoDB.Driver/2.4.3",
       "files": [
         "License.rtf",
+        "MongoDB.Driver.2.4.3.nupkg.sha512",
+        "MongoDB.Driver.nuspec",
         "lib/net45/MongoDB.Driver.XML",
         "lib/net45/MongoDB.Driver.dll",
         "lib/netstandard1.5/MongoDB.Driver.dll",
-        "lib/netstandard1.5/MongoDB.Driver.xml",
-        "mongodb.driver.2.4.3.nupkg.sha512",
-        "mongodb.driver.nuspec"
+        "lib/netstandard1.5/MongoDB.Driver.xml"
       ]
     },
     "MongoDB.Driver.Core/2.4.3": {
@@ -7561,7 +7561,7 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "RepositoryFramework.Interfaces/2.0.7": {
+    "RepositoryFramework.Interfaces/2.0.0": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"

@@ -8,7 +8,7 @@ namespace RepositoryFramework.Interfaces
   /// Parameterizes queries
   /// </summary>
   /// <typeparam name="TEntity">Type of entity</typeparam>
-  public interface IParameterizedRepository<TEntity>
+  public interface IParameterizedRepository<TEntity> : IRepository<TEntity>
     where TEntity : class
   {
     /// <summary>
@@ -22,7 +22,7 @@ namespace RepositoryFramework.Interfaces
     /// <param name="name">Parameter name</param>
     /// <param name="value">Parameter value</param>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> SetParameter(string name, object value);
+    IParameterizedRepository<TEntity> SetParameter(string name, object value);
 
     /// <summary>
     /// Gets parameter value
@@ -35,6 +35,6 @@ namespace RepositoryFramework.Interfaces
     /// Clears parameters
     /// </summary>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> ClearParameters();
+    IParameterizedRepository<TEntity> ClearParameters();
   }
 }

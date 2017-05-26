@@ -46,7 +46,16 @@ namespace RepositoryFramework.Dapper
     /// Clear parameters
     /// </summary>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> ClearParameters()
+    IParameterizedRepository<TEntity> IParameterizedRepository<TEntity>.ClearParameters()
+    {
+      return ClearParameters();
+    }
+
+    /// <summary>
+    /// Clear parameters
+    /// </summary>
+    /// <returns>Current instance</returns>
+    public IStoredProcedureDapperRepository<TEntity> ClearParameters()
     {
       Parameters.Clear();
       return this;
@@ -269,7 +278,18 @@ namespace RepositoryFramework.Dapper
     /// <param name="name">Parameter name</param>
     /// <param name="value">Parameter value</param>
     /// <returns>Current instance</returns>
-    public IRepository<TEntity> SetParameter(string name, object value)
+    IParameterizedRepository<TEntity> IParameterizedRepository<TEntity>.SetParameter(string name, object value)
+    {
+      return SetParameter(name, value);
+    }
+
+    /// <summary>
+    /// Adds a parameter to queries
+    /// </summary>
+    /// <param name="name">Parameter name</param>
+    /// <param name="value">Parameter value</param>
+    /// <returns>Current instance</returns>
+    public IStoredProcedureDapperRepository<TEntity> SetParameter(string name, object value)
     {
       if (!Parameters.Keys.Contains(name))
       {

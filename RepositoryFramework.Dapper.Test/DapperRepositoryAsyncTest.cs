@@ -7,6 +7,7 @@ using RepositoryFramework.Test.Filters;
 using Microsoft.Data.Sqlite;
 using System.Data;
 using System.Threading.Tasks;
+using RepositoryFramework.Interfaces;
 
 namespace RepositoryFramework.Dapper.Test
 {
@@ -249,7 +250,7 @@ namespace RepositoryFramework.Dapper.Test
           };
           categories.Add(category);
         }
-        var categoryRepository = CreateCategoryRepository(connection);
+        ISortableRepository<Category> categoryRepository = CreateCategoryRepository(connection);
         await categoryRepository.CreateManyAsync(categories);
 
         // Act
@@ -315,7 +316,7 @@ namespace RepositoryFramework.Dapper.Test
           };
           categories.Add(category);
         }
-        var categoryRepository = CreateCategoryRepository(connection);
+        IPageableRepository<Category> categoryRepository = CreateCategoryRepository(connection);
         await categoryRepository.CreateManyAsync(categories);
 
         // Act

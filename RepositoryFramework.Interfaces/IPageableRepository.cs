@@ -4,7 +4,7 @@
   /// Pages a result sets
   /// </summary>
   /// <typeparam name="TEntity">Entity type</typeparam>
-  public interface IPageableRepository<TEntity>
+  public interface IPageableRepository<TEntity> : IRepository<TEntity>
     where TEntity : class
   {
     /// <summary>
@@ -23,12 +23,12 @@
     /// <param name="pageNumber">Page to get (one based index).</param>
     /// <param name="pageSize">Number of items per page.</param>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> Page(int pageNumber, int pageSize);
+    IPageableRepository<TEntity> Page(int pageNumber, int pageSize);
 
     /// <summary>
     /// Clear paging
     /// </summary>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> ClearPaging();
+    IPageableRepository<TEntity> ClearPaging();
   }
 }

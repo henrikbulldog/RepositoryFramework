@@ -1,5 +1,12 @@
 ﻿{
+  "title": "RepositoryFramework.Dapper",
+  "description": "A repository framework for Dapper",
   "version": "2.0.0",
+  "authors": [ "Henrik Thomsen" ],
+  "packOptions": {
+    "projectUrl": "https://github.com/henrikbulldog/RepositoryFramework",
+    "licenseUrl": "https://github.com/henrikbulldog/RepositoryFramework/blob/master/LICENSE"
+  },
 
   "dependencies": {
     "Dapper": "1.50.2",

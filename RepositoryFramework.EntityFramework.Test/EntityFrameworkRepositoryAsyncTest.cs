@@ -6,6 +6,7 @@ using System;
 using RepositoryFramework.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using RepositoryFramework.Interfaces;
 
 namespace RepositoryFramework.Test
 {
@@ -72,12 +73,12 @@ namespace RepositoryFramework.Test
       using (var db = new SQLiteContext())
       {
         // Arrange
-        IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
+        ISortableRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var c = CreateCategory(100);
         cr.Create(c);
 
         // Act
-        IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
+        ISortableRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
         if (descendingOrder)
         {
           if (useExpression)
@@ -129,12 +130,12 @@ namespace RepositoryFramework.Test
       using (var db = new SQLiteContext())
       {
         // Arrange
-        IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
+        IPageableRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
         var category = CreateCategory(totalRows);
         cr.Create(category);
 
         // Act
-        IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
+        IPageableRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
         var pageItems = await pr
           .Page(page, pageSize)
           .FindAsync();
@@ -169,8 +170,8 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
         var pageItems = await pr
           .Page(2, 40)
-          .SortBy("Name")
           .Include("Parts")
+          .SortBy("Name")
           .FindAsync();
 
         // Assert
@@ -222,8 +223,8 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
         var pageItems = await pr
           .Page(2, 40)
-          .SortBy("Name")
           .Include("Parts")
+          .SortBy("Name")
           .AsQueryable()
           .ToListAsync();
 

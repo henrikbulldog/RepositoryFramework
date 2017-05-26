@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RepositoryFramework.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -16,7 +17,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void Find_Parameter()
     {
-      var apiRepository = new ApiRepository<Post>(
+      IParameterizedRepository<Post> apiRepository = new ApiRepository<Post>(
         configuration,
         "https://jsonplaceholder.typicode.com",
         "posts");
@@ -31,7 +32,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void Find_SubEntities()
     {
-      var apiRepository = new ApiRepository<Comment>(
+      IApiRepository<Comment> apiRepository = new ApiRepository<Comment>(
         configuration,
         "https://jsonplaceholder.typicode.com",
         "posts/{postId}/comments");
@@ -46,7 +47,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void Find_Infer_Entity_Name_And_Id()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      ApiRepository<Post> apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var result = apiRepository
         .SetParameter("UserId", 1)
         .Find();
@@ -58,7 +59,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void Find()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var result = apiRepository.Find();
       Assert.True(result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
@@ -67,7 +68,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void Find_Invalid_Path()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com", "bad_path");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com", "bad_path");
       try
       {
         apiRepository
@@ -86,7 +88,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void GetById()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var result = apiRepository.GetById("1");
       Assert.NotNull(result);
       Assert.Equal(1, result.Id);
@@ -95,7 +98,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void Update()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
         Id = 1,
@@ -110,7 +114,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void Delete()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
         Id = 1
@@ -121,7 +126,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void DeleteMany()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
 
       var posts = new List<Post>
       {
@@ -141,7 +147,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void Create()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
         UserId = 1,
@@ -155,7 +162,8 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void CreateMany()
     {
-      var apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
+      IApiRepository<Post> apiRepository = 
+        new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var posts = new List<Post>
       {
         new Post

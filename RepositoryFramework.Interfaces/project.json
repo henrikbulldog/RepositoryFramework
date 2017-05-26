@@ -1,6 +1,13 @@
 {
   "title": "RepositoryFramework.Interfaces",
-  "version": "2.0.7",
+  "description": "A repository framework",
+  "version": "2.0.0",
+  "authors": [ "Henrik Thomsen" ],
+  "packOptions": {
+    "projectUrl": "https://github.com/henrikbulldog/RepositoryFramework",
+    "licenseUrl": "https://github.com/henrikbulldog/RepositoryFramework/blob/master/LICENSE"
+  },
+
   "dependencies": {
     "StyleCop.Analyzers": {
       "version": "1.0.0",

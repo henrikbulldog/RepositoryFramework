@@ -8,7 +8,7 @@ namespace RepositoryFramework.Interfaces
   /// Loads data for referenced objects
   /// </summary>
   /// <typeparam name="TEntity">Type of entity</typeparam>
-  public interface IExpandableRepository<TEntity>
+  public interface IExpandableRepository<TEntity> : IRepository<TEntity>
     where TEntity : class
   {
     /// <summary>
@@ -21,19 +21,19 @@ namespace RepositoryFramework.Interfaces
     /// </summary>
     /// <param name="propertyPaths">Comma-separated list of property paths</param>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> Include(string propertyPaths);
+    IExpandableRepository<TEntity> Include(string propertyPaths);
 
     /// <summary>
     /// Include referenced property
     /// </summary>
     /// <param name="property">Property expression</param>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> Include(Expression<Func<TEntity, object>> property);
+    IExpandableRepository<TEntity> Include(Expression<Func<TEntity, object>> property);
 
     /// <summary>
     /// Clear includes
     /// </summary>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> ClearIncludes();
+    IExpandableRepository<TEntity> ClearIncludes();
   }
 }

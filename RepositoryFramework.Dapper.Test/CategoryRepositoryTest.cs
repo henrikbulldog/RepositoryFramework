@@ -48,7 +48,8 @@ CREATE TABLE Product
         InitializeDatabase(connection);
 
         // Arrange
-        var categoryRepository = new CategoryRepository(connection, "SELECT last_insert_rowid()");
+        IDapperRepository<Category> categoryRepository = 
+          new CategoryRepository(connection, "SELECT last_insert_rowid()");
         var category = new Category
         {
           Name = "Category 1",
@@ -81,7 +82,8 @@ CREATE TABLE Product
         InitializeDatabase(connection);
 
         // Arrange
-        var categoryRepository = new CategoryRepository(connection, "SELECT last_insert_rowid()");
+        IDapperRepository<Category> categoryRepository = 
+          new CategoryRepository(connection, "SELECT last_insert_rowid()");
         var category = new Category
         {
           Name = Guid.NewGuid().ToString(),
@@ -111,7 +113,8 @@ CREATE TABLE Product
         InitializeDatabase(connection);
 
         // Arrange
-        var categoryRepository = new CategoryRepository(connection, "SELECT last_insert_rowid()");
+        IDapperRepository<Category> categoryRepository = 
+          new CategoryRepository(connection, "SELECT last_insert_rowid()");
         var category = new Category
         {
           Name = Guid.NewGuid().ToString(),
@@ -140,7 +143,8 @@ CREATE TABLE Product
         InitializeDatabase(connection);
 
         // Arrange
-        var categoryRepository = new CategoryRepository(connection, "SELECT last_insert_rowid()");
+        IDapperRepository<Category> categoryRepository = 
+          new CategoryRepository(connection, "SELECT last_insert_rowid()");
         for (int i = 0; i < categories; i++)
         {
           var category = new Category
@@ -237,7 +241,6 @@ CREATE TABLE Product
       {
         products.Add(CreateProduct(c));
       };
-      //c.Products = products;
       return c;
     }
   }

@@ -7,7 +7,7 @@ namespace RepositoryFramework.Interfaces
   /// Sorts a result sets
   /// </summary>
   /// <typeparam name="TEntity">Entity type</typeparam>
-  public interface ISortableRepository<TEntity>
+  public interface ISortableRepository<TEntity> : IRepository<TEntity>
     where TEntity : class
   {
     /// <summary>
@@ -25,33 +25,33 @@ namespace RepositoryFramework.Interfaces
     /// </summary>
     /// <param name="propertyName">Name of the property.</param>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> SortBy(string propertyName);
+    ISortableRepository<TEntity> SortBy(string propertyName);
 
     /// <summary>
     /// Sort descending by a property.
     /// </summary>
     /// <param name="propertyName">Name of the property.</param>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> SortByDescending(string propertyName);
+    ISortableRepository<TEntity> SortByDescending(string propertyName);
 
     /// <summary>
     /// Property to sort by (ascending)
     /// </summary>
     /// <param name="property">The property.</param>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> SortBy(Expression<Func<TEntity, object>> property);
+    ISortableRepository<TEntity> SortBy(Expression<Func<TEntity, object>> property);
 
     /// <summary>
     /// Property to sort by (descending)
     /// </summary>
     /// <param name="property">The property</param>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> SortByDescending(Expression<Func<TEntity, object>> property);
+    ISortableRepository<TEntity> SortByDescending(Expression<Func<TEntity, object>> property);
 
     /// <summary>
     /// Clear sorting
     /// </summary>
     /// <returns>Current instance</returns>
-    IRepository<TEntity> ClearSorting();
+    ISortableRepository<TEntity> ClearSorting();
   }
 }
