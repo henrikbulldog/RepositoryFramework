@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RepositoryFramework.EntityFramework;
 using RepositoryFramework.Test.Models;
 
 namespace RepositoryFramework.Test
@@ -19,13 +20,19 @@ namespace RepositoryFramework.Test
     }
     public override void Dispose()
     {
-      Database.EnsureDeleted();
-      base.Dispose();
+      try
+      {
+        Database.EnsureDeleted();
+        base.Dispose();
+      }
+      catch { }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
       base.OnModelCreating(modelBuilder);
+
+      modelBuilder.RemovePluralizingTableNameConvention();
 
       modelBuilder.Entity<Order>(entity =>
       {

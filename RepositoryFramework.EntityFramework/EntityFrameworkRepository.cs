@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Data.Common;
+using System.Text.RegularExpressions;
 
 namespace RepositoryFramework.EntityFramework
 {
@@ -67,7 +69,7 @@ namespace RepositoryFramework.EntityFramework
     /// <summary>
     /// Gets the kind of sort order
     /// </summary>
-    public virtual SortOrder SortOrder { get; private set; } = SortOrder.Unspecified;
+    public virtual Interfaces.SortOrder SortOrder { get; private set; } = Interfaces.SortOrder.Unspecified;
 
     /// <summary>
     /// Gets property name for the property to sort by.
@@ -129,7 +131,7 @@ namespace RepositoryFramework.EntityFramework
     public IEntityFrameworkRepository<TEntity> ClearSorting()
     {
       SortPropertyName = null;
-      SortOrder = SortOrder.Unspecified;
+      SortOrder = Interfaces.SortOrder.Unspecified;
       return this;
     }
 
@@ -293,6 +295,36 @@ namespace RepositoryFramework.EntityFramework
     public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
       return await GetQuery().ToListAsync();
+    }
+
+    /// <summary>
+    /// Filters a collection of entities using a predicate
+    /// </summary>
+    /// <param name="sql">SQL containing named parameter placeholders. For example: SELECT * FROM Customer WHERE Id = @Id</param>
+    /// <param name="parameters">Named parameters</param>
+    /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
+    /// <returns>Filtered collection of entities</returns>
+    public virtual IEnumerable<TEntity> Find(
+      string sql, 
+      IDictionary<string, object> parameters = null, 
+      string parameterPattern = @"@(\w+)")
+    {
+
+      return GetQuery(sql, parameters, parameterPattern)
+        .ToList();
+    }
+
+    /// <summary>
+    /// Filters a collection of entities using a predicate
+    /// </summary>
+    /// <param name="sql">SQL containing named parameter placeholders. For example: SELECT * FROM Customer WHERE Id = @Id</param>
+    /// <param name="parameters">Named parameters</param>
+    /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
+    /// <returns>Filtered collection of entities</returns>
+    public virtual async Task<IEnumerable<TEntity>> FindAsync(string sql, IDictionary<string, object> parameters = null, string parameterPattern = "@(\\w+)")
+    {
+      return await GetQuery(sql, parameters, parameterPattern)
+        .ToListAsync();
     }
 
     /// <summary>
@@ -506,7 +538,7 @@ namespace RepositoryFramework.EntityFramework
 
       ValidatePropertyName(propertyName, out propertyName);
 
-      SortOrder = SortOrder.Ascending;
+      SortOrder = Interfaces.SortOrder.Ascending;
       SortPropertyName = propertyName;
       return this;
     }
@@ -563,7 +595,7 @@ namespace RepositoryFramework.EntityFramework
 
       ValidatePropertyName(propertyName, out propertyName);
 
-      SortOrder = SortOrder.Descending;
+      SortOrder = Interfaces.SortOrder.Descending;
       SortPropertyName = propertyName;
       return this;
     }
@@ -676,6 +708,42 @@ namespace RepositoryFramework.EntityFramework
       return query
         .Sort(this)
         .Page(this);
+    }
+
+    /// <summary>
+    /// Filters a collection of entities using a predicate
+    /// </summary>
+    /// <param name="sql">SQL containing named parameter placeholders. For example: SELECT * FROM Customer WHERE Id = @Id</param>
+    /// <param name="parameters">Named parameters</param>
+    /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
+    /// <returns>Queryable collection</returns>
+    protected virtual IQueryable<TEntity> GetQuery(string sql,
+      IDictionary<string, object> parameters,
+      string parameterPattern)
+    {
+      if (parameters == null)
+      {
+        parameters = new Dictionary<string, object>();
+      }
+
+      var parameterValues = new List<object>();
+
+      var placeholders = Regex.Matches(sql, parameterPattern);
+      for (int i = 0; i < placeholders.Count; i++)
+      {
+        sql = sql.Replace(placeholders[i].Value, $"{{{i}}}");
+
+        var parameterName = Regex.Match(placeholders[i].Value, @"(\w+)").Value;
+        if (!parameters.ContainsKey(parameterName))
+        {
+          throw new ArgumentException($"Value must be specified for parameter \"{parameterName}\"");
+        }
+
+        parameterValues.Add(parameters[parameterName]);
+      }
+
+      return GetQuery()
+        .FromSql(sql, parameterValues.ToArray());
     }
   }
 }

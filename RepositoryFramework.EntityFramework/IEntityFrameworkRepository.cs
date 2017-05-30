@@ -20,7 +20,9 @@ namespace RepositoryFramework.EntityFramework
     IUnitOfWorkRepository<TEntity>,
     IUnitOfWorkRepositoryAsync<TEntity>,
     IFindWhere<TEntity>,
-    IFindWhereAsync<TEntity>
+    IFindWhereAsync<TEntity>,
+    IFindSql<TEntity>,
+    IFindSqlAsync<TEntity>
   where TEntity : class
   {
     /// <summary>

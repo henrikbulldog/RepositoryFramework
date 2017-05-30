@@ -226,6 +226,178 @@ namespace RepositoryFramework.Dapper.Test
       }
     }
 
+
+    [Fact]
+    public void Combine_Page_Sort_FindSql()
+    {
+      using (var connection = CreateConnection())
+      {
+        InitializeDatabase(connection, "RepositoryTest_Find");
+
+        // Arrange
+        var categories = new List<Category>();
+        for (int i = 0; i < 100; i++)
+        {
+          var category = new Category
+          {
+            Name = i.ToString(),
+            Description = i.ToString()
+          };
+          categories.Add(category);
+        }
+        var categoryRepository = CreateCategoryRepository(connection);
+        categoryRepository.CreateMany(categories);
+
+        // Act
+        var result = categoryRepository
+          .Page(2, 40)
+          .SortBy(c => c.Id)
+          .Find("SELECT * FROM Category WHERE Id > @Id AND Description <> @Description",
+          new Dictionary<string, object>
+          {
+            { "Description", "XXX" },
+            { "Id", 50 }
+          });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(10, result.Count());
+      }
+    }
+
+    [Fact]
+    public void FindSql_No_Parameters()
+    {
+      using (var connection = CreateConnection())
+      {
+        InitializeDatabase(connection, "RepositoryTest_Find");
+
+        // Arrange
+        var categories = new List<Category>();
+        for (int i = 0; i < 100; i++)
+        {
+          var category = new Category
+          {
+            Name = i.ToString(),
+            Description = i.ToString()
+          };
+          categories.Add(category);
+        }
+        var categoryRepository = (DapperRepository<Category>)CreateCategoryRepository(connection);
+        categoryRepository.CreateMany(categories);
+
+        // Act
+        var result = categoryRepository
+          .Find("SELECT * FROM Category");
+
+        // Assert
+        Assert.Equal(100, result.Count());
+      }
+    }
+
+    [Fact]
+    public void FindSql_With_Parameters()
+    {
+      using (var connection = CreateConnection())
+      {
+        InitializeDatabase(connection, "RepositoryTest_Find");
+
+        // Arrange
+        var categories = new List<Category>();
+        for (int i = 0; i < 100; i++)
+        {
+          var category = new Category
+          {
+            Name = i.ToString(),
+            Description = i.ToString()
+          };
+          categories.Add(category);
+        }
+        var categoryRepository = (DapperRepository<Category>)CreateCategoryRepository(connection);
+        categoryRepository.CreateMany(categories);
+
+        // Act
+        var result = categoryRepository
+          .Find("SELECT * FROM Category WHERE Id > @Id AND Description <> @Description",
+          new Dictionary<string, object>
+          {
+            { "Description", "XXX" },
+            { "Id", 50 }
+          });
+
+        // Assert
+        Assert.Equal(50, result.Count());
+      }
+    }
+
+    [Fact]
+    public void FindSql_With_Parameters_And_Pattern()
+    {
+      using (var connection = CreateConnection())
+      {
+        InitializeDatabase(connection, "RepositoryTest_Find");
+
+        // Arrange
+        var categories = new List<Category>();
+        for (int i = 0; i < 100; i++)
+        {
+          var category = new Category
+          {
+            Name = i.ToString(),
+            Description = i.ToString()
+          };
+          categories.Add(category);
+        }
+        var categoryRepository = (DapperRepository<Category>)CreateCategoryRepository(connection);
+        categoryRepository.CreateMany(categories);
+
+        // Act
+        var result = categoryRepository
+          .Find("SELECT * FROM Category WHERE Id > :Id AND Description <> :Description",
+          new Dictionary<string, object>
+          {
+            { "Description", "XXX" },
+            { "Id", 50 }
+          },
+          @":(\w+)");
+
+        // Assert
+        Assert.Equal(50, result.Count());
+      }
+    }
+
+    [Fact]
+    public void FindSql_Wrong_Parameter()
+    {
+      using (var connection = CreateConnection())
+      {
+        InitializeDatabase(connection, "RepositoryTest_Find");
+
+        // Arrange
+        var categories = new List<Category>();
+        for (int i = 0; i < 100; i++)
+        {
+          var category = new Category
+          {
+            Name = i.ToString(),
+            Description = i.ToString()
+          };
+          categories.Add(category);
+        }
+        var categoryRepository = (DapperRepository<Category>)CreateCategoryRepository(connection);
+        categoryRepository.CreateMany(categories);
+
+        // Act
+
+        // Assert
+        Assert.Throws(typeof(ArgumentException), () => 
+          categoryRepository.Find("SELECT * FROM Category WHERE Id > @Id"));
+        Assert.Throws(typeof(ArgumentException), () => 
+          categoryRepository.Find("SELECT * FROM Category WHERE Id > @Id", 
+            new Dictionary<string, object> { { "Wrong", 1 } }));
+      }
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]

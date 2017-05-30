@@ -2868,12 +2868,12 @@
           "lib/netstandard1.1/xunit.runner.utility.dotnet.dll": {}
         }
       },
-      "RepositoryFramework.Api/2.0.0": {
+      "RepositoryFramework.Api/2.0.2": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
           "Newtonsoft.Json": "9.0.2-beta2",
-          "RepositoryFramework.Interfaces": "1.0.0",
+          "RepositoryFramework.Interfaces": "2.0.2",
           "RestSharp.NetCore": "105.2.3"
         },
         "compile": {
@@ -2883,7 +2883,7 @@
           "netcoreapp1.1/RepositoryFramework.Api.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.0": {
+      "RepositoryFramework.Interfaces/2.0.2": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
@@ -3312,12 +3312,12 @@
           "lib/net45/xunit.runner.utility.desktop.dll": {}
         }
       },
-      "RepositoryFramework.Api/2.0.0": {
+      "RepositoryFramework.Api/2.0.2": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
           "Newtonsoft.Json": "9.0.2-beta2",
-          "RepositoryFramework.Interfaces": "1.0.0",
+          "RepositoryFramework.Interfaces": "2.0.2",
           "RestSharp": "105.2.3"
         },
         "compile": {
@@ -3327,7 +3327,7 @@
           "net452/RepositoryFramework.Api.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.0": {
+      "RepositoryFramework.Interfaces/2.0.2": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
@@ -9209,12 +9209,12 @@
         "xunit.runner.utility.nuspec"
       ]
     },
-    "RepositoryFramework.Api/2.0.0": {
+    "RepositoryFramework.Api/2.0.2": {
       "type": "project",
       "path": "../RepositoryFramework.Api/project.json",
       "msbuildProject": "../RepositoryFramework.Api/RepositoryFramework.Api.xproj"
     },
-    "RepositoryFramework.Interfaces/2.0.0": {
+    "RepositoryFramework.Interfaces/2.0.2": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"

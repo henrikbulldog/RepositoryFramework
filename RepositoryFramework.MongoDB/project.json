@@ -1,7 +1,7 @@
 {
-  "title": "RepositoryFramework.Api",
+  "title": "RepositoryFramework.MongoDB",
   "description": "A repository framework for Mongo DB",
-  "version": "2.0.0",
+  "version": "2.0.3",
   "authors": [ "Henrik Thomsen" ],
   "packOptions": {
     "projectUrl": "https://github.com/henrikbulldog/RepositoryFramework",
@@ -11,7 +11,7 @@
   "dependencies": {
     "Microsoft.DotNet.InternalAbstractions": "1.0.500-preview2-1-003177",
     "MongoDB.Driver": "2.4.3",
-    "RepositoryFramework.Interfaces": "*",
+    "RepositoryFramework.Interfaces": "2.0.2",
     "System.Linq.Expressions": "*"
   },
 

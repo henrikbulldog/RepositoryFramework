@@ -1,7 +1,7 @@
-﻿{
+{
   "title": "RepositoryFramework.EntityFramework",
   "description": "A repository framework for Entity Framework Core",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "authors": [ "Henrik Thomsen" ],
   "packOptions": {
     "projectUrl": "https://github.com/henrikbulldog/RepositoryFramework",
@@ -10,11 +10,13 @@
 
   "dependencies": {
     "Microsoft.EntityFrameworkCore": "1.1.0",
-    "RepositoryFramework.Interfaces": "*",
+    "Microsoft.EntityFrameworkCore.Relational": "1.1.0",
+    "RepositoryFramework.Interfaces": "2.0.2",
     "StyleCop.Analyzers": {
       "version": "1.0.0",
       "type": "build"
-    }
+    },
+    "System.Data.SqlClient": "4.3.0"
   },
   "buildOptions": {
     "additionalArguments": [ "/ruleset:../RULES.ruleset", "/additionalfile:../stylecop.json" ],

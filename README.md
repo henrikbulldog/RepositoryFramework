@@ -26,6 +26,7 @@ Currently there are 4 implementations of the interfaces in separate packages on 
       * SortBy() / SortBydescending() - Sort result of Find()
       * Include() - Include related entites to result of Find()
       * Find(Expression<Func<TEntity, bool>>) - Find with where expression
+      * Find(string, IDictionary<string, object>) - Find with dynamic SQL
       * AsQueryable() - Gets a queryable collection of entities
 * RepositoryFramework.Dapper
   * Data access against a relational database using Dapper micro-ORM, see https://github.com/StackExchange/Dapper
@@ -34,10 +35,11 @@ Currently there are 4 implementations of the interfaces in separate packages on 
       * Addtional methods:
         * Page() - Skip and limit result of Find()
         * SortBy() / SortBydescending() - Sort result of Find()
+        * Find(string, IDictionary<string, object>) - Find with dynamic SQL
   *  Generic repository StoredProcedureDapperRepository
      * Uses Dapper with stored procedures
       * Addtional methods:
-        * SetParameter() - set parameters to filter the result of result of Find()
+        * SetParameter() - set parameters to stored procedures
 * RepositoryFramework.Api
   * Data access against a ReSTful API using RestSharp, see http://restsharp.org/
   * Generic repository ApiRepository   
@@ -99,15 +101,23 @@ Simply because the code base will be easier to read and navigate.
     .GetById(123);
 
   // To get all entities with includes, sorting and paging:
-  var result = categoryRepository
+  result = categoryRepository
     .SortBy(p => p.Name)
     .Page(2, 50)
     .Include("Products"))
     .Find();
 
   // To read a filtered list using a where expression:
-  var result = categoryRepository
-    .Find(c => c.Name == "Some name");
+  result = categoryRepository.Find(c => c.Name == "Some name");
+
+  // To read a filtered list using dynamic SQL:
+  var parameters = new Dictionary<string, object>
+  { 
+    { "Id", 123 },
+    { "Name", "MyName" }
+  };
+  result = categoryRepository.Find("EXEC FindCategory @Id, @Name", parameters);
+  result = categoryRepository.Find("SELECT * FROM Category WHERE Id = @Id AND Name = @Name", parameters);
   ~~~~
 
 ### Wait, You Shouldn't Expose Queryable Collections from a Repository!
@@ -127,6 +137,55 @@ If you don't like Linq parameters, inherit from Repository and do your own imple
         .Find(c => c.Name == name);
     }
   }
+~~~~
+
+## How To Use RepositoryFramework.Api?
+To GET https://jsonplaceholder.typicode.com/posts:
+~~~~
+  var apiRepository = new ApiRepository<Post>(
+    new Configuration { AuthenticationType = AuthenticationType.Anonymous }, 
+    "https://jsonplaceholder.typicode.com");
+
+  var result = apiRepository.Find();
+~~~~
+The ApiRepository can recognize placeholders in the base path and set parameter values:
+
+To GET https://SomeUrl.com/system/1/posts?userId=123:
+~~~~
+  var apiRepository = new ApiRepository<Post>(
+    new Configuration { AuthenticationType = AuthenticationType.Anonymous }, 
+    "https://SomeUrl.com/system/{systemId}/posts");
+
+  var result = apiRepository
+    .SetParameter("systemId", 1) // sets path parameter systemId to 1
+    .SetParameter("userId", 123) // sets query parameter userId to 123
+    .Find();
+~~~~
+To POST https://jsonplaceholder.typicode.com/posts:
+~~~~
+  var post = new Post
+    {
+      Id = 1,
+      UserId = 1,
+      Title = "New title",
+      Body = "New body"
+    };
+
+    apiRepository.Create(post);
+~~~~
+To PUT https://jsonplaceholder.typicode.com/posts/1:
+~~~~
+  apiRepository.Update(post);
+~~~~
+To DELETE https://jsonplaceholder.typicode.com/posts/1:
+~~~~
+  apiRepository.Delete(post);
+~~~~
+To specify GET parameters:
+~~~~
+  var result = apiRepository
+    .SetParameter("UserId", 1)
+    .Find();
 ~~~~
 
 ## How To Use RepositoryFramework.Dapper?
@@ -170,13 +229,21 @@ Queries using a method like this: Find($"where col = {formData}") is therefore i
   // To delete an entity:
   categoryRepository.Delete(category);
 
-
   // To get all entities with includes, sorting and paging:
   var result = categoryRepository
     .SortBy(p => p.Name)
     .Page(2, 50)
     .Include("Products"))
     .Find();
+
+  // To read a filtered list using dynamic SQL:
+  var parameters = new Dictionary<string, object>
+  { 
+    { "Id", 123 },
+    { "Name", "MyName" }
+  };
+  result = categoryRepository.Find("EXEC FindCategory @Id, @Name", parameters);
+  result = categoryRepository.Find("SELECT * FROM Category WHERE Id = @Id AND Name = @Name", parameters);
 
   // To expand replated objects, you have to override the Find() method:
   public class CategoryRepository : Repository<Category, CategoryFilter>
@@ -258,46 +325,6 @@ Having created the stored procedures, you can pass arguments to them like this:
     .SetParameter("Name", "Some name")
     .Find();
 ~~~~
-
-## How To Use RepositoryFramework.Api?
-To GET https://jsonplaceholder.typicode.com/posts:
-~~~~
-  var apiRepository = new ApiRepository<Post>(
-    new Configuration
-    {
-      AuthenticationType = AuthenticationType.Anonymous
-    }, 
-    "https://jsonplaceholder.typicode.com");
-
-  var result = apiRepository.Find();
-~~~~
-To POST https://jsonplaceholder.typicode.com/posts:
-~~~~
-  var post = new Post
-    {
-      Id = 1,
-      UserId = 1,
-      Title = "New title",
-      Body = "New body"
-    };
-
-    apiRepository.Create(post);
-~~~~
-To PUT https://jsonplaceholder.typicode.com/posts/1:
-~~~~
-  apiRepository.Update(post);
-~~~~
-To DELETE https://jsonplaceholder.typicode.com/posts/1:
-~~~~
-  apiRepository.Delete(post);
-~~~~
-To specify GET parameters:
-~~~~
-  var result = apiRepository
-    .SetParameter("UserId", 1)
-    .Find();
-~~~~
-
 ## How To Use RepositoryFramework.MongoDB
   ~~~~
   // Given this model:

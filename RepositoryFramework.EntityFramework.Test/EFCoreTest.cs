@@ -1,4 +1,5 @@
-﻿using RepositoryFramework.EntityFramework;
+﻿using Microsoft.EntityFrameworkCore;
+using RepositoryFramework.EntityFramework;
 using RepositoryFramework.Test.Models;
 using System;
 using System.Collections.Generic;

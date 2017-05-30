@@ -2403,7 +2403,7 @@
           "lib/netstandard1.3/_._": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.0": {
+      "RepositoryFramework.Interfaces/2.0.2": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
@@ -2508,7 +2508,7 @@
           }
         }
       },
-      "RepositoryFramework.Interfaces/2.0.0": {
+      "RepositoryFramework.Interfaces/2.0.2": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
@@ -7561,7 +7561,7 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "RepositoryFramework.Interfaces/2.0.0": {
+    "RepositoryFramework.Interfaces/2.0.2": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"
@@ -7571,7 +7571,7 @@
     "": [
       "Microsoft.DotNet.InternalAbstractions >= 1.0.500-preview2-1-003177",
       "MongoDB.Driver >= 2.4.3",
-      "RepositoryFramework.Interfaces",
+      "RepositoryFramework.Interfaces >= 2.0.2",
       "System.Linq.Expressions"
     ],
     ".NETCoreApp,Version=v1.1": [

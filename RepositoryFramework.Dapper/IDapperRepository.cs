@@ -11,7 +11,9 @@ namespace RepositoryFramework.Dapper
   public interface IDapperRepository<TEntity> :
     IRepository<TEntity>,
     ISortableRepository<TEntity>,
-    IPageableRepository<TEntity>
+    IPageableRepository<TEntity>,
+    IFindSql<TEntity>,
+    IFindSqlAsync<TEntity>
     where TEntity : class
   {
     /// <summary>

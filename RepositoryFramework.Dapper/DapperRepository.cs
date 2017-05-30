@@ -3,9 +3,11 @@ using RepositoryFramework.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace RepositoryFramework.Dapper
@@ -267,6 +269,48 @@ WHERE {IdPropertyName} IN (@Id)";
     }
 
     /// <summary>
+    /// Filters a collection of entities using a predicate
+    /// </summary>
+    /// <param name="sql">SQL containing named parameter placeholders. For example: SELECT * FROM Customer WHERE Id = @Id</param>
+    /// <param name="parameters">Named parameters</param>
+    /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
+    /// <returns>Filtered collection of entities</returns>
+    public virtual IEnumerable<TEntity> Find(
+      string sql,
+      IDictionary<string, object> parameters = null,
+      string parameterPattern = @"@(\w+)")
+    {
+      if (parameters == null)
+      {
+        parameters = new Dictionary<string, object>();
+      }
+
+      CheckParameters(sql, parameters, parameterPattern);
+      return Connection.Query<TEntity>(GetQuery(sql), ToObject(parameters));
+    }
+
+    /// <summary>
+    /// Filters a collection of entities using a predicate
+    /// </summary>
+    /// <param name="sql">SQL containing named parameter placeholders. For example: SELECT * FROM Customer WHERE Id = @Id</param>
+    /// <param name="parameters">Named parameters</param>
+    /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
+    /// <returns>Filtered collection of entities</returns>
+    public virtual async Task<IEnumerable<TEntity>> FindAsync(
+      string sql, 
+      IDictionary<string, object> parameters = null, 
+      string parameterPattern = "@(\\w+)")
+    {
+      if (parameters == null)
+      {
+        parameters = new Dictionary<string, object>();
+      }
+
+      CheckParameters(sql, parameters, parameterPattern);
+      return await Connection.QueryAsync<TEntity>(GetQuery(sql), ToObject(parameters));
+    }
+
+    /// <summary>
     /// Gets an entity by id.
     /// </summary>
     /// <param name="id">Filter</param>
@@ -465,11 +509,37 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
     }
 
     /// <summary>
+    /// Check SQL parameters
+    /// </summary>
+    /// <param name="sql">SQL containing named parameter placeholders. For example: SELECT * FROM Customer WHERE Id = @Id</param>
+    /// <param name="parameters">Named parameters</param>
+    /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
+    protected virtual void CheckParameters(
+      string sql,
+      IDictionary<string, object> parameters,
+      string parameterPattern)
+    {
+      var placeholders = Regex.Matches(sql, parameterPattern);
+      for (int i = 0; i < placeholders.Count; i++)
+      {
+        var parameterName = Regex.Match(placeholders[i].Value, @"(\w+)").Value;
+        if (!parameters.ContainsKey(parameterName))
+        {
+          throw new ArgumentException($"Value must be specified for parameter \"{parameterName}\"");
+        }
+      }
+    }
+
+    /// <summary>
     /// Gets query string
     /// </summary>
     /// <returns>Query string</returns>
-    protected virtual string GetQuery()
+    protected virtual string GetQuery(string sql = null)
     {
+      if(sql == null)
+      {
+        sql = $"SELECT * FROM {TableName}";
+      }
       var orderBy = string.Empty;
       if (SortOrder != SortOrder.Unspecified
         && !string.IsNullOrWhiteSpace(SortPropertyName))
@@ -485,7 +555,7 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
       }
 
       return $@"
-SELECT * FROM {TableName}
+{sql}
 {orderBy}
 {offset}";
     }

@@ -7,6 +7,7 @@ using RepositoryFramework.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using RepositoryFramework.Interfaces;
+using Microsoft.Data.Sqlite;
 
 namespace RepositoryFramework.Test
 {
@@ -181,7 +182,7 @@ namespace RepositoryFramework.Test
     }
 
     [Fact]
-    public void Combine_Page_Sort_Include()
+    public void Combine_Page_Sort_Include_Find()
     {
       // Create new empty database
       using (var db = new SQLiteContext())
@@ -202,6 +203,36 @@ namespace RepositoryFramework.Test
         // Assert
         Assert.NotNull(pageItems);
         Assert.Equal(40, pageItems.Count());
+      }
+    }
+
+    [Fact]
+    public void Combine_Page_Sort_Include_FindSql()
+    {
+      // Create new empty database
+      using (var db = new SQLiteContext())
+      {
+        // Arrange
+        IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
+        var category = CreateCategory(100);
+        cr.Create(category);
+
+        // Act
+        IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
+        var pageItems = pr
+          .Page(2, 40)
+          .Include("Parts")
+          .SortBy("Name")
+          .Find("SELECT * FROM Product WHERE Id > @Id AND Description <> @Description",
+          new Dictionary<string, object>
+          {
+            { "Description", "XXX" },
+            { "Id", 50 }
+          });
+
+        // Assert
+        Assert.NotNull(pageItems);
+        Assert.Equal(10, pageItems.Count());
       }
     }
 
@@ -252,6 +283,100 @@ namespace RepositoryFramework.Test
         // Assert
         Assert.NotNull(pageItems);
         Assert.Equal(40, pageItems.Count());
+      }
+    }
+
+    [Fact]
+    public void FindSql_No_Parameters()
+    {
+      // Create new empty database
+      using (var db = new SQLiteContext())
+      {
+        // Arrange
+        var cr = new EntityFrameworkRepository<Category>(db);
+        var category = CreateCategory(100);
+        cr.Create(category);
+
+        // Act
+        var pr = new EntityFrameworkRepository<Product>(db);
+        var result = pr.Find("SELECT * FROM Product");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(100, result.Count());
+      }
+    }
+
+    [Fact]
+    public void FindSql_With_Parameters()
+    {
+      // Create new empty database
+      using (var db = new SQLiteContext())
+      {
+        // Arrange
+        var cr = new EntityFrameworkRepository<Category>(db);
+        var category = CreateCategory(100);
+        cr.Create(category);
+
+        // Act
+        var pr = new EntityFrameworkRepository<Product>(db);
+        var result = pr.Find("SELECT * FROM Product WHERE Id > @Id AND Description <> @Description",
+          new Dictionary<string, object>
+          {
+            { "Description", "XXX" },
+            { "Id", 50 }
+          });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(50, result.Count());
+      }
+    }
+
+    [Fact]
+    public void FindSql_With_Parameters_And_Pattern()
+    {
+      // Create new empty database
+      using (var db = new SQLiteContext())
+      {
+        // Arrange
+        var cr = new EntityFrameworkRepository<Category>(db);
+        var category = CreateCategory(100);
+        cr.Create(category);
+
+        // Act
+        var pr = new EntityFrameworkRepository<Product>(db);
+        var result = pr.Find("SELECT * FROM Product WHERE Id > :Id AND Description <> :Description",
+          new Dictionary<string, object>
+          {
+            { "Description", "XXX" },
+            { "Id", 50 }
+          },
+          @":(\w+)");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(50, result.Count());
+      }
+    }
+
+    [Fact]
+    public void FindSql_Wrong_Parameter()
+    {
+      // Create new empty database
+      using (var db = new SQLiteContext())
+      {
+        // Arrange
+        var cr = new EntityFrameworkRepository<Category>(db);
+        var category = CreateCategory(100);
+        cr.Create(category);
+
+        // Act
+        var pr = new EntityFrameworkRepository<Product>(db);
+
+        // Assert
+        Assert.Throws(typeof(ArgumentException), () => pr.Find("SELECT * FROM Product WHERE Id > @Id"));
+        Assert.Throws(typeof(ArgumentException), () => pr.Find("SELECT * FROM Product WHERE Id > @Id", new Dictionary<string, object> { { "Wrong", 1 } }));
       }
     }
 

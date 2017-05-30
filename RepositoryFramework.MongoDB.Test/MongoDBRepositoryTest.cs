@@ -80,7 +80,6 @@ namespace RepositoryFramework.MongoDB.Test
         .Find();
       Assert.True(result.Count() > 0);
 
-      var s = "{ IntTest: 1 }";
       var s = @"{ _id: """ + result.First().TestDocumentId + @""" }";
       var filtered = mongoDBRepository
         .Find(s);
