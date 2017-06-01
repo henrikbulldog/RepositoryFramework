@@ -10,8 +10,9 @@ namespace RepositoryFramework.Interfaces
     where TEntity : class
   {
     /// <summary>
-    /// Automatically save changes when data is modified
+    /// Gets a value indicating whether changes are committed automatically
     /// </summary>
+    /// <remarks>If false, SaveChanges() msut be called before changes are committed</remarks>
     bool AutoCommit { get; }
 
     /// <summary>

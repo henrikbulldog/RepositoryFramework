@@ -44,7 +44,7 @@ namespace RepositoryFramework.EntityFramework
     /// <summary>
     /// Automatically save changes when data is modified
     /// </summary>
-    public bool AutoCommit { get; private set; }
+    public bool AutoCommit { get; set; }
 
     /// <summary>
     /// Gets the database context

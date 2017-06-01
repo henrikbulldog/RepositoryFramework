@@ -13,8 +13,7 @@ namespace RepositoryFramework.Interfaces
     /// <summary>
     /// Wait for the task to complete and rethrow exceptions thrown in another thread
     /// </summary>
-    /// <param name="instance"></param>
-    /// <returns>Current instance</returns>
+    /// <param name="instance">Current instance</param>
     public static void WaitSync(this Task instance)
     {
       Exception exceptionInThread = null;
@@ -30,6 +29,7 @@ namespace RepositoryFramework.Interfaces
           return true;
         });
       }
+
       if (exceptionInThread != null)
       {
         throw exceptionInThread;

@@ -53,7 +53,7 @@ namespace RepositoryFramework.Interfaces
       .ToArray();
 
     /// <summary>
-    /// Gets or sets entity Id property
+    /// Gets entity Id property
     /// </summary>
     protected string IdPropertyName { get; private set; }
 
@@ -180,14 +180,16 @@ namespace RepositoryFramework.Interfaces
     /// <summary>
     /// Convert parameter collection to an object
     /// </summary>
+    /// <param name="parameters">Parameter collection</param>
     /// <returns>Object</returns>
-    protected static object ToObject(IDictionary<string, Object> parameters)
+    protected static object ToObject(IDictionary<string, object> parameters)
     {
-      var dynamicObject = new ExpandoObject() as IDictionary<string, Object>;
+      var dynamicObject = new ExpandoObject() as IDictionary<string, object>;
       foreach (var parameter in parameters)
       {
         dynamicObject.Add(parameter.Key, parameter.Value);
       }
+
       return dynamicObject;
     }
 
@@ -196,11 +198,10 @@ namespace RepositoryFramework.Interfaces
     /// </summary>
     /// <param name="propertyName">Property name</param>
     /// <returns>Property selector expression </returns>
-    public static Expression<Func<TEntity, object>> GetPropertySelector(string propertyName)
+    protected static Expression<Func<TEntity, object>> GetPropertySelector(string propertyName)
     {
       var arg = Expression.Parameter(typeof(TEntity), "x");
       var property = Expression.Property(arg, propertyName);
-      //return the property as object
       var conv = Expression.Convert(property, typeof(object));
       var exp = Expression.Lambda<Func<TEntity, object>>(conv, new ParameterExpression[] { arg });
       return exp;

@@ -17,7 +17,6 @@ namespace RepositoryFramework.Interfaces
     /// <returns>Current instance</returns>
     Task<IRepository<TEntity>> SaveChangesAsync();
 
-
     /// <summary>
     /// Detaches all entites from the repository
     /// <returns>Current instance</returns>

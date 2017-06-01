@@ -6,7 +6,7 @@
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.CodeCoverage": "1.0.2",
     "MongoDB.Driver": "2.4.3",
-    "RepositoryFramework.MongoDB": "1.0.0-*"
+    "RepositoryFramework.MongoDB": "*"
   },
 
   "testRunner": "xunit",

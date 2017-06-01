@@ -14,6 +14,7 @@ namespace RepositoryFramework.Interfaces
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
+    /// <returns>Task</returns>
     Task DeleteManyAsync(IEnumerable<TEntity> entities);
   }
 }

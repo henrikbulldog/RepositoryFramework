@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using RepositoryFramework.Interfaces;
-using RestSharp;
-using System.Reflection;
-using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 using System.IO;
-using RestSharp.Extensions;
+using System.Linq.Expressions;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
+using RepositoryFramework.Interfaces;
 using RestSharp.Authenticators;
+using RestSharp.Extensions;
+using RestSharp;
 
 namespace RepositoryFramework.Api
 {
@@ -63,10 +63,14 @@ namespace RepositoryFramework.Api
     public ApiConfiguration Configuration { get; private set; } = null;
 
     /// <summary>
+    /// Gets parameters
+    /// </summary>
+    public IDictionary<string, object> Parameters { get; private set; } = new Dictionary<string, object>();
+
+    /// <summary>
     /// Gets entity path, for example /posts in https://jsonplaceholder.typicode.com/posts
     /// </summary>
     protected string EntityPath { get; private set; }
-
 
     /// <summary>
     /// Gets default header map
@@ -87,12 +91,6 @@ namespace RepositoryFramework.Api
     {
       get { return DefaultHeaderMap; }
     }
-
-    /// <summary>
-    /// Parameters
-    /// </summary>
-    public IDictionary<string, object> Parameters { get; private set; } = new Dictionary<string, object>();
-
 
     /// <summary>
     /// Clear parameters
@@ -126,6 +124,7 @@ namespace RepositoryFramework.Api
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task CreateAsync(TEntity entity)
     {
       if (entity == null)
@@ -195,6 +194,7 @@ namespace RepositoryFramework.Api
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
+    /// <returns>Task</returns>
     public virtual async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
       if (entities == null)
@@ -266,6 +266,7 @@ namespace RepositoryFramework.Api
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task DeleteAsync(TEntity entity)
     {
       if (entity == null)
@@ -338,6 +339,7 @@ namespace RepositoryFramework.Api
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
+    /// <returns>Task</returns>
     public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities)
     {
       foreach (var entity in entities)
@@ -520,6 +522,7 @@ namespace RepositoryFramework.Api
       {
         Parameters[name] = value;
       }
+
       return this;
     }
 
@@ -536,6 +539,7 @@ namespace RepositoryFramework.Api
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task UpdateAsync(TEntity entity)
     {
       if (entity == null)
@@ -600,6 +604,90 @@ namespace RepositoryFramework.Api
     }
 
     /// <summary>
+    /// Makes the HTTP request (Sync).
+    /// </summary>
+    /// <param name="path">URL path.</param>
+    /// <param name="method">HTTP method.</param>
+    /// <param name="pathParams">Path parameters</param>
+    /// <param name="queryParams">Query parameters.</param>
+    /// <param name="postBody">HTTP body (POST request).</param>
+    /// <param name="headerParams">Header parameters.</param>
+    /// <param name="formParams">Form parameters.</param>
+    /// <param name="fileParams">File parameters.</param>
+    /// <returns>Object</returns>
+    public Task<IRestResponse> CallApiAsync(string path,
+      RestSharp.Method method,
+      Dictionary<string, string> pathParams,
+      Dictionary<string, string> queryParams,
+      string postBody,
+      Dictionary<string, string> headerParams,
+      Dictionary<string, string> formParams,
+      Dictionary<string, FileParameter> fileParams)
+    {
+      var request = new RestRequest(path, method);
+
+      UpdateParamsForAuth(headerParams);
+
+      // add default header, if any
+      foreach (var defaultHeader in DefaultHeaderMap)
+      {
+        request.AddHeader(defaultHeader.Key, defaultHeader.Value);
+      }
+
+      // add header parameter, if any
+      foreach (var param in headerParams)
+      {
+        request.AddHeader(param.Key, param.Value);
+      }
+
+      // add path parameter, if any
+      foreach (var param in pathParams)
+      {
+        request.AddParameter(param.Key, param.Value, ParameterType.UrlSegment);
+      }
+
+      // add query parameter, if any
+      foreach (var param in queryParams)
+      {
+        request.AddParameter(param.Key, param.Value, ParameterType.GetOrPost);
+      }
+
+      // add form parameter, if any
+      foreach (var param in formParams)
+      {
+        request.AddParameter(param.Key, param.Value, ParameterType.GetOrPost);
+      }
+
+      // add file parameter, if any
+      foreach (var param in fileParams)
+      {
+#if NET452
+        request.AddFile(
+        param.Value.Name,
+        param.Value.Writer,
+        param.Value.FileName,
+        param.Value.ContentType);
+#else
+        request.AddFile(
+          param.Value.Name,
+          param.Value.Writer,
+          param.Value.FileName,
+          param.Value.ContentLength,
+          param.Value.ContentType);
+#endif
+      }
+
+      // http body (model) parameter
+      if (postBody != null)
+      {
+        request.AddParameter("application/json", postBody, ParameterType.RequestBody);
+      }
+      var taskCompletionSource = new TaskCompletionSource<IRestResponse>();
+      RestClient.ExecuteAsync(request, (response) => taskCompletionSource.SetResult(response));
+      return taskCompletionSource.Task;
+    }
+
+    /// <summary>
     /// Gets path parameters
     /// </summary>
     /// <param name="path">Path</param>
@@ -619,6 +707,7 @@ namespace RepositoryFramework.Api
           }
         }
       }
+
       return pathParameters;
     }
 
@@ -644,6 +733,7 @@ namespace RepositoryFramework.Api
           }
         }
       }
+
       return queryParameters;
     }
 
@@ -943,90 +1033,6 @@ namespace RepositoryFramework.Api
       }
 
       return result;
-    }
-
-    /// <summary>
-    /// Makes the HTTP request (Sync).
-    /// </summary>
-    /// <param name="path">URL path.</param>
-    /// <param name="method">HTTP method.</param>
-    /// <param name="pathParams">Path parameters</param>
-    /// <param name="queryParams">Query parameters.</param>
-    /// <param name="postBody">HTTP body (POST request).</param>
-    /// <param name="headerParams">Header parameters.</param>
-    /// <param name="formParams">Form parameters.</param>
-    /// <param name="fileParams">File parameters.</param>
-    /// <returns>Object</returns>
-    public Task<IRestResponse> CallApiAsync(string path,
-      RestSharp.Method method,
-      Dictionary<string, string> pathParams,
-      Dictionary<string, string> queryParams,
-      string postBody,
-      Dictionary<string, string> headerParams,
-      Dictionary<string, string> formParams,
-      Dictionary<string, FileParameter> fileParams)
-    {
-      var request = new RestRequest(path, method);
-
-      UpdateParamsForAuth(headerParams);
-
-      // add default header, if any
-      foreach (var defaultHeader in DefaultHeaderMap)
-      {
-        request.AddHeader(defaultHeader.Key, defaultHeader.Value);
-      }
-
-      // add header parameter, if any
-      foreach (var param in headerParams)
-      {
-        request.AddHeader(param.Key, param.Value);
-      }
-
-      // add path parameter, if any
-      foreach (var param in pathParams)
-      {
-        request.AddParameter(param.Key, param.Value, ParameterType.UrlSegment);
-      }
-
-      // add query parameter, if any
-      foreach (var param in queryParams)
-      {
-        request.AddParameter(param.Key, param.Value, ParameterType.GetOrPost);
-      }
-
-      // add form parameter, if any
-      foreach (var param in formParams)
-      {
-        request.AddParameter(param.Key, param.Value, ParameterType.GetOrPost);
-      }
-
-      // add file parameter, if any
-      foreach (var param in fileParams)
-      {
-#if NET452
-        request.AddFile(
-        param.Value.Name,
-        param.Value.Writer,
-        param.Value.FileName,
-        param.Value.ContentType);
-#else
-        request.AddFile(
-          param.Value.Name,
-          param.Value.Writer,
-          param.Value.FileName,
-          param.Value.ContentLength,
-          param.Value.ContentType);
-#endif
-      }
-
-      // http body (model) parameter
-      if (postBody != null)
-      {
-        request.AddParameter("application/json", postBody, ParameterType.RequestBody);
-      }
-      var taskCompletionSource = new TaskCompletionSource<IRestResponse>();
-      RestClient.ExecuteAsync(request, (response) => taskCompletionSource.SetResult(response));
-      return taskCompletionSource.Task;
     }
 
     /// <summary>

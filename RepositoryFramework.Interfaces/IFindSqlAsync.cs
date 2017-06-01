@@ -19,7 +19,7 @@ namespace RepositoryFramework.Interfaces
     /// <param name="parameters">Named parameters</param>
     /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
     /// <returns>Filtered collection of entities</returns>
-    Task<IEnumerable<TEntity>>  FindAsync(
+    Task<IEnumerable<TEntity>> FindAsync(
       string sql,
       IDictionary<string, object> parameters = null,
       string parameterPattern = @"@(\w+)");

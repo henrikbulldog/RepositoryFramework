@@ -13,6 +13,7 @@ namespace RepositoryFramework.Interfaces
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     Task DeleteAsync(TEntity entity);
   }
 }

@@ -13,6 +13,7 @@ namespace RepositoryFramework.Interfaces
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     Task CreateAsync(TEntity entity);
   }
 }

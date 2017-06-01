@@ -14,6 +14,7 @@ namespace RepositoryFramework.Interfaces
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
+    /// <returns>Task</returns>
     Task CreateManyAsync(IEnumerable<TEntity> entities);
   }
 }
