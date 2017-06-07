@@ -47,11 +47,6 @@ namespace RepositoryFramework.EntityFramework
     public bool AutoCommit { get; set; }
 
     /// <summary>
-    /// Gets the database context
-    /// </summary>
-    protected virtual DbContext DbContext { get; private set; }
-
-    /// <summary>
     /// Gets a list of reference properties to include
     /// </summary>
     public virtual List<string> Includes { get; private set; } = new List<string>();
@@ -75,6 +70,11 @@ namespace RepositoryFramework.EntityFramework
     /// Gets property name for the property to sort by.
     /// </summary>
     public virtual string SortPropertyName { get; private set; } = null;
+
+    /// <summary>
+    /// Gets the database context
+    /// </summary>
+    protected virtual DbContext DbContext { get; private set; }
 
     /// <summary>
     /// Clear expansion
@@ -359,27 +359,25 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Entity</returns>
     public virtual TEntity GetById(object id)
     {
-      if (string.IsNullOrEmpty(IdPropertyName))
-      {
-        throw new Exception($"Id property must be specified");
-      }
-
       IQueryable<TEntity> query = DbContext.Set<TEntity>();
-
       foreach (var propertyName in Includes)
       {
         query = query.Include(propertyName);
       }
 
-      var p = Expression.Parameter(EntityType);
-      var prop = Expression.Property(p, IdPropertyName);
-      var body = Expression.Equal(prop, Expression.Constant(id, ((PropertyInfo)prop.Member).PropertyType));
-      var exp = Expression.Lambda(body, p);
-      var idCompare = (Func<TEntity, bool>)exp.Compile();
+      if (typeof(TEntity).GetProperty(IdPropertyName, BindingFlags.IgnoreCase |
+          BindingFlags.Public | BindingFlags.Instance) == null)
+      {
+        return null;
+      }
 
-      return query
-        .Where(idCompare)
-        .SingleOrDefault();
+      ParameterExpression parameter = Expression.Parameter(typeof(TEntity), "item");
+      Expression whereProperty = Expression.Property(parameter, IdPropertyName);
+      Expression constant = Expression.Constant(id);
+      var converted = Expression.Convert(constant, whereProperty.Type);
+      Expression condition = Expression.Equal(whereProperty, converted);
+      Expression<Func<TEntity, bool>> lambda = Expression.Lambda<Func<TEntity, bool>>(condition, parameter);
+      return query.SingleOrDefault(lambda);
     }
 
     /// <summary>

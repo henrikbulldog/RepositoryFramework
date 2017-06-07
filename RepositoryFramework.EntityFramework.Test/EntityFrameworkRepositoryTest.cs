@@ -8,11 +8,19 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using RepositoryFramework.Interfaces;
 using Microsoft.Data.Sqlite;
+using Xunit.Abstractions;
+using System.Reflection;
+using System.Linq.Expressions;
 
 namespace RepositoryFramework.Test
 {
-  public class EntityFrameworkRepositoryTest
+  public class EntityFrameworkRepositoryTest : TestLogger
   {
+    public EntityFrameworkRepositoryTest(ITestOutputHelper output)
+      :base(output)
+    {
+    }
+
     [Theory]
     [InlineData("", 100, 0, 0)]
     [InlineData("Products", 100, 100, 0)]
@@ -240,7 +248,7 @@ namespace RepositoryFramework.Test
     public void FindWhere()
     {
       // Create new empty database
-      using (var db = new SQLiteContext())
+      using (var db = new SQLiteContext(this))
       {
         // Arrange
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
@@ -251,6 +259,8 @@ namespace RepositoryFramework.Test
         IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
         var pageItems = pr
           .Include("Parts")
+          .SortBy(p => p.Name)
+          .Page(1, 100)
           .Find(p => p.Id > 50);
 
         // Assert
@@ -263,7 +273,7 @@ namespace RepositoryFramework.Test
     public void AsQueryable()
     {
       // Create new empty database
-      using (var db = new SQLiteContext())
+      using (var db = new SQLiteContext(this))
       {
         // Arrange
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
@@ -271,7 +281,7 @@ namespace RepositoryFramework.Test
         cr.Create(category);
 
         // Act
-        IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
+        EntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
         var pageItems = pr
           .AsQueryable()
           .Where(p => p.Id > 1)
@@ -409,7 +419,7 @@ namespace RepositoryFramework.Test
     public void GetById()
     {
       // Create new empty database
-      using (var db = new SQLiteContext())
+      using (var db = new SQLiteContext(this))
       {
         // Arrange
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
@@ -417,13 +427,17 @@ namespace RepositoryFramework.Test
         cr.Create(category);
 
         // Act
-        IEntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
-
-        var products = pr.Find(p => p.Id == 1);
-        var product = pr.GetById(1);
+        EntityFrameworkRepository<Product> pr = new EntityFrameworkRepository<Product>(db);
+        var product = pr
+          .Include(p => p.Category)
+          .Include(p => p.Parts)
+          .GetById(1);
 
         // Assert
         Assert.NotNull(product);
+        Assert.Equal(1, product.Id);
+        Assert.NotNull(product.Category);
+        Assert.NotNull(product.Parts);
       }
     }
 

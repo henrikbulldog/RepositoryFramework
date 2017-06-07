@@ -1,7 +1,7 @@
 {
   "title": "RepositoryFramework.EntityFramework",
   "description": "A repository framework for Entity Framework Core",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "authors": [ "Henrik Thomsen" ],
   "packOptions": {
     "projectUrl": "https://github.com/henrikbulldog/RepositoryFramework",
