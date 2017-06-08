@@ -332,7 +332,7 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="where">Where predicate</param>
     /// <returns>Filtered collection of entities</returns>
-    public virtual IEnumerable<TEntity> Find(Func<TEntity, bool> where)
+    public virtual IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> where)
     {
       return GetQuery()
         .Where(where)
@@ -344,12 +344,11 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="where">Where predicate</param>
     /// <returns>Filtered collection of entities</returns>
-    public virtual async Task<IEnumerable<TEntity>> FindAsync(Func<TEntity, bool> where)
+    public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> where)
     {
-      return await Task.Run(() => GetQuery()
+      return await GetQuery()
         .Where(where)
-        // ToListAsync() not supported after call to Where()
-        .ToList());
+        .ToListAsync();
     }
 
     /// <summary>

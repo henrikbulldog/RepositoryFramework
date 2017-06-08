@@ -248,7 +248,7 @@ namespace RepositoryFramework.Test
     public void FindWhere()
     {
       // Create new empty database
-      using (var db = new SQLiteContext(this))
+      using (var db = new SQLiteContext())
       {
         // Arrange
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
@@ -269,11 +269,16 @@ namespace RepositoryFramework.Test
       }
     }
 
+    private static Expression<Func<T, bool>> FuncToExpression<T>(Func<T, bool> f)
+    {
+      return x => f(x);
+    }
+
     [Fact]
     public void AsQueryable()
     {
       // Create new empty database
-      using (var db = new SQLiteContext(this))
+      using (var db = new SQLiteContext())
       {
         // Arrange
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);
@@ -419,7 +424,7 @@ namespace RepositoryFramework.Test
     public void GetById()
     {
       // Create new empty database
-      using (var db = new SQLiteContext(this))
+      using (var db = new SQLiteContext())
       {
         // Arrange
         IEntityFrameworkRepository<Category> cr = new EntityFrameworkRepository<Category>(db);

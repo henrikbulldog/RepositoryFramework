@@ -2883,7 +2883,7 @@
           "netcoreapp1.1/RepositoryFramework.Api.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.2": {
+      "RepositoryFramework.Interfaces/2.0.3": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
@@ -3327,7 +3327,7 @@
           "net452/RepositoryFramework.Api.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.2": {
+      "RepositoryFramework.Interfaces/2.0.3": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
@@ -9214,7 +9214,7 @@
       "path": "../RepositoryFramework.Api/project.json",
       "msbuildProject": "../RepositoryFramework.Api/RepositoryFramework.Api.xproj"
     },
-    "RepositoryFramework.Interfaces/2.0.2": {
+    "RepositoryFramework.Interfaces/2.0.3": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"

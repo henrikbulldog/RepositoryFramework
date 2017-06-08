@@ -215,7 +215,7 @@ namespace RepositoryFramework.MongoDB
     /// </summary>
     /// <param name="where">Where predicate</param>
     /// <returns>Filtered collection of entities</returns>
-    public IEnumerable<TEntity> Find(Func<TEntity, bool> where)
+    public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> where)
     {
       return AsQueryable().Where(where).ToList();
     }
@@ -225,7 +225,7 @@ namespace RepositoryFramework.MongoDB
     /// </summary>
     /// <param name="where">Where predicate</param>
     /// <returns>Filtered collection of entities</returns>
-    public virtual async Task<IEnumerable<TEntity>> FindAsync(Func<TEntity, bool> where)
+    public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> where)
     {
       return await Task.Run(() => AsQueryable().Where(where).ToList());
     }

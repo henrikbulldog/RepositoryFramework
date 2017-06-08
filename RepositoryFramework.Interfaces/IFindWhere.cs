@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace RepositoryFramework.Interfaces
@@ -17,6 +18,6 @@ namespace RepositoryFramework.Interfaces
     /// </summary>
     /// <param name="where">Where predicate</param>
     /// <returns>Filtered collection of entities</returns>
-    IEnumerable<TEntity> Find(Func<TEntity, bool> where);
+    IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> where);
   }
 }

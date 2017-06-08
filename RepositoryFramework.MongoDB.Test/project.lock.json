@@ -3000,7 +3000,7 @@
           "lib/netstandard1.1/xunit.runner.utility.dotnet.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.2": {
+      "RepositoryFramework.Interfaces/2.0.3": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
@@ -3016,14 +3016,14 @@
           "netcoreapp1.1/RepositoryFramework.Interfaces.dll": {}
         }
       },
-      "RepositoryFramework.MongoDB/2.0.3": {
+      "RepositoryFramework.MongoDB/2.0.4": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
           "Microsoft.DotNet.InternalAbstractions": "1.0.500-preview2-1-003177",
           "Microsoft.NETCore.App": "1.1.0",
           "MongoDB.Driver": "2.4.3",
-          "RepositoryFramework.Interfaces": "2.0.2",
+          "RepositoryFramework.Interfaces": "2.0.3",
           "System.Linq.Expressions": "1.0.0"
         },
         "compile": {
@@ -3533,7 +3533,7 @@
           "lib/net45/xunit.runner.utility.desktop.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.2": {
+      "RepositoryFramework.Interfaces/2.0.3": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
@@ -3546,13 +3546,13 @@
           "net452/RepositoryFramework.Interfaces.dll": {}
         }
       },
-      "RepositoryFramework.MongoDB/2.0.3": {
+      "RepositoryFramework.MongoDB/2.0.4": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
           "Microsoft.DotNet.InternalAbstractions": "1.0.500-preview2-1-003177",
           "MongoDB.Driver": "2.4.3",
-          "RepositoryFramework.Interfaces": "2.0.2",
+          "RepositoryFramework.Interfaces": "2.0.3",
           "System.Linq.Expressions": "1.0.0"
         },
         "compile": {
@@ -9622,12 +9622,12 @@
         "xunit.runner.utility.nuspec"
       ]
     },
-    "RepositoryFramework.Interfaces/2.0.2": {
+    "RepositoryFramework.Interfaces/2.0.3": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"
     },
-    "RepositoryFramework.MongoDB/2.0.3": {
+    "RepositoryFramework.MongoDB/2.0.4": {
       "type": "project",
       "path": "../RepositoryFramework.MongoDB/project.json",
       "msbuildProject": "../RepositoryFramework.MongoDB/RepositoryFramework.MongoDB.xproj"
