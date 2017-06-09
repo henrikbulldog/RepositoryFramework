@@ -4,9 +4,9 @@ using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 using Dapper;
 using RepositoryFramework.Interfaces;
-using System.Threading.Tasks;
 
 namespace RepositoryFramework.Dapper
 {
@@ -14,8 +14,8 @@ namespace RepositoryFramework.Dapper
   /// A Dapper repository using stored procedures
   /// </summary>
   /// <typeparam name="TEntity">Entity type</typeparam>
-  public class StoredProcedureDapperRepository<TEntity> : 
-    GenericRepositoryBase<TEntity>, 
+  public class StoredProcedureDapperRepository<TEntity> :
+    GenericRepositoryBase<TEntity>,
     IStoredProcedureDapperRepository<TEntity>
     where TEntity : class
   {
@@ -33,7 +33,7 @@ namespace RepositoryFramework.Dapper
     }
 
     /// <summary>
-    /// Parameters
+    /// Gets parameters
     /// </summary>
     public IDictionary<string, object> Parameters { get; private set; } = new Dictionary<string, object>();
 
@@ -74,6 +74,7 @@ namespace RepositoryFramework.Dapper
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task CreateAsync(TEntity entity)
     {
       if (Connection.State != ConnectionState.Open)
@@ -108,6 +109,7 @@ namespace RepositoryFramework.Dapper
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
+    /// <returns>Task</returns>
     public virtual async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
       if (Connection.State != ConnectionState.Open)
@@ -137,6 +139,7 @@ namespace RepositoryFramework.Dapper
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task DeleteAsync(TEntity entity)
     {
       if (Connection.State != ConnectionState.Open)
@@ -162,6 +165,7 @@ namespace RepositoryFramework.Dapper
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
+    /// <returns>Task</returns>
     public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities)
     {
       if (Connection.State != ConnectionState.Open)
@@ -170,7 +174,7 @@ namespace RepositoryFramework.Dapper
       }
 
       await Connection.ExecuteAsync(
-        $@"EXEC Delete{EntityTypeName} @{IdPropertyName}", 
+        $@"EXEC Delete{EntityTypeName} @{IdPropertyName}",
         entities);
     }
 
@@ -187,6 +191,7 @@ namespace RepositoryFramework.Dapper
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task UpdateAsync(TEntity entity)
     {
       if (Connection.State != ConnectionState.Open)
@@ -299,6 +304,7 @@ namespace RepositoryFramework.Dapper
       {
         Parameters[name] = value;
       }
+
       return this;
     }
   }

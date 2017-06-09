@@ -1,16 +1,13 @@
-﻿using RepositoryFramework.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
+using RepositoryFramework.Interfaces;
 
 namespace RepositoryFramework.MongoDB
 {
   /// <summary>
   /// Repository that uses the MongoDB document database, see https://docs.mongodb.com/
   /// </summary>
-  /// <typeparam name="TEntity"></typeparam>
+  /// <typeparam name="TEntity">Entity type</typeparam>
   public interface IMongoDBRepository<TEntity> :
     IRepository<TEntity>,
     ISortableRepository<TEntity>,

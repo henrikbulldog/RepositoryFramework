@@ -1,26 +1,27 @@
-﻿using Dapper;
-using RepositoryFramework.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Dapper;
+using RepositoryFramework.Interfaces;
 
 namespace RepositoryFramework.Dapper
 {
   /// <summary>
   /// Repository that uses the Dapper micro-ORM framework, see https://github.com/StackExchange/Dapper
   /// </summary>
-  /// <typeparam name="TEntity"></typeparam>
+  /// <typeparam name="TEntity">Entity type</typeparam>
   public class DapperRepository<TEntity> :
     GenericRepositoryBase<TEntity>,
     IDapperRepository<TEntity>
     where TEntity : class
   {
+    private IDbConnection connection;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="DapperRepository{TEntity}"/> class
     /// </summary>
@@ -51,8 +52,6 @@ namespace RepositoryFramework.Dapper
       LastRowIdCommand = lastRowIdCommand;
       LimitOffsetPattern = limitOffsetPattern;
     }
-
-    private IDbConnection connection;
 
     /// <summary>
     /// Gets number of items per page (when paging is used)
@@ -85,6 +84,7 @@ namespace RepositoryFramework.Dapper
         {
           connection.Open();
         }
+
         return connection;
       }
 
@@ -162,6 +162,7 @@ namespace RepositoryFramework.Dapper
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task CreateAsync(TEntity entity)
     {
       var insertColumns = EntityColumns.Where(c => c != IdPropertyName);
@@ -189,6 +190,7 @@ VALUES (@{string.Join(",@", insertColumns)});
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
+    /// <returns>Task</returns>
     public virtual async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
       var insertColumns = EntityColumns.Where(c => c != IdPropertyName);
@@ -213,6 +215,7 @@ VALUES (@{string.Join(",@", insertColumns)})";
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task DeleteAsync(TEntity entity)
     {
       var deleteQCommand = $@"
@@ -235,6 +238,7 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
+    /// <returns>Task</returns>
     public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities)
     {
       var deleteCommand = $@"
@@ -297,8 +301,8 @@ WHERE {IdPropertyName} IN (@Id)";
     /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
     /// <returns>Filtered collection of entities</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync(
-      string sql, 
-      IDictionary<string, object> parameters = null, 
+      string sql,
+      IDictionary<string, object> parameters = null,
       string parameterPattern = "@(\\w+)")
     {
       if (parameters == null)
@@ -490,6 +494,7 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task UpdateAsync(TEntity entity)
     {
       if (Connection.State != ConnectionState.Open)
@@ -533,13 +538,15 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
     /// <summary>
     /// Gets query string
     /// </summary>
+    /// <param name="sql">SQL statement</param>
     /// <returns>Query string</returns>
     protected virtual string GetQuery(string sql = null)
     {
-      if(sql == null)
+      if (sql == null)
       {
         sql = $"SELECT * FROM {TableName}";
       }
+
       var orderBy = string.Empty;
       if (SortOrder != SortOrder.Unspecified
         && !string.IsNullOrWhiteSpace(SortPropertyName))

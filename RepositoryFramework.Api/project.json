@@ -10,7 +10,7 @@
 
   "dependencies": {
     "Newtonsoft.Json": "9.0.2-beta2",
-    "RepositoryFramework.Interfaces": "2.0.2",
+    "RepositoryFramework.Interfaces": "2.0.3",
     "StyleCop.Analyzers": {
       "version": "1.0.0",
       "type": "build"

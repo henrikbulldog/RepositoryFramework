@@ -2873,7 +2873,7 @@
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
           "Newtonsoft.Json": "9.0.2-beta2",
-          "RepositoryFramework.Interfaces": "2.0.2",
+          "RepositoryFramework.Interfaces": "2.0.3",
           "RestSharp.NetCore": "105.2.3"
         },
         "compile": {
@@ -3317,7 +3317,7 @@
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
           "Newtonsoft.Json": "9.0.2-beta2",
-          "RepositoryFramework.Interfaces": "2.0.2",
+          "RepositoryFramework.Interfaces": "2.0.3",
           "RestSharp": "105.2.3"
         },
         "compile": {

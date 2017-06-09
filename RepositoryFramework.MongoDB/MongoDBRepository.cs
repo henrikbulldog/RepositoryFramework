@@ -2,25 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
-using RepositoryFramework.Interfaces;
-using MongoDB.Driver;
-using MongoDB.Bson.Serialization;
 using System.Reflection;
+using System.Threading.Tasks;
+using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
+using RepositoryFramework.Interfaces;
 
 namespace RepositoryFramework.MongoDB
 {
   /// <summary>
   /// Repository that uses the MongoDB document database, see https://docs.mongodb.com/
   /// </summary>
-  /// <typeparam name="TEntity"></typeparam>
+  /// <typeparam name="TEntity">Entity type</typeparam>
   public class MongoDBRepository<TEntity> : GenericRepositoryBase<TEntity>, IMongoDBRepository<TEntity>
     where TEntity : class
   {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Repository{TEntity}"/> class
+    /// Initializes a new instance of the <see cref="MongoDBRepository{TEntity}"/> class
     /// </summary>
-    /// <param name="MongoDB database">Database</param>
+    /// <param name="database">MongoDB Database</param>
     /// <param name="classMapInitializer">Class map initializer</param>
     /// <param name="idProperty">Id property expression</param>
     public MongoDBRepository(
@@ -42,21 +42,17 @@ namespace RepositoryFramework.MongoDB
           }
         }
       }
+
       Collection = database.GetCollection<TEntity>($"{EntityTypeName}Collection");
     }
 
     /// <summary>
-    /// MongoDB collection of entities/>
-    /// </summary>
-    protected virtual IMongoCollection<TEntity> Collection { get; private set; }
-
-    /// <summary>
-    /// Gets number of items per page (when paging is used)
+    /// Gets the number of items per page (when paging is used)
     /// </summary>
     public virtual int PageSize { get; private set; } = 0;
 
     /// <summary>
-    /// Gets page number (one based index)
+    /// Gets the page number (one based index)
     /// </summary>
     public virtual int PageNumber { get; private set; } = 1;
 
@@ -69,6 +65,11 @@ namespace RepositoryFramework.MongoDB
     /// Gets property name for the property to sort by.
     /// </summary>
     public virtual string SortPropertyName { get; private set; } = null;
+
+    /// <summary>
+    /// Gets the MongoDB collection of entities
+    /// </summary>
+    protected virtual IMongoCollection<TEntity> Collection { get; private set; }
 
     /// <summary>
     /// Clear paging
@@ -123,6 +124,7 @@ namespace RepositoryFramework.MongoDB
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task CreateAsync(TEntity entity)
     {
       await Collection.InsertOneAsync(entity);
@@ -141,6 +143,7 @@ namespace RepositoryFramework.MongoDB
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
+    /// <returns>Task</returns>
     public virtual async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
       await Collection.InsertManyAsync(entities);
@@ -161,6 +164,7 @@ namespace RepositoryFramework.MongoDB
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task DeleteAsync(TEntity entity)
     {
       var builder = Builders<TEntity>.Filter;
@@ -171,7 +175,7 @@ namespace RepositoryFramework.MongoDB
     /// <summary>
     /// Delete a list of existing entities
     /// </summary>
-    /// <param name="entities">Entity list</param>
+    /// <param name="list">Entity list</param>
     public virtual void DeleteMany(IEnumerable<TEntity> list)
     {
       var builder = Builders<TEntity>.Filter;
@@ -182,7 +186,8 @@ namespace RepositoryFramework.MongoDB
     /// <summary>
     /// Delete a list of existing entities
     /// </summary>
-    /// <param name="entities">Entity list</param>
+    /// <param name="list">Entity list</param>
+    /// <returns>Task</returns>
     public virtual async Task DeleteManyAsync(IEnumerable<TEntity> list)
     {
       var builder = Builders<TEntity>.Filter;
@@ -193,7 +198,6 @@ namespace RepositoryFramework.MongoDB
     /// <summary>
     /// Finds a list of items using a filter expression
     /// </summary>
-    /// <param name="expr">Filter expression</param>
     /// <returns>List of items</returns>
     public virtual IEnumerable<TEntity> Find()
     {
@@ -203,7 +207,6 @@ namespace RepositoryFramework.MongoDB
     /// <summary>
     /// Finds a list of items using a filter expression
     /// </summary>
-    /// <param name="expr">Filter expression</param>
     /// <returns>List of items</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
@@ -240,6 +243,11 @@ namespace RepositoryFramework.MongoDB
       return ApplyConstraints(Collection.Find(filter)).ToList();
     }
 
+    /// <summary>
+    /// Filters a collection of entities
+    /// </summary>
+    /// <param name="filter">BSON filter definition</param>
+    /// <returns>Filtered collection of entities</returns>
     public async Task<IEnumerable<TEntity>> FindAsync(string filter)
     {
       return await ApplyConstraints(Collection.Find(filter)).ToListAsync();
@@ -378,7 +386,6 @@ namespace RepositoryFramework.MongoDB
       return this;
     }
 
-
     /// <summary>
     /// Sort descending by a property.
     /// </summary>
@@ -423,6 +430,7 @@ namespace RepositoryFramework.MongoDB
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task UpdateAsync(TEntity entity)
     {
       var builder = Builders<TEntity>.Filter;
@@ -454,16 +462,19 @@ namespace RepositoryFramework.MongoDB
       {
         findFluent = findFluent.SortBy(GetPropertySelector(SortPropertyName));
       }
+
       if (SortOrder == SortOrder.Descending)
       {
         findFluent = findFluent.SortByDescending(GetPropertySelector(SortPropertyName));
       }
+
       if (PageNumber > 1 || PageSize > 0)
       {
         findFluent = findFluent
           .Skip((PageNumber - 1) * PageSize)
           .Limit(PageSize);
       }
+
       return findFluent;
     }
   }

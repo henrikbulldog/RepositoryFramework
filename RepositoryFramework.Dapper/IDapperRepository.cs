@@ -1,13 +1,13 @@
-﻿using RepositoryFramework.Interfaces;
-using System;
+﻿using System;
 using System.Linq.Expressions;
+using RepositoryFramework.Interfaces;
 
 namespace RepositoryFramework.Dapper
 {
   /// <summary>
   /// Repository that uses the Dapper micro-ORM framework, see https://github.com/StackExchange/Dapper
   /// </summary>
-  /// <typeparam name="TEntity"></typeparam>
+  /// <typeparam name="TEntity">Entity type</typeparam>
   public interface IDapperRepository<TEntity> :
     IRepository<TEntity>,
     ISortableRepository<TEntity>,

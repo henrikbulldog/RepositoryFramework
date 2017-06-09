@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using RepositoryFramework.Interfaces;
-using System.Threading.Tasks;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Data.Common;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using RepositoryFramework.Interfaces;
 
 namespace RepositoryFramework.EntityFramework
 {
   /// <summary>
-  /// Repository that uses Entity Framework Core 
+  /// Repository that uses Entity Framework Core
   /// </summary>
   /// <typeparam name="TEntity">Entity type</typeparam>
   public class EntityFrameworkRepository<TEntity> :
@@ -42,7 +41,7 @@ namespace RepositoryFramework.EntityFramework
     }
 
     /// <summary>
-    /// Automatically save changes when data is modified
+    /// Gets or sets a value indicating whether to automatically save changes when data is modified
     /// </summary>
     public bool AutoCommit { get; set; }
 
@@ -157,6 +156,7 @@ namespace RepositoryFramework.EntityFramework
     /// Create a new entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task CreateAsync(TEntity entity)
     {
       if (entity == null)
@@ -193,6 +193,7 @@ namespace RepositoryFramework.EntityFramework
     /// Create a list of new entities
     /// </summary>
     /// <param name="entities">List of entities</param>
+    /// <returns>Task</returns>
     public virtual async Task CreateManyAsync(IEnumerable<TEntity> entities)
     {
       if (entities == null)
@@ -229,6 +230,7 @@ namespace RepositoryFramework.EntityFramework
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task DeleteAsync(TEntity entity)
     {
       if (entity == null)
@@ -265,6 +267,7 @@ namespace RepositoryFramework.EntityFramework
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
+    /// <returns>Task</returns>
     public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities)
     {
       if (entities == null)
@@ -305,11 +308,10 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
     /// <returns>Filtered collection of entities</returns>
     public virtual IEnumerable<TEntity> Find(
-      string sql, 
-      IDictionary<string, object> parameters = null, 
+      string sql,
+      IDictionary<string, object> parameters = null,
       string parameterPattern = @"@(\w+)")
     {
-
       return GetQuery(sql, parameters, parameterPattern)
         .ToList();
     }
@@ -364,8 +366,7 @@ namespace RepositoryFramework.EntityFramework
         query = query.Include(propertyName);
       }
 
-      if (typeof(TEntity).GetProperty(IdPropertyName, BindingFlags.IgnoreCase |
-          BindingFlags.Public | BindingFlags.Instance) == null)
+      if (typeof(TEntity).GetProperty(IdPropertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance) == null)
       {
         return null;
       }
@@ -383,11 +384,17 @@ namespace RepositoryFramework.EntityFramework
     /// Gets an entity by id.
     /// </summary>
     /// <param name="id">Filter to find a single item</param>
+    /// <returns>Task</returns>
     public virtual async Task<TEntity> GetByIdAsync(object id)
     {
       return await Task.Run(() => GetById(id));
     }
 
+    /// <summary>
+    /// Include referenced properties
+    /// </summary>
+    /// <param name="propertyPaths">Comma-separated list of property paths</param>
+    /// <returns>Current instance</returns>
     IExpandableRepository<TEntity> IExpandableRepository<TEntity>.Include(string propertyPaths)
     {
       return Include(propertyPaths);
@@ -417,6 +424,7 @@ namespace RepositoryFramework.EntityFramework
                 propertyPath,
                 EntityTypeName));
           }
+
           if (!Includes.Contains(validatedPropertyPath))
           {
             Includes.Add(validatedPropertyPath);
@@ -619,6 +627,7 @@ namespace RepositoryFramework.EntityFramework
     /// Update an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
+    /// <returns>Task</returns>
     public virtual async Task UpdateAsync(TEntity entity)
     {
       if (entity == null)
@@ -637,6 +646,7 @@ namespace RepositoryFramework.EntityFramework
     /// Persists all changes to the data storage
     /// <returns>Current instance</returns>
     /// </summary>
+    /// <returns>Current instance</returns>
     public virtual IRepository<TEntity> SaveChanges()
     {
       DbContext.SaveChanges();
@@ -647,6 +657,7 @@ namespace RepositoryFramework.EntityFramework
     /// Persists all changes to the data storage
     /// <returns>Current instance</returns>
     /// </summary>
+    /// <returns>Task</returns>
     public virtual async Task<IRepository<TEntity>> SaveChangesAsync()
     {
       await DbContext.SaveChangesAsync();
@@ -657,6 +668,7 @@ namespace RepositoryFramework.EntityFramework
     /// Detaches all entites from the repository
     /// <returns>Current instance</returns>
     /// </summary>
+    /// <returns>Current instance</returns>
     public virtual IRepository<TEntity> DetachAll()
     {
       foreach (var entityEntry in DbContext.ChangeTracker.Entries().ToArray())
@@ -666,6 +678,7 @@ namespace RepositoryFramework.EntityFramework
           entityEntry.State = EntityState.Detached;
         }
       }
+
       return this;
     }
 
@@ -673,6 +686,7 @@ namespace RepositoryFramework.EntityFramework
     /// Detaches all entites from the repository
     /// <returns>Current instance</returns>
     /// </summary>
+    /// <returns>Task</returns>
     public virtual async Task<IRepository<TEntity>> DetachAllAsync()
     {
       Task task = Task.Run(() => DetachAll());
@@ -692,7 +706,7 @@ namespace RepositoryFramework.EntityFramework
     /// <summary>
     /// Gets a collection of entities with sorting, paging and include constraints
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Queryable collection</returns>
     protected virtual IQueryable<TEntity> GetQuery()
     {
       IQueryable<TEntity> query = DbContext.Set<TEntity>();
@@ -714,7 +728,8 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="parameters">Named parameters</param>
     /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
     /// <returns>Queryable collection</returns>
-    protected virtual IQueryable<TEntity> GetQuery(string sql,
+    protected virtual IQueryable<TEntity> GetQuery(
+      string sql,
       IDictionary<string, object> parameters,
       string parameterPattern)
     {

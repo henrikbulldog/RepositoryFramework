@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq.Expressions;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RepositoryFramework.Interfaces;
+using RestSharp;
 using RestSharp.Authenticators;
 using RestSharp.Extensions;
-using RestSharp;
 
 namespace RepositoryFramework.Api
 {
@@ -615,7 +615,8 @@ namespace RepositoryFramework.Api
     /// <param name="formParams">Form parameters.</param>
     /// <param name="fileParams">File parameters.</param>
     /// <returns>Object</returns>
-    public Task<IRestResponse> CallApiAsync(string path,
+    public Task<IRestResponse> CallApiAsync(
+      string path,
       RestSharp.Method method,
       Dictionary<string, string> pathParams,
       Dictionary<string, string> queryParams,
@@ -682,6 +683,7 @@ namespace RepositoryFramework.Api
       {
         request.AddParameter("application/json", postBody, ParameterType.RequestBody);
       }
+
       var taskCompletionSource = new TaskCompletionSource<IRestResponse>();
       RestClient.ExecuteAsync(request, (response) => taskCompletionSource.SetResult(response));
       return taskCompletionSource.Task;

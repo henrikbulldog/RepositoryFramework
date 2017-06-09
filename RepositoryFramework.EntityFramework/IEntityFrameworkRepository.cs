@@ -1,14 +1,11 @@
-﻿using RepositoryFramework.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
+using RepositoryFramework.Interfaces;
 
 namespace RepositoryFramework.EntityFramework
 {
   /// <summary>
-  /// Repository that uses Entity Framework Core 
+  /// Repository that uses Entity Framework Core
   /// </summary>
   /// <typeparam name="TEntity">Entity type</typeparam>
   public interface IEntityFrameworkRepository<TEntity> :
