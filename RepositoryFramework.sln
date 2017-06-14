@@ -18,7 +18,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\MyInstruments\FossAssureGrainAPI\Mainline\global.json = ..\MyInstruments\FossAssureGrainAPI\Mainline\global.json
 		pack.ps1 = pack.ps1
 		README.md = README.md
-		README.v1.md = README.v1.md
 		RULES.ruleset = RULES.ruleset
 		stylecop.json = stylecop.json
 	EndProjectSection
@@ -30,6 +29,14 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.MongoDB.Test", "RepositoryFramework.MongoDB.Test\RepositoryFramework.MongoDB.Test.xproj", "{91A064BE-B208-47AF-9B35-CC1A4E873C40}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.MongoDB", "RepositoryFramework.MongoDB\RepositoryFramework.MongoDB.xproj", "{5E82FF79-D884-408E-B2ED-B8A8F301FE55}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.Azure.Blob", "RepositoryFramework.Azure.Blob\RepositoryFramework.Azure.Blob.xproj", "{7E103FDF-BA13-424D-BB18-0478E0C1C656}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.Azure.Blob.Test", "RepositoryFramework.Azure.Blob.Test\RepositoryFramework.Azure.Blob.Test.xproj", "{96FB9D0E-6D8C-4E8E-8B50-10A6A41C267C}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.AWS.S3", "RepositoryFramework.AWS.S3\RepositoryFramework.AWS.S3.xproj", "{95D9510F-17B5-4AD7-AF49-3970B40F24E1}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.AWS.S3.Test", "RepositoryFramework.AWS.S3.Test\RepositoryFramework.AWS.S3.Test.xproj", "{CD6E4686-D46F-47F9-812D-7C6457431391}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,6 +80,22 @@ Global
 		{5E82FF79-D884-408E-B2ED-B8A8F301FE55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E82FF79-D884-408E-B2ED-B8A8F301FE55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E82FF79-D884-408E-B2ED-B8A8F301FE55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E103FDF-BA13-424D-BB18-0478E0C1C656}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E103FDF-BA13-424D-BB18-0478E0C1C656}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E103FDF-BA13-424D-BB18-0478E0C1C656}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E103FDF-BA13-424D-BB18-0478E0C1C656}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96FB9D0E-6D8C-4E8E-8B50-10A6A41C267C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96FB9D0E-6D8C-4E8E-8B50-10A6A41C267C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96FB9D0E-6D8C-4E8E-8B50-10A6A41C267C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96FB9D0E-6D8C-4E8E-8B50-10A6A41C267C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95D9510F-17B5-4AD7-AF49-3970B40F24E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95D9510F-17B5-4AD7-AF49-3970B40F24E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95D9510F-17B5-4AD7-AF49-3970B40F24E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95D9510F-17B5-4AD7-AF49-3970B40F24E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD6E4686-D46F-47F9-812D-7C6457431391}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD6E4686-D46F-47F9-812D-7C6457431391}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD6E4686-D46F-47F9-812D-7C6457431391}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD6E4686-D46F-47F9-812D-7C6457431391}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

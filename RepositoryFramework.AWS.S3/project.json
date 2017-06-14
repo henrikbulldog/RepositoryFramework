@@ -1,7 +1,7 @@
-{
-  "title": "RepositoryFramework.Api",
-  "description": "A repository framework for ReSTful API clients",
-  "version": "2.0.2",
+﻿{
+  "title": "RepositoryFramework.AWS.S3",
+  "description": "A repository framework for Amazon web Services Simple Storage Service",
+  "version": "1.0.0",
   "authors": [ "Henrik Thomsen" ],
   "packOptions": {
     "projectUrl": "https://github.com/henrikbulldog/RepositoryFramework",
@@ -9,8 +9,8 @@
   },
 
   "dependencies": {
-    "Newtonsoft.Json": "9.0.2-beta2",
     "RepositoryFramework.Interfaces": "2.0.4",
+    "AWSSDK.S3": "3.3.6.3",
     "StyleCop.Analyzers": {
       "version": "1.0.0",
       "type": "build"
@@ -27,15 +27,9 @@
       "imports": [
         "dotnet5.6",
         "portable-net45+win8"
-      ],
-      "dependencies": {
-        "RestSharp.NetCore": "105.2.3"
-      }
+      ]
     },
     "net452": {
-      "dependencies": {
-        "RestSharp": "105.2.3"
-      }
     }
   }
 }

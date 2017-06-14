@@ -1,7 +1,7 @@
-{
-  "title": "RepositoryFramework.Api",
-  "description": "A repository framework for ReSTful API clients",
-  "version": "2.0.2",
+﻿{
+  "title": "RepositoryFramework.Azure.Blob",
+  "description": "A repository framework for Microsoft Azure Blob Storage",
+  "version": "1.0.0",
   "authors": [ "Henrik Thomsen" ],
   "packOptions": {
     "projectUrl": "https://github.com/henrikbulldog/RepositoryFramework",
@@ -9,7 +9,7 @@
   },
 
   "dependencies": {
-    "Newtonsoft.Json": "9.0.2-beta2",
+    "WindowsAzure.Storage": "8.1.3",
     "RepositoryFramework.Interfaces": "2.0.4",
     "StyleCop.Analyzers": {
       "version": "1.0.0",
@@ -27,15 +27,9 @@
       "imports": [
         "dotnet5.6",
         "portable-net45+win8"
-      ],
-      "dependencies": {
-        "RestSharp.NetCore": "105.2.3"
-      }
+      ]
     },
     "net452": {
-      "dependencies": {
-        "RestSharp": "105.2.3"
-      }
     }
   }
 }

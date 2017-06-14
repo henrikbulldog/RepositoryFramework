@@ -16,44 +16,51 @@ These methods are common to all repositories:
 * GetById() - Get an entity from its id
 * Find() - Get a collection of entities
 
-Currently there are 4 implementations of the interfaces in separate packages on NuGet.org:
+Currently there are 6 implementations of the interfaces in separate packages on NuGet.org:
 
 * RepositoryFramework.EntityFramework
   * Data access against a relational database using Entity Framework Core, see https://docs.microsoft.com/en-us/ef/core/
-  * Generic repository EntityFramworkRepository
-    * Additional methods:
-      * Page() - Skip and limit result of Find()
-      * SortBy() / SortBydescending() - Sort result of Find()
-      * Include() - Include related entites to result of Find()
-      * Find(Expression<Func<TEntity, bool>>) - Find with where expression
-      * Find(string, IDictionary<string, object>) - Find with dynamic SQL
-      * AsQueryable() - Gets a queryable collection of entities
+  * EntityFramworkRepository additional methods:
+    * Page() - Skip and limit result of Find()
+    * SortBy() / SortBydescending() - Sort result of Find()
+    * Include() - Include related entites to result of Find()
+    * Find(Expression<Func<TEntity, bool>>) - Find with where expression
+    * Find(string, IDictionary<string, object>) - Find with dynamic SQL
+    * AsQueryable() - Gets a queryable collection of entities
+   * [How to use it?](#How.To.Use.RepositoryFramework.EntityFramework)
 * RepositoryFramework.Dapper
   * Data access against a relational database using Dapper micro-ORM, see https://github.com/StackExchange/Dapper
-  * Generic repository DapperRepository
-    * Uses Dapper with dynamic SQL
-      * Addtional methods:
-        * Page() - Skip and limit result of Find()
-        * SortBy() / SortBydescending() - Sort result of Find()
-        * Find(string, IDictionary<string, object>) - Find with dynamic SQL
-  *  Generic repository StoredProcedureDapperRepository
-     * Uses Dapper with stored procedures
-      * Addtional methods:
-        * SetParameter() - set parameters to stored procedures
+  * DapperRepository uses Dapper with dynamic SQL, addtional methods:
+    * Page() - Skip and limit result of Find()
+    * SortBy() / SortBydescending() - Sort result of Find()
+    * Find(string, IDictionary<string, object>) - Find with dynamic SQL
+  * StoredProcedureDapperRepository uses Dapper with stored procedures, addtional methods:
+    * SetParameter() - set parameters to stored procedures
+   * [How to use it?](#How.To.Use.RepositoryFramework.Dapper)
 * RepositoryFramework.Api
   * Data access against a ReSTful API using RestSharp, see http://restsharp.org/
-  * Generic repository ApiRepository   
-    * Additional methods:
-      * SetParameter() - set parameters for API calls
+  * ApiRepository additional methods:
+    * SetParameter() - set parameters for API calls
+   * [How to use it?](#How.To.Use.RepositoryFramework.Api)
 *  RepositoryFramework.MongoDB
-  *  Data access against a No-SQL document database using the MongoDB C# driver, see https://github.com/mongodb/mongo-csharp-driver
-  * Generic repository MongoDBRepository   
-    * Addtional methods:
-      * Page() - Skip and limit result of Find()
-      * SortBy() / SortBydescending() - Sort result of Find()
-      * Find(string) - Find with a BSON filter definition
-      * Find(Expression<Func<TEntity, bool>>) - Find with where expression
-      * AsQueryable() - Gets a queryable collection of entities
+   * Data access against a No-SQL document database using the MongoDB C# driver, see https://github.com/mongodb/mongo-csharp-driver
+   * MongoDBRepository addtional methods:
+     * Page() - Skip and limit result of Find()
+     * SortBy() / SortBydescending() - Sort result of Find()
+     * Find(string) - Find with a BSON filter definition
+     * Find(Expression<Func<TEntity, bool>>) - Find with where expression
+     * AsQueryable() - Gets a queryable collection of entities
+   * [How to use it?](#How.To.Use.RepositoryFramework.MongoDB)
+*  RepositoryFramework.Azure.Blob
+   *  Binary large object storage in Microsoft Azure
+   *  AzureBlobRepository addtional methods:
+      * Find(string) - Filter on folder prefix
+   * [How to use it?](#How.To.Use.RepositoryFramework.Azure.Blob)
+*  RepositoryFramework.AWS.S3
+   *  Binary large object storage in Amazon Simple Storage Service
+   *  AWSS3BlobRepository addtional methods:
+      * Find(string) - Filter on folder prefix
+   * [How to use it?](#How.To.Use.RepositoryFramework.AWS.S3)
 
 ## Why Should I Use This Repository Framework ?
 You should't necessarily. Every tool has its purpose. 
@@ -62,8 +69,8 @@ Don't bother setting up repositories unless you really need them.
 If you are building Microservices as part of a larger enterprise scale solution, streamlining your data access code, through the use of the Repository Framework, might turn out to be a good investment;
 Simply because the code base will be easier to read and navigate.
 
-## How To Use RepositoryFramework.EntityFramework ?
-  ~~~~
+## How To Use RepositoryFramework.EntityFramework ?<a name="How.To.Use.RepositoryFramework.EntityFramework"></a>
+~~~~
   // Given this model:
   public class Category
   {
@@ -118,7 +125,7 @@ Simply because the code base will be easier to read and navigate.
   };
   result = categoryRepository.Find("EXEC FindCategory @Id, @Name", parameters);
   result = categoryRepository.Find("SELECT * FROM Category WHERE Id = @Id AND Name = @Name", parameters);
-  ~~~~
+~~~~
 
 ### Wait, You Shouldn't Expose Queryable Collections from a Repository!
 True in principle, because Linq to SQL implementations are incomplete and differ from one ORM framework to another. 
@@ -139,7 +146,7 @@ If you don't like Linq parameters, inherit from Repository and do your own imple
   }
 ~~~~
 
-## How To Use RepositoryFramework.Api?
+## How To Use RepositoryFramework.Api?<a name="How.To.Use.RepositoryFramework.Api"></a>
 To GET https://jsonplaceholder.typicode.com/posts:
 ~~~~
   var apiRepository = new ApiRepository<Post>(
@@ -188,7 +195,7 @@ To specify GET parameters:
     .Find();
 ~~~~
 
-## How To Use RepositoryFramework.Dapper?
+## How To Use RepositoryFramework.Dapper?<a name="How.To.Use.RepositoryFramework.Dapper"></a>
 The Dapper generic repository does not support SQL injection since it not considered safe, see https://www.owasp.org/index.php/SQL_Injection. 
 Queries using a method like this: Find($"where col = {formData}") is therefore intentionally opted out. To support queries, inherit the generic repository and pass forms data as parameters.
 
@@ -291,7 +298,7 @@ OUTER LEFT JOIN Product p ON p.CategoryId = c.Id";
       return currentCategory;
     }
   }
-  ~~~~
+~~~~
 
 ### Wait, You Should Only Have One Language Per File!
 I agree. So I made StoredProcedureDapperRepository. This allows you to put all your SQL in the database and use stored procedures as an abstraction layer to SQL (and SQL dialects!).
@@ -325,8 +332,8 @@ Having created the stored procedures, you can pass arguments to them like this:
     .SetParameter("Name", "Some name")
     .Find();
 ~~~~
-## How To Use RepositoryFramework.MongoDB
-  ~~~~
+## How To Use RepositoryFramework.MongoDB ?<a name="How.To.Use.RepositoryFramework.MongoDB"></a>
+~~~~
   // Given this model:
   public class TestDocument
   {
@@ -367,4 +374,70 @@ Having created the stored procedures, you can pass arguments to them like this:
   // To filter using a BSON filter definition:
   var result = categoryRepository
     .Find("{ IntTest: 1 }");
-  ~~~~
+~~~~
+
+## How To Use RepositoryFramework.Azure.Blob ?<a name="How.To.Use.RepositoryFramework.Azure.Blob"></a>
+~~~~
+  // To create a blob repository:
+  CloudStorageAccount storageAccount = CloudStorageAccount.Parse("Specify connection string");
+  CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+  var container = blobClient.GetContainerReference("data");
+  // Specify container and where to put downloaded files:
+  var blobRepository = new AzureBlobRepository<FileBlob>(
+    container,
+    (id, size, uri) => new FileBlob(id, size, uri, @"\DROP"));
+
+  // To upload a file:
+  blobRepository.Create(new FileBlob("myfiles/file.ext"));
+
+  // To download the file to \DROP\myfiles\file.txt:
+  var blob = blobRepository.GetById("myfiles/file.ext");
+
+  // To delete a file:
+  blobRepository.Delete(blob);
+
+  // To list files from folder "myfiles":
+  var result = blobRepository.Find("myfiles/");
+~~~~
+
+## How To Use RepositoryFramework.AWS.S3 ?<a name="How.To.Use.RepositoryFramework.AWS.S3"></a>
+appSettings must contain valid AWS settings (check region):
+~~~~
+"AWS": {
+  "Profile": "local-test-profile",
+  "Region": "eu-central-1"
+}
+~~~~
+An AWS credential file must be present in C:/Users/[user name]/.aws with this content:
+~~~~
+[local-test-profile]
+aws_access_key_id = key
+aws_secret_access_key = key 
+~~~~
+~~~~
+  var options = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json")
+    .Build()
+    .GetAWSOptions();
+  using (s3client = options.CreateServiceClient<IAmazonS3>())
+  {
+    // Specify S3 cient, bucket name and where to put downloaded files:
+    var s3Repository = new S3Repository<MemoryBlob>(
+      s3client, 
+      "a valid bucket name",
+      (id, size, uri) => new FileBlob(id, size, uri, @"\DROP"));
+
+    // To upload a file:
+    s3Repository.Create(new FileBlob("myfiles/file.ext"));
+
+    // To download the file to \DROP\myfiles\file.txt:
+    var blob = s3Repository.GetById("myfiles/file.ext");
+
+    // To delete a file:
+    s3Repository.Delete(blob);
+
+    // To list files from folder "myfiles":
+    var result = s3Repository.Find("myfiles/");
+  }
+~~~~

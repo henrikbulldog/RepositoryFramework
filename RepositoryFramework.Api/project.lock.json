@@ -588,26 +588,26 @@
           "lib/netstandard1.3/System.IO.Compression.ZipFile.dll": {}
         }
       },
-      "System.IO.FileSystem/4.0.1": {
+      "System.IO.FileSystem/4.3.0": {
         "type": "package",
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.NETCore.Targets": "1.0.1",
-          "System.IO": "4.1.0",
-          "System.IO.FileSystem.Primitives": "4.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Runtime.Handles": "4.0.1",
-          "System.Text.Encoding": "4.0.11",
-          "System.Threading.Tasks": "4.0.11"
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.NETCore.Targets": "1.1.0",
+          "System.IO": "4.3.0",
+          "System.IO.FileSystem.Primitives": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Handles": "4.3.0",
+          "System.Text.Encoding": "4.3.0",
+          "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
           "ref/netstandard1.3/System.IO.FileSystem.dll": {}
         }
       },
-      "System.IO.FileSystem.Primitives/4.0.1": {
+      "System.IO.FileSystem.Primitives/4.3.0": {
         "type": "package",
         "dependencies": {
-          "System.Runtime": "4.1.0"
+          "System.Runtime": "4.3.0"
         },
         "compile": {
           "ref/netstandard1.3/System.IO.FileSystem.Primitives.dll": {}
@@ -1001,12 +1001,12 @@
           "lib/portable-net45+win8+wp8+wpa81/_._": {}
         }
       },
-      "System.Runtime.Handles/4.0.1": {
+      "System.Runtime.Handles/4.3.0": {
         "type": "package",
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.NETCore.Targets": "1.0.1",
-          "System.Runtime": "4.1.0"
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.NETCore.Targets": "1.1.0",
+          "System.Runtime": "4.3.0"
         },
         "compile": {
           "ref/netstandard1.3/System.Runtime.Handles.dll": {}
@@ -1523,13 +1523,15 @@
           "lib/netstandard1.3/System.Xml.XmlSerializer.dll": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.3": {
+      "RepositoryFramework.Interfaces/2.0.4": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v1.1",
         "dependencies": {
           "System.Dynamic.Runtime": "1.0.0",
+          "System.IO.FileSystem": "4.3.0",
           "System.Linq.Queryable": "4.0.1",
           "System.Reflection.TypeExtensions": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
           "System.Runtime.InteropServices": "4.1.0"
         },
         "compile": {
@@ -1574,7 +1576,7 @@
           "lib/net45/_._": {}
         }
       },
-      "RepositoryFramework.Interfaces/2.0.3": {
+      "RepositoryFramework.Interfaces/2.0.4": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.2",
         "dependencies": {
@@ -2930,12 +2932,12 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "System.IO.FileSystem/4.0.1": {
-      "sha512": "IBErlVq5jOggAD69bg1t0pJcHaDbJbWNUZTPI96fkYWzwYbN6D9wRHMULLDd9dHsl7C2YsxXL31LMfPI1SWt8w==",
+    "System.IO.FileSystem/4.3.0": {
+      "sha512": "3wEMARTnuio+ulnvi+hkRNROYwa1kylvYahhcLk4HSoVdl+xxTFVeVlYOfLwrDPImGls0mDqbMhrza8qnWPTdA==",
       "type": "package",
-      "path": "System.IO.FileSystem/4.0.1",
+      "path": "System.IO.FileSystem/4.3.0",
       "files": [
-        "System.IO.FileSystem.4.0.1.nupkg.sha512",
+        "System.IO.FileSystem.4.3.0.nupkg.sha512",
         "System.IO.FileSystem.nuspec",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
@@ -2966,12 +2968,12 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "System.IO.FileSystem.Primitives/4.0.1": {
-      "sha512": "kWkKD203JJKxJeE74p8aF8y4Qc9r9WQx4C0cHzHPrY3fv/L/IhWnyCHaFJ3H1QPOH6A93whlQ2vG5nHlBDvzWQ==",
+    "System.IO.FileSystem.Primitives/4.3.0": {
+      "sha512": "6QOb2XFLch7bEc4lIcJH49nJN2HV+OC3fHDgsLVsBVBk3Y4hFAnOBGzJ2lUu7CyDDFo9IBWkSsnbkT6IBwwiMw==",
       "type": "package",
-      "path": "System.IO.FileSystem.Primitives/4.0.1",
+      "path": "System.IO.FileSystem.Primitives/4.3.0",
       "files": [
-        "System.IO.FileSystem.Primitives.4.0.1.nupkg.sha512",
+        "System.IO.FileSystem.Primitives.4.3.0.nupkg.sha512",
         "System.IO.FileSystem.Primitives.nuspec",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
@@ -4190,12 +4192,12 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "System.Runtime.Handles/4.0.1": {
-      "sha512": "nCJvEKguXEvk2ymk1gqj625vVnlK3/xdGzx0vOKicQkoquaTBJTP13AIYkocSUwHCLNBwUbXTqTWGDxBTWpt7g==",
+    "System.Runtime.Handles/4.3.0": {
+      "sha512": "OKiSUN7DmTWeYb3l51A7EYaeNMnvxwE249YtZz7yooT4gOZhmTjIn48KgSsw2k2lYdLgTKNJw/ZIfSElwDRVgg==",
       "type": "package",
-      "path": "System.Runtime.Handles/4.0.1",
+      "path": "System.Runtime.Handles/4.3.0",
       "files": [
-        "System.Runtime.Handles.4.0.1.nupkg.sha512",
+        "System.Runtime.Handles.4.3.0.nupkg.sha512",
         "System.Runtime.Handles.nuspec",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
@@ -5455,7 +5457,7 @@
         "runtimes/aot/lib/netcore50/System.Xml.XmlSerializer.dll"
       ]
     },
-    "RepositoryFramework.Interfaces/2.0.3": {
+    "RepositoryFramework.Interfaces/2.0.4": {
       "type": "project",
       "path": "../RepositoryFramework.Interfaces/project.json",
       "msbuildProject": "../RepositoryFramework.Interfaces/RepositoryFramework.Interfaces.xproj"
@@ -5464,7 +5466,7 @@
   "projectFileDependencyGroups": {
     "": [
       "Newtonsoft.Json >= 9.0.2-beta2",
-      "RepositoryFramework.Interfaces >= 2.0.3",
+      "RepositoryFramework.Interfaces >= 2.0.4",
       "StyleCop.Analyzers >= 1.0.0"
     ],
     ".NETCoreApp,Version=v1.1": [

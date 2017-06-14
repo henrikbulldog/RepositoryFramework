@@ -10,7 +10,7 @@
 
   "dependencies": {
     "Dapper": "1.50.2",
-    "RepositoryFramework.Interfaces": "2.0.3",
+    "RepositoryFramework.Interfaces": "2.0.4",
     "StyleCop.Analyzers": {
       "version": "1.0.0",
       "type": "build"
