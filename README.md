@@ -377,27 +377,75 @@ Having created the stored procedures, you can pass arguments to them like this:
 ~~~~
 
 ## How To Use RepositoryFramework.Azure.Blob ?<a name="How.To.Use.RepositoryFramework.Azure.Blob"></a>
+To create a blob repository:
 ~~~~
-  // To create a blob repository:
   CloudStorageAccount storageAccount = CloudStorageAccount.Parse("Specify connection string");
   CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
   var container = blobClient.GetContainerReference("data");
   // Specify container and where to put downloaded files:
-  var blobRepository = new AzureBlobRepository<FileBlob>(
-    container,
-    (id, size, uri) => new FileBlob(id, size, uri, @"\DROP"));
+  var blobRepository = new AzureBlobRepository(container);
+~~~~
+To upload a file to blob storage:
+~~~~
+  var uploadFolder = Path.Combine(Environment.GetEnvironmentVariable("LOCALAPPDATA"), "Upload");
+  Directory.CreateDirectory(uploadFolder);
+  using (var file = File.CreateText(Path.Combine(uploadFolder, "file1.txt")))
+  {
+    file.WriteLine("payload");
+  }
 
-  // To upload a file:
-  blobRepository.Create(new FileBlob("myfiles/file.ext"));
+  var blob = new BlobInfo("cloudFolder/file1.ext");
+  using (var uploadStream = new FileStream(Path.Combine(uploadFolder, "file1.txt"), FileMode.Open))
+  {
+    blobRepository.Upload(blob, uploadStream);
+  }
 
-  // To download the file to \DROP\myfiles\file.txt:
-  var blob = blobRepository.GetById("myfiles/file.ext");
+~~~~
+To download a file from blob storage:
+~~~~
+  var downloadFolder = Path.Combine(Environment.GetEnvironmentVariable("LOCALAPPDATA"), "Download");
+  Directory.CreateDirectory(downloadFolder);
 
-  // To delete a file:
+  using (var uploadStream = new FileStream(Path.Combine(downloadFolder, "file1.txt"), FileMode.Create))
+  {
+    blobRepository.Download(blob, uploadStream);
+  }
+~~~~
+To delete a blob:
+~~~~
   blobRepository.Delete(blob);
+~~~~
+To list files from folder "cloudFolder":
+~~~~
+  var result = blobRepository.Find("cloudFolder/");
+~~~~
+To upload a blob from an ASP.NET Core web app:
+~~~~
+  [HttpPost]
+  [Route("/files/{fileId}")]
+  public virtual async Task<IActionResult> FilesPayloadPut([FromRoute]string fileId)
+  {
+    await blobRepository.Upload(new BlobInfo(fileId), Request.Body);
+    return Ok();
+  }
+~~~~
+To download a blob from an ASP.NET Core web app:
+~~~~
+  [HttpGet]
+  [Route("/files/{fileId}")]
+  public virtual async Task GetFile([FromRoute]string fileId)
+  {
+    var blob = await blobRepository.GetByIdAsync(fileId);
+    if (blob == null)
+    {
+      Response.StatusCode = 404;
+      return;
+    }
 
-  // To list files from folder "myfiles":
-  var result = blobRepository.Find("myfiles/");
+    Response.Headers.Add("content-type", "application/octet-stream");
+    Response.Headers.Add("content-disposition", $"attachment; filename={fileId}");
+    await blobRepository.DownloadAsync(blob, Response.Body);
+  }
 ~~~~
 
 ## How To Use RepositoryFramework.AWS.S3 ?<a name="How.To.Use.RepositoryFramework.AWS.S3"></a>
@@ -414,6 +462,7 @@ An AWS credential file must be present in C:/Users/[user name]/.aws with this co
 aws_access_key_id = key
 aws_secret_access_key = key 
 ~~~~
+The code must use the configuration:
 ~~~~
   var options = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -423,21 +472,12 @@ aws_secret_access_key = key
   using (s3client = options.CreateServiceClient<IAmazonS3>())
   {
     // Specify S3 cient, bucket name and where to put downloaded files:
-    var s3Repository = new S3Repository<MemoryBlob>(
+    var blobRepository = new S3Repository<MemoryBlob>(
       s3client, 
       "a valid bucket name",
       (id, size, uri) => new FileBlob(id, size, uri, @"\DROP"));
-
-    // To upload a file:
-    s3Repository.Create(new FileBlob("myfiles/file.ext"));
-
-    // To download the file to \DROP\myfiles\file.txt:
-    var blob = s3Repository.GetById("myfiles/file.ext");
-
-    // To delete a file:
-    s3Repository.Delete(blob);
-
-    // To list files from folder "myfiles":
-    var result = s3Repository.Find("myfiles/");
+    
+    // Use the repository
   }
 ~~~~
+The repository is used the same way as [RepositoryFramework.Azure.Blob](#How.To.Use.RepositoryFramework.Azure.Blob)

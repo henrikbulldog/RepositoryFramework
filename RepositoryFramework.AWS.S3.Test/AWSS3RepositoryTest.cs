@@ -10,6 +10,8 @@ using Xunit;
 using Amazon.S3.Model;
 using System.Threading.Tasks;
 using System.Threading;
+using System;
+using System.Text;
 
 namespace RepositoryFramework.Azure.Blob.Test
 {
@@ -31,45 +33,47 @@ namespace RepositoryFramework.Azure.Blob.Test
     private const string bucketName = "foss.enablement.s3";
 
     [Fact]
-    public void Create()
+    public void Upload_And_Download()
     {
       using (var s3client = GetAWSS3Client())
       {
-        var r = new AWSS3Repository<MemoryBlob>(s3client, bucketName);
-        var blob = new MemoryBlob("AWSS3RepositoryTest.Create.ext", "payload");
-        r.Create(blob);
-        r.Delete(blob);
-      }
-    }
+        var r = new AWSS3Repository(s3client, bucketName);
+        var blob = new BlobInfo($"AWSS3RepositoryTest/Upload_And_Download/{Guid.NewGuid()}");
+        var payload = "payload";
+        Upload(blob, payload, r);
+        var result = Download(blob.Id, r);
 
-    [Fact]
-    public void CreateMany()
-    {
-      using (var s3client = GetAWSS3Client())
-      {
-        var r = new AWSS3Repository<MemoryBlob>(s3client, bucketName);
-        var blobs = new List<MemoryBlob>
+        if (!useMockContainer)
         {
-          new MemoryBlob("AWSS3RepositoryTest.CreateMany1.ext", "payload"),
-          new MemoryBlob("AWSS3RepositoryTest.CreateMany2.ext", "payload"),
-          new MemoryBlob("AWSS3RepositoryTest.CreateMany3.ext", "payload")
-        };
-        r.CreateMany(blobs);
-        r.DeleteMany(blobs);
+          Assert.Equal(payload, result);
+        }
+
+        r.Delete(blob);
       }
     }
 
-    [Fact]
-    public void Update()
+    private void Upload(BlobInfo blob, string payload, IBlobRepository repository)
     {
-      using (var s3client = GetAWSS3Client())
+      var uploadBuffer = Encoding.UTF8.GetBytes(payload);
+      using (var uploadStream = new MemoryStream(uploadBuffer))
       {
-        var r = new AWSS3Repository<MemoryBlob>(s3client, bucketName);
-        var blob = new MemoryBlob("AWSS3RepositoryTest.Update.ext", "payload");
-        r.Create(blob);
-        r.Update(blob);
-        r.Delete(blob);
+        repository.Upload(blob, uploadStream);
       }
+    }
+
+    private string Download(string id, IBlobRepository repository)
+    {
+      var blob = repository.GetById(id);
+      if (blob != null && blob.Size > 0)
+      {
+        var downloadBuffer = new byte[blob.Size];
+        using (var downloadStream = new MemoryStream(downloadBuffer))
+        {
+          repository.Download(blob, downloadStream);
+        }
+        return Encoding.UTF8.GetString(downloadBuffer);
+      }
+      return string.Empty;
     }
 
     [Fact]
@@ -77,35 +81,22 @@ namespace RepositoryFramework.Azure.Blob.Test
     {
       using (var s3client = GetAWSS3Client())
       {
-        var r = new AWSS3Repository<MemoryBlob>(s3client, bucketName);
-        var blobs = new List<MemoryBlob>
-        {
-          new MemoryBlob("AWSS3RepositoryTest.Find1.ext", "payload"),
-          new MemoryBlob("folder1/AWSS3RepositoryTest.Find2.ext", "payload"),
-          new MemoryBlob("folder1/AWSS3RepositoryTest.Find3.ext", "payload")
-        };
-        r.CreateMany(blobs);
+        var r = new AWSS3Repository(s3client, bucketName);
+        var blobs = new List<BlobInfo>
+      {
+        new BlobInfo("AWSS3RepositoryTest.Find/file1.ext"),
+        new BlobInfo("AWSS3RepositoryTest.Find/folder1/file2.ext"),
+        new BlobInfo("AWSS3RepositoryTest.Find/folder1/file3.ext")
+      };
+        Upload(blobs[0], "payload1", r);
+        Upload(blobs[1], "payload2", r);
+        Upload(blobs[2], "payload3", r);
         if (!useMockContainer)
         {
-          Assert.Equal(3, r.Find().Count());
-          Assert.Equal(2, r.Find("folder1/").Count());
+          Assert.Equal(3, r.Find("AWSS3RepositoryTest.Find/").Count());
+          Assert.Equal(2, r.Find("AWSS3RepositoryTest.Find/folder1/").Count());
         }
         r.DeleteMany(blobs);
-      }
-    }
-
-    [Fact]
-    public void GetById()
-    {
-      using (var s3client = GetAWSS3Client())
-      {
-        var r = new AWSS3Repository<MemoryBlob>(s3client, bucketName);
-        var id = "AWSS3RepositoryTest.GetById.ext";
-        var blob = new MemoryBlob(id, "payload");
-        r.Create(blob);
-        var result = r.GetById(id);
-        Assert.NotNull(result);
-        r.Delete(result);
       }
     }
 
@@ -114,9 +105,13 @@ namespace RepositoryFramework.Azure.Blob.Test
     {
       using (var s3client = GetAWSS3Client())
       {
-        var r = new AWSS3Repository<MemoryBlob>(s3client, bucketName);
-        var id = "AWSS3RepositoryTest.GetById_Not_Found.ext";
+        var r = new AWSS3Repository(s3client, bucketName);
+        var id = "AzureBlobRepositoryTest.GetById_Not_Found.ext";
         var result = r.GetById(id);
+        if (!useMockContainer)
+        {
+          Assert.Null(result);
+        }
       }
     }
 

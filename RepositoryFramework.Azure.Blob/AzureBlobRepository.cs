@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Blob;
 using RepositoryFramework.Interfaces;
@@ -9,108 +9,26 @@ namespace RepositoryFramework.Azure.Blob
   /// <summary>
   /// Microsoft Azure Blob Storage repository
   /// </summary>
-  /// <typeparam name="TBlob">Blob type</typeparam>
-  public class AzureBlobRepository<TBlob> : IBlobRepository<TBlob>
-    where TBlob : Interfaces.Blob, new()
+  public class AzureBlobRepository : IBlobRepository
   {
-    private CreateBlob createBlob = null;
-
     private CloudBlobContainer container = null;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureBlobRepository{TBlob}" /> class.
+    /// Initializes a new instance of the <see cref="AzureBlobRepository" /> class.
     /// </summary>
     /// <param name="container">Azure Blob Storage conainer</param>
-    /// <param name="createBlob">Method to create new blobs</param>
     public AzureBlobRepository(
-      CloudBlobContainer container,
-      CreateBlob createBlob = null)
+      CloudBlobContainer container)
     {
-      if (createBlob == null)
-      {
-        this.createBlob = (id, size, uri) =>
-        {
-          var b = new TBlob();
-          b.Id = id;
-          b.Size = size;
-          b.Uri = uri;
-          return b;
-        };
-      }
-      else
-      {
-        this.createBlob = createBlob;
-      }
-
       this.container = container;
       container.CreateIfNotExistsAsync().WaitSync();
-    }
-
-    /// <summary>
-    /// Creates a new blob
-    /// </summary>
-    /// <param name="id">Id or name of the object</param>
-    /// <param name="size">Size of the object</param>
-    /// <param name="uri">Uri to access the object</param>
-    /// <returns>New blob instance</returns>
-    public delegate TBlob CreateBlob(string id, long size, Uri uri);
-
-    /// <summary>
-    /// Create a new entity
-    /// </summary>
-    /// <param name="entity">Entity</param>
-    public void Create(TBlob entity)
-    {
-      CreateAsync(entity).WaitSync();
-    }
-
-    /// <summary>
-    /// Create a new entity
-    /// </summary>
-    /// <param name="entity">Entity</param>
-    /// <returns>Task</returns>
-    public async Task CreateAsync(TBlob entity)
-    {
-      CloudBlockBlob blockBlob = container.GetBlockBlobReference(entity.Id);
-      entity.Uri = blockBlob.Uri;
-      using (var stream = entity.CreateUploadStream())
-      {
-        await blockBlob.UploadFromStreamAsync(stream);
-      }
-    }
-
-    /// <summary>
-    /// Create a list of new entities
-    /// </summary>
-    /// <param name="entities">List of entities</param>
-    public void CreateMany(IEnumerable<TBlob> entities)
-    {
-      CreateManyAsync(entities).WaitSync();
-    }
-
-    /// <summary>
-    /// Create a list of new entities
-    /// </summary>
-    /// <param name="entities">List of entities</param>
-    /// <returns>Task</returns>
-    public async Task CreateManyAsync(IEnumerable<TBlob> entities)
-    {
-      foreach (var entity in entities)
-      {
-        CloudBlockBlob blockBlob = container.GetBlockBlobReference(entity.Id);
-        entity.Uri = blockBlob.Uri;
-        using (var stream = entity.CreateUploadStream())
-        {
-          await blockBlob.UploadFromStreamAsync(stream);
-        }
-      }
     }
 
     /// <summary>
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public void Delete(TBlob entity)
+    public void Delete(BlobInfo entity)
     {
       DeleteAsync(entity).WaitSync();
     }
@@ -120,7 +38,7 @@ namespace RepositoryFramework.Azure.Blob
     /// </summary>
     /// <param name="entity">Entity</param>
     /// <returns>Task</returns>
-    public async Task DeleteAsync(TBlob entity)
+    public async Task DeleteAsync(BlobInfo entity)
     {
       CloudBlockBlob blockBlob = container.GetBlockBlobReference(entity.Id);
       await blockBlob.DeleteIfExistsAsync();
@@ -130,7 +48,7 @@ namespace RepositoryFramework.Azure.Blob
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
-    public void DeleteMany(IEnumerable<TBlob> entities)
+    public void DeleteMany(IEnumerable<BlobInfo> entities)
     {
       DeleteManyAsync(entities).WaitSync();
     }
@@ -140,7 +58,7 @@ namespace RepositoryFramework.Azure.Blob
     /// </summary>
     /// <param name="entities">Entity list</param>
     /// <returns>Task</returns>
-    public async Task DeleteManyAsync(IEnumerable<TBlob> entities)
+    public async Task DeleteManyAsync(IEnumerable<BlobInfo> entities)
     {
       foreach (var entity in entities)
       {
@@ -153,7 +71,7 @@ namespace RepositoryFramework.Azure.Blob
     /// Get a list of entities
     /// </summary>
     /// <returns>Query result</returns>
-    public IEnumerable<TBlob> Find()
+    public IEnumerable<Interfaces.BlobInfo> Find()
     {
       var t = FindAsync();
       t.WaitSync();
@@ -164,7 +82,7 @@ namespace RepositoryFramework.Azure.Blob
     /// Get a list of entities
     /// </summary>
     /// <returns>Query result</returns>
-    public async Task<IEnumerable<TBlob>> FindAsync()
+    public async Task<IEnumerable<Interfaces.BlobInfo>> FindAsync()
     {
       return await FindAsync(null);
     }
@@ -174,7 +92,7 @@ namespace RepositoryFramework.Azure.Blob
     /// </summary>
     /// <param name="prefix">Filter objects by prefix</param>
     /// <returns>Filtered collection of entities</returns>
-    public IEnumerable<TBlob> Find(string prefix)
+    public IEnumerable<Interfaces.BlobInfo> Find(string prefix)
     {
       var t = FindAsync(prefix);
       t.WaitSync();
@@ -186,22 +104,26 @@ namespace RepositoryFramework.Azure.Blob
     /// </summary>
     /// <param name="prefix">Filter objects by prefix</param>
     /// <returns>Filtered collection of entities</returns>
-    public async Task<IEnumerable<TBlob>> FindAsync(string prefix)
+    public async Task<IEnumerable<Interfaces.BlobInfo>> FindAsync(string prefix)
     {
       BlobContinuationToken continuationToken = null;
       BlobResultSegment resultSegment = null;
-      var blobs = new List<TBlob>();
+      var blobs = new List<Interfaces.BlobInfo>();
       do
       {
         resultSegment = await container.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.Metadata, null, continuationToken, null, null);
         if (resultSegment != null && resultSegment.Results != null)
         {
-          foreach (var blob in resultSegment.Results)
+          foreach (var cloudBlob in resultSegment.Results)
           {
-            var block = blob as CloudBlockBlob;
+            var block = cloudBlob as CloudBlockBlob;
             if (block != null)
             {
-              blobs.Add(createBlob(block.Name, block.Properties.Length, block.Uri));
+              var blob = new Interfaces.BlobInfo();
+              blob.Id = block.Name;
+              blob.Size = block.Properties.Length;
+              blob.Uri = block.Uri;
+              blobs.Add(blob);
             }
           }
 
@@ -222,7 +144,7 @@ namespace RepositoryFramework.Azure.Blob
     /// </summary>
     /// <param name="id">Filter to find a single item</param>
     /// <returns>Entity</returns>
-    public TBlob GetById(object id)
+    public Interfaces.BlobInfo GetById(object id)
     {
       var t = GetByIdAsync(id);
       t.WaitSync();
@@ -234,18 +156,16 @@ namespace RepositoryFramework.Azure.Blob
     /// </summary>
     /// <param name="id">Filter to find a single item</param>
     /// <returns>Entity</returns>
-    public async Task<TBlob> GetByIdAsync(object id)
+    public async Task<Interfaces.BlobInfo> GetByIdAsync(object id)
     {
       try
       {
         CloudBlockBlob block = container.GetBlockBlobReference(id.ToString());
         await block.FetchAttributesAsync();
-        var blob = createBlob(id.ToString(), block.Properties.Length, block.Uri);
-        using (var stream = blob.CreateDownloadStream())
-        {
-          await block.DownloadToStreamAsync(stream);
-        }
-
+        var blob = new Interfaces.BlobInfo();
+        blob.Id = block.Name;
+        blob.Size = block.Properties.Length;
+        blob.Uri = block.Uri;
         return blob;
       }
       catch
@@ -255,22 +175,59 @@ namespace RepositoryFramework.Azure.Blob
     }
 
     /// <summary>
-    /// Update an existing entity
+    /// Download blob payload
     /// </summary>
-    /// <param name="entity">Entity</param>
-    public void Update(TBlob entity)
+    /// <param name="entity">Blob info entity</param>
+    /// <param name="stream">Download stream</param>
+    public void Download(BlobInfo entity, Stream stream)
     {
-      CreateAsync(entity).WaitSync();
+      DownloadAsync(entity, stream).WaitSync();
     }
 
     /// <summary>
-    /// Update an existing entity
+    /// Download blob payload
     /// </summary>
-    /// <param name="entity">Entity</param>
+    /// <param name="entity">Blob info entity</param>
+    /// <param name="stream">Download stream</param>
     /// <returns>Task</returns>
-    public async Task UpdateAsync(TBlob entity)
+    public async Task DownloadAsync(BlobInfo entity, Stream stream)
     {
-      await CreateAsync(entity);
+      if (entity != null)
+      {
+        CloudBlockBlob block = container.GetBlockBlobReference(entity.Id);
+        if (stream != null)
+        {
+          using (stream)
+          {
+            await block.DownloadToStreamAsync(stream);
+          }
+        }
+      }
+    }
+
+    /// <summary>
+    /// Upload blob
+    /// </summary>
+    /// <param name="entity">Blob info entity</param>
+    /// <param name="stream">Upload stream</param>
+    public void Upload(BlobInfo entity, Stream stream)
+    {
+      UploadAsync(entity, stream).WaitSync();
+    }
+
+    /// <summary>
+    /// Upload blob
+    /// </summary>
+    /// <param name="entity">Blob info entity</param>
+    /// <param name="stream">Upload stream</param>
+    /// <returns>Task</returns>
+    public async Task UploadAsync(BlobInfo entity, Stream stream)
+    {
+      CloudBlockBlob block = container.GetBlockBlobReference(entity.Id);
+      await block.UploadFromStreamAsync(stream);
+      await block.FetchAttributesAsync();
+      entity.Size = block.Properties.Length;
+      entity.Uri = block.Uri;
     }
   }
 }

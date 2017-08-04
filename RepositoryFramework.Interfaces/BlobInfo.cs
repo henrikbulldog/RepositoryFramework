@@ -6,22 +6,22 @@ namespace RepositoryFramework.Interfaces
   /// <summary>
   /// A binary large object
   /// </summary>
-  public class Blob
+  public class BlobInfo
   {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Blob" /> class.
+    /// Initializes a new instance of the <see cref="BlobInfo" /> class.
     /// </summary>
-    public Blob()
+    public BlobInfo()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Blob" /> class.
+    /// Initializes a new instance of the <see cref="BlobInfo" /> class.
     /// </summary>
     /// <param name="id">Id or name of the object</param>
     /// <param name="size">Size of the object</param>
     /// <param name="uri">Uri to access the object</param>
-    public Blob(string id, long size = -1, Uri uri = null)
+    public BlobInfo(string id, long size = -1, Uri uri = null)
     {
       Id = id;
       Size = size;

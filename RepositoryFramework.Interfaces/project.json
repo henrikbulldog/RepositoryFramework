@@ -1,7 +1,7 @@
 {
   "title": "RepositoryFramework.Interfaces",
   "description": "A repository framework",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "authors": [ "Henrik Thomsen" ],
   "packOptions": {
     "projectUrl": "https://github.com/henrikbulldog/RepositoryFramework",

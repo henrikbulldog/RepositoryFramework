@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -15,9 +16,7 @@ namespace RepositoryFramework.AWS.S3
   /// To configure AWS credentials see http://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/net-dg-config-creds.html
   /// To configure the Amazon S3 client in .Net Core see http://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/net-dg-config-netcore.html
   /// </remarks>
-  /// <typeparam name="TBlob">Blob type</typeparam>
-  public class AWSS3Repository<TBlob> : IBlobRepository<TBlob>
-    where TBlob : Blob, new()
+  public class AWSS3Repository : IBlobRepository
   {
     private IAmazonS3 s3client = null;
 
@@ -25,37 +24,16 @@ namespace RepositoryFramework.AWS.S3
 
     private string bucketLocation = string.Empty;
 
-    private CreateBlob createBlob = null;
-
     /// <summary>
-    /// Initializes a new instance of the <see cref="AWSS3Repository{TBlob}" /> class.
+    /// Initializes a new instance of the <see cref="AWSS3Repository" /> class.
     /// </summary>
     /// <param name="s3client">AWS S3 client</param>
     /// <param name="bucketName">Bucket name</param>
-    /// <param name="createBlob">Method to create new blobs</param>
     public AWSS3Repository(
       IAmazonS3 s3client,
-      string bucketName,
-      CreateBlob createBlob = null)
+      string bucketName)
     {
       this.s3client = s3client;
-
-      if (createBlob == null)
-      {
-        this.createBlob = (id, size, uri) =>
-        {
-          var b = new TBlob();
-          b.Id = id;
-          b.Size = size;
-          b.Uri = uri;
-          return b;
-        };
-      }
-      else
-      {
-        this.createBlob = createBlob;
-      }
-
       this.bucketName = bucketName;
       var getBucketLocationTask =
         s3client.GetBucketLocationAsync(new GetBucketLocationRequest
@@ -79,67 +57,10 @@ namespace RepositoryFramework.AWS.S3
     }
 
     /// <summary>
-    /// Creates a new blob
-    /// </summary>
-    /// <param name="id">Id or name of the object</param>
-    /// <param name="size">Size of the object</param>
-    /// <param name="uri">Uri to access the object</param>
-    /// <returns>New blob instance</returns>
-    public delegate TBlob CreateBlob(string id, long size, Uri uri);
-
-    /// <summary>
-    /// Create a new entity
-    /// </summary>
-    /// <param name="entity">Entity</param>
-    public void Create(TBlob entity)
-    {
-      CreateAsync(entity).WaitSync();
-    }
-
-    /// <summary>
-    /// Create a new entity
-    /// </summary>
-    /// <param name="entity">Entity</param>
-    /// <returns>Task</returns>
-    public async Task CreateAsync(TBlob entity)
-    {
-      PutObjectRequest request = new PutObjectRequest()
-      {
-        BucketName = bucketName,
-        Key = entity.Id,
-        InputStream = entity.CreateUploadStream()
-      };
-      await s3client.PutObjectAsync(request);
-      entity.Uri = new Uri($"http://{bucketName}.s3-{bucketLocation}.amazonaws.com/{entity.Id}");
-    }
-
-    /// <summary>
-    /// Create a list of new entities
-    /// </summary>
-    /// <param name="entities">List of entities</param>
-    public void CreateMany(IEnumerable<TBlob> entities)
-    {
-      CreateManyAsync(entities).WaitSync();
-    }
-
-    /// <summary>
-    /// Create a list of new entities
-    /// </summary>
-    /// <param name="entities">List of entities</param>
-    /// <returns>Task</returns>
-    public async Task CreateManyAsync(IEnumerable<TBlob> entities)
-    {
-      foreach (var entity in entities)
-      {
-        await CreateAsync(entity);
-      }
-    }
-
-    /// <summary>
     /// Delete an existing entity
     /// </summary>
     /// <param name="entity">Entity</param>
-    public void Delete(TBlob entity)
+    public void Delete(BlobInfo entity)
     {
       DeleteAsync(entity).WaitSync();
     }
@@ -149,7 +70,7 @@ namespace RepositoryFramework.AWS.S3
     /// </summary>
     /// <param name="entity">Entity</param>
     /// <returns>Task</returns>
-    public async Task DeleteAsync(TBlob entity)
+    public async Task DeleteAsync(BlobInfo entity)
     {
       DeleteObjectRequest deleteObjectRequest =
           new DeleteObjectRequest
@@ -165,7 +86,7 @@ namespace RepositoryFramework.AWS.S3
     /// Delete a list of existing entities
     /// </summary>
     /// <param name="entities">Entity list</param>
-    public void DeleteMany(IEnumerable<TBlob> entities)
+    public void DeleteMany(IEnumerable<BlobInfo> entities)
     {
       DeleteManyAsync(entities).WaitSync();
     }
@@ -175,7 +96,7 @@ namespace RepositoryFramework.AWS.S3
     /// </summary>
     /// <param name="entities">Entity list</param>
     /// <returns>Task</returns>
-    public async Task DeleteManyAsync(IEnumerable<TBlob> entities)
+    public async Task DeleteManyAsync(IEnumerable<BlobInfo> entities)
     {
       DeleteObjectsRequest multiObjectDeleteRequest = new DeleteObjectsRequest();
       multiObjectDeleteRequest.BucketName = bucketName;
@@ -193,7 +114,7 @@ namespace RepositoryFramework.AWS.S3
     /// </summary>
     /// <param name="id">Filter to find a single item</param>
     /// <returns>Entity</returns>
-    public TBlob GetById(object id)
+    public BlobInfo GetById(object id)
     {
       var t = GetByIdAsync(id);
       t.WaitSync();
@@ -205,9 +126,9 @@ namespace RepositoryFramework.AWS.S3
     /// </summary>
     /// <param name="id">Filter to find a single item</param>
     /// <returns>Entity</returns>
-    public async Task<TBlob> GetByIdAsync(object id)
+    public async Task<BlobInfo> GetByIdAsync(object id)
     {
-      var blob = createBlob(
+      var blob = new BlobInfo(
         id.ToString(),
         -1,
         new Uri($"http://{bucketName}.s3-{bucketLocation}.amazonaws.com/{id}"));
@@ -221,17 +142,7 @@ namespace RepositoryFramework.AWS.S3
       try
       {
         GetObjectResponse response = await s3client.GetObjectAsync(request);
-        if (response.ResponseStream != null)
-        {
-          blob.Size = response.ResponseStream.Length;
-          using (var inputStream = response.ResponseStream)
-          {
-            using (var outputStream = blob.CreateDownloadStream())
-            {
-              inputStream.CopyTo(outputStream);
-            }
-          }
-        }
+        blob.Size = response.ContentLength;
       }
       catch
       {
@@ -245,7 +156,7 @@ namespace RepositoryFramework.AWS.S3
     /// Get a list of entities
     /// </summary>
     /// <returns>Query result</returns>
-    public IEnumerable<TBlob> Find()
+    public IEnumerable<BlobInfo> Find()
     {
       var t = FindAsync(null);
       t.WaitSync();
@@ -256,28 +167,9 @@ namespace RepositoryFramework.AWS.S3
     /// Get a list of entities
     /// </summary>
     /// <returns>Query result</returns>
-    public async Task<IEnumerable<TBlob>> FindAsync()
+    public async Task<IEnumerable<BlobInfo>> FindAsync()
     {
       return await FindAsync(null);
-    }
-
-    /// <summary>
-    /// Update an existing entity
-    /// </summary>
-    /// <param name="entity">Entity</param>
-    public void Update(TBlob entity)
-    {
-      Create(entity);
-    }
-
-    /// <summary>
-    /// Update an existing entity
-    /// </summary>
-    /// <param name="entity">Entity</param>
-    /// <returns>Task</returns>
-    public async Task UpdateAsync(TBlob entity)
-    {
-      await CreateAsync(entity);
     }
 
     /// <summary>
@@ -285,7 +177,7 @@ namespace RepositoryFramework.AWS.S3
     /// </summary>
     /// <param name="prefix">Filter objects by prefix</param>
     /// <returns>Filtered collection of entities</returns>
-    public IEnumerable<TBlob> Find(string prefix)
+    public IEnumerable<BlobInfo> Find(string prefix)
     {
       var t = FindAsync(prefix);
       t.WaitSync();
@@ -297,7 +189,7 @@ namespace RepositoryFramework.AWS.S3
     /// </summary>
     /// <param name="prefix">Filter objects by prefix</param>
     /// <returns>Filtered collection of entities</returns>
-    public async Task<IEnumerable<TBlob>> FindAsync(string prefix)
+    public async Task<IEnumerable<BlobInfo>> FindAsync(string prefix)
     {
       ListObjectsRequest request = new ListObjectsRequest
       {
@@ -305,7 +197,7 @@ namespace RepositoryFramework.AWS.S3
         MaxKeys = 2,
         Prefix = prefix
       };
-      var blobs = new List<TBlob>();
+      var blobs = new List<BlobInfo>();
 
       do
       {
@@ -314,7 +206,7 @@ namespace RepositoryFramework.AWS.S3
         // Process response.
         foreach (S3Object entry in response.S3Objects)
         {
-          blobs.Add(createBlob(
+          blobs.Add(new BlobInfo(
             entry.Key,
             entry.Size,
             new Uri($"http://{bucketName}.s3-{bucketLocation}.amazonaws.com/{entry.Key}")));
@@ -334,6 +226,69 @@ namespace RepositoryFramework.AWS.S3
       while (request != null);
 
       return blobs;
+    }
+
+    /// <summary>
+    /// Upload blob
+    /// </summary>
+    /// <param name="entity">Blob info entity</param>
+    /// <param name="stream">Upload stream</param>
+    public void Upload(BlobInfo entity, Stream stream)
+    {
+      UploadAsync(entity, stream).WaitSync();
+    }
+
+    /// <summary>
+    /// Upload blob
+    /// </summary>
+    /// <param name="entity">Blob info entity</param>
+    /// <param name="stream">Upload stream</param>
+    /// <returns>Task</returns>
+    public async Task UploadAsync(BlobInfo entity, Stream stream)
+    {
+      PutObjectRequest request = new PutObjectRequest()
+      {
+        BucketName = bucketName,
+        Key = entity.Id,
+        InputStream = stream
+      };
+      await s3client.PutObjectAsync(request);
+      entity.Uri = new Uri($"http://{bucketName}.s3-{bucketLocation}.amazonaws.com/{entity.Id}");
+    }
+
+    /// <summary>
+    /// Download blob payload
+    /// </summary>
+    /// <param name="entity">Blob info entity</param>
+    /// <param name="stream">Download stream</param>
+    public void Download(BlobInfo entity, Stream stream)
+    {
+      DownloadAsync(entity, stream).WaitSync();
+    }
+
+    /// <summary>
+    /// Download blob payload
+    /// </summary>
+    /// <param name="entity">Blob info entity</param>
+    /// <param name="stream">Download stream</param>
+    /// <returns>Task</returns>
+    public async Task DownloadAsync(BlobInfo entity, Stream stream)
+    {
+      var request = new GetObjectRequest
+      {
+        BucketName = bucketName,
+        Key = entity.Id.ToString(),
+      };
+
+      GetObjectResponse response = await s3client.GetObjectAsync(request);
+      if (response.ResponseStream != null)
+      {
+        entity.Size = response.ResponseStream.Length;
+        using (var inputStream = response.ResponseStream)
+        {
+          inputStream.CopyTo(stream);
+        }
+      }
     }
   }
 }

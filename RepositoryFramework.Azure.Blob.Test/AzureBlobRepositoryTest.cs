@@ -9,6 +9,7 @@ using Microsoft.WindowsAzure.Storage;
 using System.IO;
 using Xunit;
 using RepositoryFramework.Interfaces;
+using System.Text;
 
 namespace RepositoryFramework.Azure.Blob.Test
 {
@@ -17,7 +18,7 @@ namespace RepositoryFramework.Azure.Blob.Test
     /// <summary>
     /// Set to false to test Microsoft Azure Storage Service and set connection string in environment variable azureStorageConnectionEnvironmentVariable
     /// </summary>
-    private bool useMockContainer = true;
+    private bool useMockContainer = false;
 
     /// <summary>
     /// Specify environment variable that contains Azure Storage connection string
@@ -25,77 +26,119 @@ namespace RepositoryFramework.Azure.Blob.Test
     private const string azureStorageConnectionEnvironmentVariable = "Azure.Storage.Connection";
 
     [Fact]
-    public void Create()
+    public void Upload_And_Download_File()
     {
-      var r = new AzureBlobRepository<MemoryBlob>(GetCloudBlobContainer());
-      var blob = new MemoryBlob("AzureBlobRepositoryTest.Create.ext", "payload");
-      r.Create(blob);
-      r.Delete(blob);
-    }
-
-    [Fact]
-    public void CreateMany()
-    {
-      var r = new AzureBlobRepository<MemoryBlob>(GetCloudBlobContainer());
-      var blobs = new List<MemoryBlob>
+      var uploadFolder = Path.Combine(Environment.GetEnvironmentVariable("LOCALAPPDATA"), "Upload");
+      Directory.CreateDirectory(uploadFolder);
+      using (var file = File.CreateText(Path.Combine(uploadFolder, "file1.txt")))
       {
-        new MemoryBlob("AzureBlobRepositoryTest.CreateMany1.ext", "payload"),
-        new MemoryBlob("AzureBlobRepositoryTest.CreateMany2.ext", "payload"),
-        new MemoryBlob("AzureBlobRepositoryTest.CreateMany3.ext", "payload")
-      };
-      r.CreateMany(blobs);
-      r.DeleteMany(blobs);
+        file.WriteLine("payload");
+      }
+
+      var blobRepository = new AzureBlobRepository(GetCloudBlobContainer());
+      var blob = new BlobInfo("cloudFolder/file1.ext");
+      using (var uploadStream = new FileStream(Path.Combine(uploadFolder, "file1.txt"), FileMode.Open))
+      {
+        blobRepository.Upload(blob, uploadStream);
+      }
+
+      var downloadFolder = Path.Combine(Environment.GetEnvironmentVariable("LOCALAPPDATA"), "Download");
+      Directory.CreateDirectory(downloadFolder);
+
+      using (var uploadStream = new FileStream(Path.Combine(downloadFolder, "file1.txt"), FileMode.Create))
+      {
+        blobRepository.Download(blob, uploadStream);
+      }
+
+      if (!useMockContainer)
+      {
+        Assert.Equal(
+          new FileInfo(Path.Combine(uploadFolder, "file1.txt")).Length, 
+          new FileInfo(Path.Combine(downloadFolder, "file1.txt")).Length);
+        Assert.True(
+          File.ReadAllBytes(Path.Combine(uploadFolder, "file1.txt"))
+          .SequenceEqual(File.ReadAllBytes(Path.Combine(downloadFolder, "file1.txt"))));
+      }
+
+      blobRepository.Delete(blob);
+      File.Delete(Path.Combine(uploadFolder, "file1.txt"));
+      File.Delete(Path.Combine(downloadFolder, "file1.txt"));
     }
 
+
     [Fact]
-    public void Update()
+    public void Upload_And_Download()
     {
-      var r = new AzureBlobRepository<MemoryBlob>(GetCloudBlobContainer());
-      var blob = new MemoryBlob("AzureBlobRepositoryTest.Update.ext", "payload");
-      r.Create(blob);
-      r.Update(blob);
+      var r = new AzureBlobRepository(GetCloudBlobContainer());
+      var blob = new BlobInfo($"AzureBlobRepositoryTest/Upload_And_Download/{Guid.NewGuid()}");
+      var payload = "payload";
+      Upload(blob, payload, r);
+      var result = Download(blob.Id, r);
+
+      if (!useMockContainer)
+      {
+        Assert.Equal(payload, result);
+      }
+
       r.Delete(blob);
+    }
+
+    private void Upload(BlobInfo blob, string payload, IBlobRepository repository)
+    {
+      var uploadBuffer = Encoding.UTF8.GetBytes(payload);
+      using (var uploadStream = new MemoryStream(uploadBuffer))
+      {
+        repository.Upload(blob, uploadStream);
+      }
+    }
+
+    private string Download(string id, IBlobRepository repository)
+    {
+      var blob = repository.GetById(id);
+      if (blob != null && blob.Size > 0)
+      {
+        var downloadBuffer = new byte[blob.Size];
+        using (var downloadStream = new MemoryStream(downloadBuffer))
+        {
+          repository.Download(blob, downloadStream);
+        }
+        return Encoding.UTF8.GetString(downloadBuffer);
+      }
+      return string.Empty;
     }
 
     [Fact]
     public void Find()
     {
-      var r = new AzureBlobRepository<MemoryBlob>(GetCloudBlobContainer());
-      var blobs = new List<MemoryBlob>
+      var r = new AzureBlobRepository(GetCloudBlobContainer());
+      var blobs = new List<BlobInfo>
       {
-        new MemoryBlob("AzureBlobRepositoryTest.Find1.ext", "payload"),
-        new MemoryBlob("folder1/AzureBlobRepositoryTest.Find2.ext", "payload"),
-        new MemoryBlob("folder1/AzureBlobRepositoryTest.Find3.ext", "payload")
+        new BlobInfo("AzureBlobRepositoryTest.Find/file1.ext"),
+        new BlobInfo("AzureBlobRepositoryTest.Find/folder1/file2.ext"),
+        new BlobInfo("AzureBlobRepositoryTest.Find/folder1/file3.ext")
       };
-      r.CreateMany(blobs);
-      if (!useMockContainer)
+      Upload(blobs[0], "payload1", r);
+      Upload(blobs[1], "payload2", r);
+      Upload(blobs[2], "payload3", r);
+      if (!useMockContainer) 
       {
-        Assert.Equal(3, r.Find().Count());
-        Assert.Equal(2, r.Find("folder1/").Count());
+        Assert.Equal(3, r.Find("AzureBlobRepositoryTest.Find/").Count());
+        Assert.Equal(2, r.Find("AzureBlobRepositoryTest.Find/folder1/").Count());
       }
       r.DeleteMany(blobs);
     }
 
     [Fact]
-    public void GetById()
-    {
-      var r = new AzureBlobRepository<MemoryBlob>(GetCloudBlobContainer());
-      var id = "AzureBlobRepositoryTest.GetById.ext";
-      var blob = new MemoryBlob(id, "payload");
-      r.Create(blob);
-      var result = r.GetById(id);
-      Assert.NotNull(result);
-      r.Delete(result);
-    }
-
-    [Fact]
     public void GetById_Not_Found()
     {
-      var r = new AzureBlobRepository<MemoryBlob>(GetCloudBlobContainer());
+      var r = new AzureBlobRepository(GetCloudBlobContainer());
       var id = "AzureBlobRepositoryTest.GetById_Not_Found.ext";
       var result = r.GetById(id);
+      if (!useMockContainer)
+      {
+        Assert.Null(result);
+      }
     }
-
 
     private CloudBlobContainer GetCloudBlobContainer()
     {
