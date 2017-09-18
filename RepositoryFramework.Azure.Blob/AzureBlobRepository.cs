@@ -197,10 +197,7 @@ namespace RepositoryFramework.Azure.Blob
         CloudBlockBlob block = container.GetBlockBlobReference(entity.Id);
         if (stream != null)
         {
-          using (stream)
-          {
-            await block.DownloadToStreamAsync(stream);
-          }
+          await block.DownloadToStreamAsync(stream);
         }
       }
     }
