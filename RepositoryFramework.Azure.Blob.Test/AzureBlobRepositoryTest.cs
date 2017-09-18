@@ -18,7 +18,7 @@ namespace RepositoryFramework.Azure.Blob.Test
     /// <summary>
     /// Set to false to test Microsoft Azure Storage Service and set connection string in environment variable azureStorageConnectionEnvironmentVariable
     /// </summary>
-    private bool useMockContainer = false;
+    private bool useMockContainer = true;
 
     /// <summary>
     /// Specify environment variable that contains Azure Storage connection string

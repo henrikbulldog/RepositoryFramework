@@ -284,10 +284,7 @@ namespace RepositoryFramework.AWS.S3
       if (response.ResponseStream != null)
       {
         entity.Size = response.ResponseStream.Length;
-        using (var inputStream = response.ResponseStream)
-        {
-          inputStream.CopyTo(stream);
-        }
+        response.ResponseStream.CopyTo(stream);
       }
     }
   }

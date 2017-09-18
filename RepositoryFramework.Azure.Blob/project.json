@@ -1,7 +1,7 @@
-﻿{
+{
   "title": "RepositoryFramework.Azure.Blob",
   "description": "A repository framework for Microsoft Azure Blob Storage",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "authors": [ "Henrik Thomsen" ],
   "packOptions": {
     "projectUrl": "https://github.com/henrikbulldog/RepositoryFramework",
