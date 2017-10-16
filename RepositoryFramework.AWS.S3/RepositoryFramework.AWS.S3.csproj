@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>A repository framework for Amazon web Services Simple Storage Service</Description>
+    <AssemblyTitle>RepositoryFramework.AWS.S3</AssemblyTitle>
+    <VersionPrefix>1.0.2</VersionPrefix>
+    <Authors>Henrik Thomsen</Authors>
+		<TargetFrameworks>netcoreapp2.0;netcoreapp1.1;net452</TargetFrameworks>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyName>RepositoryFramework.AWS.S3</AssemblyName>
+    <PackageId>RepositoryFramework.AWS.S3</PackageId>
+    <PackageProjectUrl>https://github.com/henrikbulldog/RepositoryFramework</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/henrikbulldog/RepositoryFramework/blob/master/LICENSE</PackageLicenseUrl>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+		<CodeAnalysisRuleSet>../RULES.ruleset</CodeAnalysisRuleSet>
+		<Version>1.0.3</Version>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include="../stylecop.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+    <ProjectReference Include="..\RepositoryFramework.Interfaces\RepositoryFramework.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="3.3.6.3" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

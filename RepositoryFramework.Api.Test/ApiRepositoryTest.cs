@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
-using RepositoryFramework.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
-using Xunit;
-
-namespace RepositoryFramework.Api.Test
+﻿namespace RepositoryFramework.Api.Test
 {
+  using System.Collections.Generic;
+  using System.Linq;
+  using Newtonsoft.Json;
+  using RepositoryFramework.Interfaces;
+  using Xunit;
+
   public class ApiRepositoryTest
   {
     private ApiConfiguration configuration =
@@ -24,7 +24,8 @@ namespace RepositoryFramework.Api.Test
       var result = apiRepository
         .SetParameter("UserId", 1)
         .Find();
-      Assert.True(result.Count() > 0,
+      Assert.True(
+        result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
       Assert.False(result.Any(p => p.UserId != 1));
     }
@@ -39,7 +40,8 @@ namespace RepositoryFramework.Api.Test
       var result = apiRepository
         .SetParameter("PostId", 1)
         .Find();
-      Assert.True(result.Count() > 0,
+      Assert.True(
+        result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
       Assert.False(result.Any(p => p.PostId != 1));
     }
@@ -51,7 +53,8 @@ namespace RepositoryFramework.Api.Test
       var result = apiRepository
         .SetParameter("UserId", 1)
         .Find();
-      Assert.True(result.Count() > 0,
+      Assert.True(
+        result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
       Assert.False(result.Any(p => p.UserId != 1));
     }
@@ -61,14 +64,15 @@ namespace RepositoryFramework.Api.Test
     {
       IApiRepository<Post> apiRepository = new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var result = apiRepository.Find();
-      Assert.True(result.Count() > 0,
+      Assert.True(
+        result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
     }
 
     [Fact]
     public void Find_Invalid_Path()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com", "bad_path");
       try
       {
@@ -88,7 +92,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void GetById()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var result = apiRepository.GetById("1");
       Assert.NotNull(result);
@@ -98,7 +102,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void Update()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
@@ -114,7 +118,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void Delete()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
@@ -126,7 +130,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void DeleteMany()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
 
       var posts = new List<Post>
@@ -147,7 +151,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void Create()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
@@ -162,7 +166,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public void CreateMany()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var posts = new List<Post>
       {

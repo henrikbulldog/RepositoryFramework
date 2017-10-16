@@ -1,18 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.EntityFramework", "RepositoryFramework.EntityFramework\RepositoryFramework.EntityFramework.xproj", "{66FB133D-E282-481D-BC7B-08C942F8A5CB}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.EntityFramework.Test", "RepositoryFramework.EntityFramework.Test\RepositoryFramework.EntityFramework.Test.xproj", "{A900FE5B-584E-4602-87EC-79529E6AE180}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.Interfaces", "RepositoryFramework.Interfaces\RepositoryFramework.Interfaces.xproj", "{27C7C76D-677D-4241-BE70-D04E3442A75D}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.Api", "RepositoryFramework.Api\RepositoryFramework.Api.xproj", "{B0A00CFF-E9A2-44C5-BF9D-003466F71975}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.Api.Test", "RepositoryFramework.Api.Test\RepositoryFramework.Api.Test.xproj", "{1F3AF3A4-2C4A-4641-A32B-F18F90DB8579}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B9EEDEBC-3C15-43C8-90EC-32193D87CB74}"
 	ProjectSection(SolutionItems) = preProject
 		..\MyInstruments\FossAssureGrainAPI\Mainline\global.json = ..\MyInstruments\FossAssureGrainAPI\Mainline\global.json
@@ -22,21 +12,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		stylecop.json = stylecop.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.Dapper", "RepositoryFramework.Dapper\RepositoryFramework.Dapper.xproj", "{FAFDA019-9C49-435B-9BB1-51C4C0C756A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.EntityFramework", "RepositoryFramework.EntityFramework\RepositoryFramework.EntityFramework.csproj", "{66FB133D-E282-481D-BC7B-08C942F8A5CB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.Dapper.Test", "RepositoryFramework.Dapper.Test\RepositoryFramework.Dapper.Test.xproj", "{2BB73B46-25C3-42A4-8F73-ED4C1C97FD02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.EntityFramework.Test", "RepositoryFramework.EntityFramework.Test\RepositoryFramework.EntityFramework.Test.csproj", "{A900FE5B-584E-4602-87EC-79529E6AE180}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.MongoDB.Test", "RepositoryFramework.MongoDB.Test\RepositoryFramework.MongoDB.Test.xproj", "{91A064BE-B208-47AF-9B35-CC1A4E873C40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.Interfaces", "RepositoryFramework.Interfaces\RepositoryFramework.Interfaces.csproj", "{27C7C76D-677D-4241-BE70-D04E3442A75D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.MongoDB", "RepositoryFramework.MongoDB\RepositoryFramework.MongoDB.xproj", "{5E82FF79-D884-408E-B2ED-B8A8F301FE55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.Api", "RepositoryFramework.Api\RepositoryFramework.Api.csproj", "{B0A00CFF-E9A2-44C5-BF9D-003466F71975}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.Azure.Blob", "RepositoryFramework.Azure.Blob\RepositoryFramework.Azure.Blob.xproj", "{7E103FDF-BA13-424D-BB18-0478E0C1C656}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.Api.Test", "RepositoryFramework.Api.Test\RepositoryFramework.Api.Test.csproj", "{1F3AF3A4-2C4A-4641-A32B-F18F90DB8579}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.Azure.Blob.Test", "RepositoryFramework.Azure.Blob.Test\RepositoryFramework.Azure.Blob.Test.xproj", "{96FB9D0E-6D8C-4E8E-8B50-10A6A41C267C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.Dapper", "RepositoryFramework.Dapper\RepositoryFramework.Dapper.csproj", "{FAFDA019-9C49-435B-9BB1-51C4C0C756A6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.AWS.S3", "RepositoryFramework.AWS.S3\RepositoryFramework.AWS.S3.xproj", "{95D9510F-17B5-4AD7-AF49-3970B40F24E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.Dapper.Test", "RepositoryFramework.Dapper.Test\RepositoryFramework.Dapper.Test.csproj", "{2BB73B46-25C3-42A4-8F73-ED4C1C97FD02}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RepositoryFramework.AWS.S3.Test", "RepositoryFramework.AWS.S3.Test\RepositoryFramework.AWS.S3.Test.xproj", "{CD6E4686-D46F-47F9-812D-7C6457431391}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.MongoDB.Test", "RepositoryFramework.MongoDB.Test\RepositoryFramework.MongoDB.Test.csproj", "{91A064BE-B208-47AF-9B35-CC1A4E873C40}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.MongoDB", "RepositoryFramework.MongoDB\RepositoryFramework.MongoDB.csproj", "{5E82FF79-D884-408E-B2ED-B8A8F301FE55}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.Azure.Blob", "RepositoryFramework.Azure.Blob\RepositoryFramework.Azure.Blob.csproj", "{7E103FDF-BA13-424D-BB18-0478E0C1C656}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.Azure.Blob.Test", "RepositoryFramework.Azure.Blob.Test\RepositoryFramework.Azure.Blob.Test.csproj", "{96FB9D0E-6D8C-4E8E-8B50-10A6A41C267C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.AWS.S3", "RepositoryFramework.AWS.S3\RepositoryFramework.AWS.S3.csproj", "{95D9510F-17B5-4AD7-AF49-3970B40F24E1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepositoryFramework.AWS.S3.Test", "RepositoryFramework.AWS.S3.Test\RepositoryFramework.AWS.S3.Test.csproj", "{CD6E4686-D46F-47F9-812D-7C6457431391}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,5 +99,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2BCF8544-3E6C-4D48-A16F-6636701529CF}
 	EndGlobalSection
 EndGlobal

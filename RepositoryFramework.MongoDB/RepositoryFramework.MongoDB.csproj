@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>A repository framework for Mongo DB</Description>
+    <AssemblyTitle>RepositoryFramework.MongoDB</AssemblyTitle>
+    <VersionPrefix>2.0.4</VersionPrefix>
+    <Authors>Henrik Thomsen</Authors>
+    <TargetFrameworks>netcoreapp2.0;netcoreapp1.1;net452</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyName>RepositoryFramework.MongoDB</AssemblyName>
+    <PackageId>RepositoryFramework.MongoDB</PackageId>
+    <PackageProjectUrl>https://github.com/henrikbulldog/RepositoryFramework</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/henrikbulldog/RepositoryFramework/blob/master/LICENSE</PackageLicenseUrl>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+		<CodeAnalysisRuleSet>../RULES.ruleset</CodeAnalysisRuleSet>
+		<Version>2.0.5</Version>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include="../stylecop.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+    <ProjectReference Include="..\RepositoryFramework.Interfaces\RepositoryFramework.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.InternalAbstractions" Version="1.0.500-preview2-1-003177" />
+    <PackageReference Include="MongoDB.Driver" Version="2.4.4" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

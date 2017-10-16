@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>A repository framework for ReSTful API clients</Description>
+    <AssemblyTitle>RepositoryFramework.Api</AssemblyTitle>
+    <VersionPrefix>2.0.2</VersionPrefix>
+    <Authors>Henrik Thomsen</Authors>
+		<TargetFrameworks>netcoreapp2.0;netcoreapp1.1;net452</TargetFrameworks>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyName>RepositoryFramework.Api</AssemblyName>
+    <PackageId>RepositoryFramework.Api</PackageId>
+    <PackageProjectUrl>https://github.com/henrikbulldog/RepositoryFramework</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/henrikbulldog/RepositoryFramework/blob/master/LICENSE</PackageLicenseUrl>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  	<CodeAnalysisRuleSet>../RULES.ruleset</CodeAnalysisRuleSet>
+  	<Version>2.0.3</Version>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<AdditionalFiles Include="../stylecop.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+    <ProjectReference Include="..\RepositoryFramework.Interfaces\RepositoryFramework.Interfaces.csproj" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+		<PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
+			<PrivateAssets>All</PrivateAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0'">
+		<PackageReference Include="RestSharp.NetCore" Version="105.2.3" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1'">
+		<PackageReference Include="RestSharp.NetCore" Version="105.2.3" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+		<PackageReference Include="RestSharp" Version="105.2.3" />
+	</ItemGroup>
+	
+</Project>

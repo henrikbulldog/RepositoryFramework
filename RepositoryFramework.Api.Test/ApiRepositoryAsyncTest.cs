@@ -1,12 +1,12 @@
-﻿using Newtonsoft.Json;
-using RepositoryFramework.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
-
-namespace RepositoryFramework.Api.Test
+﻿namespace RepositoryFramework.Api.Test
 {
+  using System.Collections.Generic;
+  using System.Linq;
+  using System.Threading.Tasks;
+  using Newtonsoft.Json;
+  using RepositoryFramework.Interfaces;
+  using Xunit;
+
   public class ApiRepositoryAsyncTest
   {
     private ApiConfiguration configuration =
@@ -25,7 +25,8 @@ namespace RepositoryFramework.Api.Test
       var result = await apiRepository
         .SetParameter("UserId", 1)
         .FindAsync();
-      Assert.True(result.Count() > 0,
+      Assert.True(
+        result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
       Assert.False(result.Any(p => p.UserId != 1));
     }
@@ -40,7 +41,8 @@ namespace RepositoryFramework.Api.Test
       var result = await apiRepository
         .SetParameter("PostId", 1)
         .FindAsync();
-      Assert.True(result.Count() > 0,
+      Assert.True(
+        result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
       Assert.False(result.Any(p => p.PostId != 1));
     }
@@ -48,12 +50,13 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task FindAsync_Infer_Entity_Name_And_Id()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var result = await apiRepository
         .SetParameter("UserId", 1)
         .FindAsync();
-      Assert.True(result.Count() > 0,
+      Assert.True(
+        result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
       Assert.False(result.Any(p => p.UserId != 1));
     }
@@ -61,17 +64,18 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task FindAsync()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var result = await apiRepository.FindAsync();
-      Assert.True(result.Count() > 0,
+      Assert.True(
+        result.Count() > 0,
         JsonConvert.SerializeObject(result, Formatting.Indented));
     }
 
     [Fact]
     public async Task FindAsync_Invalid_Path()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com", "bad_path");
       try
       {
@@ -91,7 +95,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task GetByIdAsync()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var result = await apiRepository.GetByIdAsync("1");
       Assert.NotNull(result);
@@ -101,7 +105,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task UpdateAsync()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
@@ -117,7 +121,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task DeleteAsync()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
@@ -129,7 +133,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task DeleteManyAsync()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
 
       var posts = new List<Post>
@@ -150,7 +154,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task CreateAsync()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var post = new Post
       {
@@ -165,7 +169,7 @@ namespace RepositoryFramework.Api.Test
     [Fact]
     public async Task CreateManyAsync()
     {
-      IApiRepository<Post> apiRepository = 
+      IApiRepository<Post> apiRepository =
         new ApiRepository<Post>(configuration, "https://jsonplaceholder.typicode.com");
       var posts = new List<Post>
       {
