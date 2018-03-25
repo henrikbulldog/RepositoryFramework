@@ -19,6 +19,9 @@ namespace RepositoryFramework.EntityFramework
     IEntityFrameworkRepository<TEntity>
     where TEntity : class
   {
+    private long totalItems = 0;
+    private Task<long> totalItemsTask = null;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="EntityFrameworkRepository{TEntity}"/> class
     /// </summary>
@@ -59,6 +62,40 @@ namespace RepositoryFramework.EntityFramework
     /// Gets page number (one based index)
     /// </summary>
     public virtual int PageNumber { get; private set; } = 1;
+
+    /// <summary>
+    /// Gets the total number of items available in this set. For example, if a user has 100 blog posts, the response may only contain 10 items, but the totalItems would be 100.
+    /// </summary>
+    public virtual long TotalItems
+    {
+      get
+      {
+        if (this.totalItemsTask != null)
+        {
+          this.totalItemsTask.WaitSync();
+          this.totalItems = this.totalItemsTask.Result;
+          this.totalItemsTask = null;
+        }
+
+        return this.totalItems;
+      }
+    }
+
+    /// <summary>
+    /// Gets the index of the first item. For consistency, startIndex should be 1-based. For example, the first item in the first set of items should have a startIndex of 1. If the user requests the next set of data, the startIndex may be 10.
+    /// </summary>
+    public virtual int StartIndex
+    {
+      get { return (PageNumber * PageSize) + 1; }
+    }
+
+    /// <summary>
+    /// Gets the total number of pages in the result set.
+    /// </summary>
+    public virtual int TotalPages
+    {
+      get { return PageSize == 0 ? 1 : (int)(TotalItems / PageSize) + 1; }
+    }
 
     /// <summary>
     /// Gets the kind of sort order
@@ -140,16 +177,8 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="entity">Entity</param>
     public virtual void Create(TEntity entity)
     {
-      if (entity == null)
-      {
-        throw new ArgumentNullException(nameof(entity));
-      }
-
-      DbContext.Set<TEntity>().Add(entity);
-      if (AutoCommit)
-      {
-        SaveChanges();
-      }
+      var task = CreateAsync(entity);
+      task.WaitSync();
     }
 
     /// <summary>
@@ -177,16 +206,8 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="entities">List of entities</param>
     public virtual void CreateMany(IEnumerable<TEntity> entities)
     {
-      if (entities == null)
-      {
-        throw new ArgumentNullException(nameof(entities));
-      }
-
-      DbContext.Set<TEntity>().AddRange(entities);
-      if (AutoCommit)
-      {
-        SaveChanges();
-      }
+      var task = CreateManyAsync(entities);
+      task.WaitSync();
     }
 
     /// <summary>
@@ -214,16 +235,8 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="entity">Entity</param>
     public virtual void Delete(TEntity entity)
     {
-      if (entity == null)
-      {
-        throw new ArgumentNullException(nameof(entity));
-      }
-
-      DbContext.Set<TEntity>().Remove(entity);
-      if (AutoCommit)
-      {
-        SaveChanges();
-      }
+      var task = DeleteAsync(entity);
+      task.WaitSync();
     }
 
     /// <summary>
@@ -251,16 +264,8 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="entities">Entity list</param>
     public virtual void DeleteMany(IEnumerable<TEntity> entities)
     {
-      if (entities == null)
-      {
-        throw new ArgumentNullException(nameof(entities));
-      }
-
-      DbContext.Set<TEntity>().RemoveRange(entities);
-      if (AutoCommit)
-      {
-        SaveChanges();
-      }
+      var task = DeleteManyAsync(entities);
+      task.WaitSync();
     }
 
     /// <summary>
@@ -288,7 +293,9 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Query result</returns>
     public virtual IEnumerable<TEntity> Find()
     {
-      return GetQuery().ToList();
+      var task = FindAsync();
+      task.WaitSync();
+      return task.Result;
     }
 
     /// <summary>
@@ -297,7 +304,17 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Query result</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
-      return await GetQuery().ToListAsync();
+      var r = await GetQuery().ToListAsync();
+      if (PageSize == 0)
+      {
+        this.totalItems = r.LongCount();
+      }
+      else
+      {
+        totalItemsTask = GetQuery(false, false).LongCountAsync();
+      }
+
+      return r;
     }
 
     /// <summary>
@@ -312,8 +329,9 @@ namespace RepositoryFramework.EntityFramework
       IDictionary<string, object> parameters = null,
       string parameterPattern = @"@(\w+)")
     {
-      return GetQuery(sql, parameters, parameterPattern)
-        .ToList();
+      var task = FindAsync(sql, parameters, parameterPattern);
+      task.WaitSync();
+      return task.Result;
     }
 
     /// <summary>
@@ -325,8 +343,17 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Filtered collection of entities</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync(string sql, IDictionary<string, object> parameters = null, string parameterPattern = "@(\\w+)")
     {
-      return await GetQuery(sql, parameters, parameterPattern)
-        .ToListAsync();
+      var r = await GetQuery(sql, parameters, parameterPattern).ToListAsync();
+      if (PageSize == 0)
+      {
+        this.totalItems = r.LongCount();
+      }
+      else
+      {
+        totalItemsTask = GetQuery(sql, parameters, parameterPattern, false, false).LongCountAsync();
+      }
+
+      return r;
     }
 
     /// <summary>
@@ -336,9 +363,9 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Filtered collection of entities</returns>
     public virtual IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> where)
     {
-      return GetQuery()
-        .Where(where)
-        .ToList();
+      var task = FindAsync(where);
+      task.WaitSync();
+      return task.Result;
     }
 
     /// <summary>
@@ -348,9 +375,19 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Filtered collection of entities</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> where)
     {
-      return await GetQuery()
-        .Where(where)
-        .ToListAsync();
+      var r = await GetQuery()
+          .Where(where)
+          .ToListAsync();
+      if (PageSize == 0)
+      {
+        this.totalItems = r.LongCount();
+      }
+      else
+      {
+        totalItemsTask = GetQuery(false, false).Where(where).LongCountAsync();
+      }
+
+      return r;
     }
 
     /// <summary>
@@ -359,6 +396,18 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="id">Filter to find a single item</param>
     /// <returns>Entity</returns>
     public virtual TEntity GetById(object id)
+    {
+      var task = GetByIdAsync(id);
+      task.WaitSync();
+      return task.Result;
+    }
+
+    /// <summary>
+    /// Gets an entity by id.
+    /// </summary>
+    /// <param name="id">Filter to find a single item</param>
+    /// <returns>Task</returns>
+    public virtual async Task<TEntity> GetByIdAsync(object id)
     {
       IQueryable<TEntity> query = DbContext.Set<TEntity>();
       foreach (var propertyName in Includes)
@@ -377,17 +426,7 @@ namespace RepositoryFramework.EntityFramework
       var converted = Expression.Convert(constant, whereProperty.Type);
       Expression condition = Expression.Equal(whereProperty, converted);
       Expression<Func<TEntity, bool>> lambda = Expression.Lambda<Func<TEntity, bool>>(condition, parameter);
-      return query.SingleOrDefault(lambda);
-    }
-
-    /// <summary>
-    /// Gets an entity by id.
-    /// </summary>
-    /// <param name="id">Filter to find a single item</param>
-    /// <returns>Task</returns>
-    public virtual async Task<TEntity> GetByIdAsync(object id)
-    {
-      return await Task.Run(() => GetById(id));
+      return await query.SingleOrDefaultAsync(lambda);
     }
 
     /// <summary>
@@ -611,16 +650,8 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="entity">Entity</param>
     public virtual void Update(TEntity entity)
     {
-      if (entity == null)
-      {
-        throw new ArgumentNullException(nameof(entity));
-      }
-
-      DbContext.Set<TEntity>().Update(entity);
-      if (AutoCommit)
-      {
-        SaveChanges();
-      }
+      var task = UpdateAsync(entity);
+      task.WaitSync();
     }
 
     /// <summary>
@@ -689,8 +720,7 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Task</returns>
     public virtual async Task<IRepository<TEntity>> DetachAllAsync()
     {
-      Task task = Task.Run(() => DetachAll());
-      await task;
+      await Task.Run(() => DetachAll());
       return this;
     }
 
@@ -706,8 +736,10 @@ namespace RepositoryFramework.EntityFramework
     /// <summary>
     /// Gets a collection of entities with sorting, paging and include constraints
     /// </summary>
+    /// <param name="sort">Sort</param>
+    /// <param name="page">Page</param>
     /// <returns>Queryable collection</returns>
-    protected virtual IQueryable<TEntity> GetQuery()
+    protected virtual IQueryable<TEntity> GetQuery(bool sort = true, bool page = true)
     {
       IQueryable<TEntity> query = DbContext.Set<TEntity>();
 
@@ -716,9 +748,17 @@ namespace RepositoryFramework.EntityFramework
         query = query.Include(propertyName);
       }
 
-      return query
-        .Sort(this)
-        .Page(this);
+      if (sort)
+      {
+        query = query.Sort(this);
+      }
+
+      if (page)
+      {
+        query = query.Page(this);
+      }
+
+      return query;
     }
 
     /// <summary>
@@ -727,11 +767,15 @@ namespace RepositoryFramework.EntityFramework
     /// <param name="sql">SQL containing named parameter placeholders. For example: SELECT * FROM Customer WHERE Id = @Id</param>
     /// <param name="parameters">Named parameters</param>
     /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
+    /// <param name="sort">Sort</param>
+    /// <param name="page">Page</param>
     /// <returns>Queryable collection</returns>
     protected virtual IQueryable<TEntity> GetQuery(
       string sql,
       IDictionary<string, object> parameters,
-      string parameterPattern)
+      string parameterPattern,
+      bool sort = true,
+      bool page = true)
     {
       if (parameters == null)
       {
@@ -754,7 +798,7 @@ namespace RepositoryFramework.EntityFramework
         parameterValues.Add(parameters[parameterName]);
       }
 
-      return GetQuery()
+      return GetQuery(sort, page)
         .FromSql(sql, parameterValues.ToArray());
     }
   }

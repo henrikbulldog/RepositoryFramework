@@ -21,6 +21,8 @@ namespace RepositoryFramework.Dapper
     where TEntity : class
   {
     private IDbConnection connection;
+    private long totalItems = 0;
+    private Task<object> totalItemsTask = null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DapperRepository{TEntity}"/> class
@@ -62,6 +64,40 @@ namespace RepositoryFramework.Dapper
     /// Gets page number (one based index)
     /// </summary>
     public virtual int PageNumber { get; private set; } = 1;
+
+    /// <summary>
+    /// Gets the total number of items available in this set. For example, if a user has 100 blog posts, the response may only contain 10 items, but the totalItems would be 100.
+    /// </summary>
+    public virtual long TotalItems
+    {
+      get
+      {
+        if (this.totalItemsTask != null)
+        {
+          this.totalItemsTask.WaitSync();
+          this.totalItems = (long)this.totalItemsTask.Result;
+          this.totalItemsTask = null;
+        }
+
+        return this.totalItems;
+      }
+    }
+
+    /// <summary>
+    /// Gets the index of the first item. For consistency, startIndex should be 1-based. For example, the first item in the first set of items should have a startIndex of 1. If the user requests the next set of data, the startIndex may be 10.
+    /// </summary>
+    public virtual int StartIndex
+    {
+      get { return (PageNumber * PageSize) + 1; }
+    }
+
+    /// <summary>
+    /// Gets the total number of pages in the result set.
+    /// </summary>
+    public virtual int TotalPages
+    {
+      get { return PageSize == 0 ? 1 : (int)(TotalItems / PageSize) + 1; }
+    }
 
     /// <summary>
     /// Gets the kind of sort order
@@ -260,7 +296,9 @@ WHERE {IdPropertyName} IN (@Id)";
     /// <returns>Query result</returns>
     public virtual IEnumerable<TEntity> Find()
     {
-      return Connection.Query<TEntity>(GetQuery());
+      var task = FindAsync();
+      task.WaitSync();
+      return task.Result;
     }
 
     /// <summary>
@@ -269,7 +307,17 @@ WHERE {IdPropertyName} IN (@Id)";
     /// <returns>Query result</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
-      return await Connection.QueryAsync<TEntity>(GetQuery());
+      var r = await Connection.QueryAsync<TEntity>(GetQuery());
+      if (PageSize == 0)
+      {
+        this.totalItems = r.LongCount();
+      }
+      else
+      {
+        totalItemsTask = Connection.ExecuteScalarAsync(GetCount());
+      }
+
+      return r;
     }
 
     /// <summary>
@@ -284,13 +332,9 @@ WHERE {IdPropertyName} IN (@Id)";
       IDictionary<string, object> parameters = null,
       string parameterPattern = @"@(\w+)")
     {
-      if (parameters == null)
-      {
-        parameters = new Dictionary<string, object>();
-      }
-
-      CheckParameters(sql, parameters, parameterPattern);
-      return Connection.Query<TEntity>(GetQuery(sql), ToObject(parameters));
+      var task = FindAsync(sql, parameters, parameterPattern);
+      task.WaitSync();
+      return task.Result;
     }
 
     /// <summary>
@@ -311,7 +355,17 @@ WHERE {IdPropertyName} IN (@Id)";
       }
 
       CheckParameters(sql, parameters, parameterPattern);
-      return await Connection.QueryAsync<TEntity>(GetQuery(sql), ToObject(parameters));
+      var r = await Connection.QueryAsync<TEntity>(GetQuery(sql), ToObject(parameters));
+      if (PageSize == 0)
+      {
+        this.totalItems = r.LongCount();
+      }
+      else
+      {
+        totalItemsTask = Connection.ExecuteScalarAsync(GetCount(), ToObject(parameters));
+      }
+
+      return r;
     }
 
     /// <summary>
@@ -565,6 +619,23 @@ WHERE {IdPropertyName}=@{IdPropertyName}";
 {sql}
 {orderBy}
 {offset}";
+    }
+
+    /// <summary>
+    /// Gets query string
+    /// </summary>
+    /// <param name="sql">SQL statement</param>
+    /// <returns>Query string</returns>
+    protected virtual string GetCount(string sql = null)
+    {
+      if (sql == null)
+      {
+        sql = $"SELECT * FROM {TableName}";
+      }
+
+      sql = "SELECT COUNT(*) " + sql.Substring(sql.IndexOf("FROM"));
+
+      return $@"{sql}";
     }
   }
 }

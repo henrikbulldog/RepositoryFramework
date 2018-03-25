@@ -17,6 +17,9 @@ namespace RepositoryFramework.MongoDB
   public class MongoDBRepository<TEntity> : GenericRepositoryBase<TEntity>, IMongoDBRepository<TEntity>
     where TEntity : class
   {
+    private long totalItems = 0;
+    private Task<long> totalItemsTask = null;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoDBRepository{TEntity}"/> class
     /// </summary>
@@ -55,6 +58,40 @@ namespace RepositoryFramework.MongoDB
     /// Gets the page number (one based index)
     /// </summary>
     public virtual int PageNumber { get; private set; } = 1;
+
+    /// <summary>
+    /// Gets the total number of items available in this set. For example, if a user has 100 blog posts, the response may only contain 10 items, but the totalItems would be 100.
+    /// </summary>
+    public virtual long TotalItems
+    {
+      get
+      {
+        if (this.totalItemsTask != null)
+        {
+          this.totalItemsTask.WaitSync();
+          this.totalItems = this.totalItemsTask.Result;
+          this.totalItemsTask = null;
+        }
+
+        return this.totalItems;
+      }
+    }
+
+    /// <summary>
+    /// Gets the index of the first item. For consistency, startIndex should be 1-based. For example, the first item in the first set of items should have a startIndex of 1. If the user requests the next set of data, the startIndex may be 10.
+    /// </summary>
+    public virtual int StartIndex
+    {
+      get { return (PageNumber * PageSize) + 1; }
+    }
+
+    /// <summary>
+    /// Gets the total number of pages in the result set.
+    /// </summary>
+    public virtual int TotalPages
+    {
+      get { return PageSize == 0 ? 1 : (int)(TotalItems / PageSize) + 1; }
+    }
 
     /// <summary>
     /// Gets the kind of sort order
@@ -201,7 +238,9 @@ namespace RepositoryFramework.MongoDB
     /// <returns>List of items</returns>
     public virtual IEnumerable<TEntity> Find()
     {
-      return ApplyConstraints(Collection.Find("{}")).ToList();
+      var task = FindAsync();
+      task.WaitSync();
+      return task.Result;
     }
 
     /// <summary>
@@ -210,7 +249,17 @@ namespace RepositoryFramework.MongoDB
     /// <returns>List of items</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
-      return await ApplyConstraints(Collection.Find("{}")).ToListAsync();
+      var r = await ApplyConstraints(Collection.Find("{}")).ToListAsync();
+      if (PageSize == 0)
+      {
+        this.totalItems = r.LongCount();
+      }
+      else
+      {
+        this.totalItemsTask = Collection.CountAsync("{}");
+      }
+
+      return r;
     }
 
     /// <summary>
@@ -220,7 +269,9 @@ namespace RepositoryFramework.MongoDB
     /// <returns>Filtered collection of entities</returns>
     public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> where)
     {
-      return AsQueryable().Where(where).ToList();
+      var task = FindAsync(where);
+      task.WaitSync();
+      return task.Result;
     }
 
     /// <summary>
@@ -230,7 +281,17 @@ namespace RepositoryFramework.MongoDB
     /// <returns>Filtered collection of entities</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> where)
     {
-      return await Task.Run(() => AsQueryable().Where(where).ToList());
+      var r = await ApplyConstraints(Collection.Find(where)).ToListAsync();
+      if (PageSize == 0)
+      {
+        this.totalItems = r.LongCount();
+      }
+      else
+      {
+        this.totalItemsTask = Collection.CountAsync(where);
+      }
+
+      return r;
     }
 
     /// <summary>
@@ -240,7 +301,9 @@ namespace RepositoryFramework.MongoDB
     /// <returns>Filtered collection of entities</returns>
     public IEnumerable<TEntity> Find(string filter)
     {
-      return ApplyConstraints(Collection.Find(filter)).ToList();
+      var task = FindAsync(filter);
+      task.WaitSync();
+      return task.Result;
     }
 
     /// <summary>
@@ -250,7 +313,17 @@ namespace RepositoryFramework.MongoDB
     /// <returns>Filtered collection of entities</returns>
     public async Task<IEnumerable<TEntity>> FindAsync(string filter)
     {
-      return await ApplyConstraints(Collection.Find(filter)).ToListAsync();
+      var r = await ApplyConstraints(Collection.Find(filter)).ToListAsync();
+      if (PageSize == 0)
+      {
+        this.totalItems = r.LongCount();
+      }
+      else
+      {
+        this.totalItemsTask = Collection.CountAsync(filter);
+      }
+
+      return r;
     }
 
     /// <summary>

@@ -18,6 +18,21 @@
     int PageNumber { get; }
 
     /// <summary>
+    /// Gets the total number of items available in this set. For example, if a user has 100 blog posts, the response may only contain 10 items, but the totalItems would be 100.
+    /// </summary>
+    long TotalItems { get; }
+
+    /// <summary>
+    /// Gets the index of the first item. For consistency, startIndex should be 1-based. For example, the first item in the first set of items should have a startIndex of 1. If the user requests the next set of data, the startIndex may be 10.
+    /// </summary>
+    int StartIndex { get; }
+
+    /// <summary>
+    /// Gets the total number of pages in the result set.
+    /// </summary>
+    int TotalPages { get; }
+
+    /// <summary>
     /// Use paging
     /// </summary>
     /// <param name="pageNumber">Page to get (one based index).</param>

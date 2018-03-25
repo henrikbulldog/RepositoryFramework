@@ -7,13 +7,29 @@ using RepositoryFramework.Test.Filters;
 using Microsoft.Data.Sqlite;
 using System.Data;
 using RepositoryFramework.Interfaces;
+using System.Threading.Tasks;
 
 namespace RepositoryFramework.Dapper.Test
 {
   public class DapperRepositoryTest
   {
     [Fact]
-    public void GetById()
+    public async Task GetById()
+    {
+      await GetByIdTest(
+        async (pr, id) =>
+        {
+          return await Task.Run(() => pr.GetById(id));
+        });
+      await GetByIdTest(
+        async (pr, id) =>
+        {
+          return await pr.GetByIdAsync(id);
+        });
+    }
+
+    protected virtual async Task GetByIdTest(
+      Func<IDapperRepository<Category>, object, Task<Category>> getById)
     {
       using (var connection = CreateConnection())
       {
@@ -26,12 +42,12 @@ namespace RepositoryFramework.Dapper.Test
           Name = Guid.NewGuid().ToString(),
           Description = Guid.NewGuid().ToString()
         };
+        await categoryRepository.CreateAsync(category);
 
         // Act
-        categoryRepository.Create(category);
+        var result = await getById(categoryRepository, category.Id.Value);
 
         // Assert
-        var result = categoryRepository.GetById(category.Id.Value);
         Assert.NotNull(result);
         Assert.Equal(category.Id, result.Id);
         Assert.Equal(category.Name, result.Name);
@@ -40,7 +56,22 @@ namespace RepositoryFramework.Dapper.Test
     }
 
     [Fact]
-    public void CreateMany()
+    public async Task CreateMany()
+    {
+      await CreateManyTest(
+        async (r, e) =>
+        {
+          await Task.Run(() => r.CreateMany(e));
+        });
+      await CreateManyTest(
+        async (r, e) =>
+        {
+          await r.CreateManyAsync(e);
+        });
+    }
+
+    protected virtual async Task CreateManyTest(
+      Func<IDapperRepository<Category>, IEnumerable<Category>, Task> createMany)
     {
       using (var connection = CreateConnection())
       {
@@ -61,7 +92,7 @@ namespace RepositoryFramework.Dapper.Test
         }
 
         // Act
-        categoryRepository.CreateMany(createThese);
+        await createMany(categoryRepository, createThese);
 
         // Assert
         var result = categoryRepository.Find();
@@ -71,7 +102,22 @@ namespace RepositoryFramework.Dapper.Test
     }
 
     [Fact]
-    public void Update()
+    public async Task Update()
+    {
+      await UpdateTest(
+        async (r, e) =>
+        {
+          await Task.Run(() => r.Update(e));
+        });
+      await UpdateTest(
+        async (r, e) =>
+        {
+          await r.UpdateAsync(e);
+        });
+    }
+
+    protected virtual async Task UpdateTest(
+      Func<IDapperRepository<Category>, Category, Task> update)
     {
       using (var connection = CreateConnection())
       {
@@ -84,12 +130,12 @@ namespace RepositoryFramework.Dapper.Test
           Name = Guid.NewGuid().ToString(),
           Description = Guid.NewGuid().ToString()
         };
+        await categoryRepository.CreateAsync(category);
 
         // Act
-        categoryRepository.Create(category);
         category.Name = "New Name";
         category.Description = "New Description";
-        categoryRepository.Update(category);
+        await update(categoryRepository, category);
 
         // Assert
         var result = categoryRepository.GetById(category.Id.Value);
@@ -101,7 +147,22 @@ namespace RepositoryFramework.Dapper.Test
     }
 
     [Fact]
-    public void Delete()
+    public async Task Delete()
+    {
+      await DeleteTest(
+        async (r, e) =>
+        {
+          await Task.Run(() => r.Delete(e));
+        });
+      await DeleteTest(
+        async (r, e) =>
+        {
+          await r.DeleteAsync(e);
+        });
+    }
+
+    protected virtual async Task DeleteTest(
+      Func<IDapperRepository<Category>, Category, Task> delete)
     {
       using (var connection = CreateConnection())
       {
@@ -114,12 +175,11 @@ namespace RepositoryFramework.Dapper.Test
           Name = Guid.NewGuid().ToString(),
           Description = Guid.NewGuid().ToString()
         };
-
-        // Act
         categoryRepository.Create(category);
         var result = categoryRepository.GetById(category.Id.Value);
-        Assert.NotNull(result);
-        categoryRepository.Delete(category);
+
+        // Act
+        await delete(categoryRepository, category);
 
         // Assert
         result = categoryRepository.GetById(category.Id.Value);
@@ -128,7 +188,22 @@ namespace RepositoryFramework.Dapper.Test
     }
 
     [Fact]
-    public void DeleteMany()
+    public async Task DeleteMany()
+    {
+      await DeleteManyTest(
+        async (r, e) =>
+        {
+          await Task.Run(() => r.DeleteMany(e));
+        });
+      await DeleteManyTest(
+        async (r, e) =>
+        {
+          await r.DeleteManyAsync(e);
+        });
+    }
+
+    protected virtual async Task DeleteManyTest(
+      Func<IDapperRepository<Category>, IEnumerable<Category>, Task> deleteMany)
     {
       using (var connection = CreateConnection())
       {
@@ -145,7 +220,7 @@ namespace RepositoryFramework.Dapper.Test
             Name = i.ToString(),
             Description = i.ToString()
           };
-          categoryRepository.Create(category);
+          await categoryRepository.CreateAsync(category);
           if (i % 2 == 0)
           {
             deleteThese.Add(category);
@@ -153,7 +228,7 @@ namespace RepositoryFramework.Dapper.Test
         }
 
         // Act
-        categoryRepository.DeleteMany(deleteThese);
+        await deleteMany(categoryRepository, deleteThese);
 
         // Assert
         var result = categoryRepository.Find();
@@ -163,7 +238,22 @@ namespace RepositoryFramework.Dapper.Test
     }
 
     [Fact]
-    public void Find()
+    public async Task Find()
+    {
+      await FindTest(
+        async (r) =>
+        {
+          return await Task.Run(() => r.Find());
+        });
+      await FindTest(
+        async (r) =>
+        {
+          return await r.FindAsync();
+        });
+    }
+
+    protected virtual async Task FindTest(
+      Func<IDapperRepository<Category>, Task<IEnumerable<Category>>> find)
     {
       var rows = 100;
       using (var connection = CreateConnection())
@@ -182,10 +272,10 @@ namespace RepositoryFramework.Dapper.Test
           categories.Add(category);
         }
         var categoryRepository = CreateCategoryRepository(connection);
-        categoryRepository.CreateMany(categories);
+        await categoryRepository.CreateManyAsync(categories);
 
         // Act
-        var result = categoryRepository.Find();
+        var result = await find(categoryRepository);
 
         // Assert
         Assert.NotNull(result);
@@ -194,7 +284,22 @@ namespace RepositoryFramework.Dapper.Test
     }
 
     [Fact]
-    public void Combine_Page_Sort_Find()
+    public async Task Combine_Page_Sort_Find()
+    {
+      await Combine_Page_Sort_Find_Test(
+        async (r) =>
+        {
+          return await Task.Run(() => r.Find());
+        });
+      await Combine_Page_Sort_Find_Test(
+        async (r) =>
+        {
+          return await r.FindAsync();
+        });
+    }
+
+    protected virtual async Task Combine_Page_Sort_Find_Test(
+      Func<IDapperRepository<Category>, Task<IEnumerable<Category>>> find)
     {
       using (var connection = CreateConnection())
       {
@@ -212,13 +317,12 @@ namespace RepositoryFramework.Dapper.Test
           categories.Add(category);
         }
         var categoryRepository = CreateCategoryRepository(connection);
-        categoryRepository.CreateMany(categories);
+        await categoryRepository.CreateManyAsync(categories);
 
         // Act
-        var result = categoryRepository
+        var result = await find(categoryRepository
           .Page(2, 40)
-          .SortBy(c => c.Id)
-          .Find();
+          .SortBy(c => c.Id));
 
         // Assert
         Assert.NotNull(result);
@@ -228,7 +332,22 @@ namespace RepositoryFramework.Dapper.Test
 
 
     [Fact]
-    public void Combine_Page_Sort_FindSql()
+    public async Task Combine_Page_Sort_FindSql()
+    {
+      await Combine_Page_Sort_FindSql_Test(
+        async (r, sql, parameters) =>
+        {
+          return await Task.Run(() => r.Find(sql, parameters));
+        });
+      await Combine_Page_Sort_FindSql_Test(
+        async (r, sql, parameters) =>
+        {
+          return await r.FindAsync(sql, parameters);
+        });
+    }
+
+    protected virtual async Task Combine_Page_Sort_FindSql_Test(
+      Func<IDapperRepository<Category>, string, Dictionary<string, object>, Task<IEnumerable<Category>>> find)
     {
       using (var connection = CreateConnection())
       {
@@ -246,13 +365,13 @@ namespace RepositoryFramework.Dapper.Test
           categories.Add(category);
         }
         var categoryRepository = CreateCategoryRepository(connection);
-        categoryRepository.CreateMany(categories);
+        await categoryRepository.CreateManyAsync(categories);
 
         // Act
-        var result = categoryRepository
+        var result = await find(categoryRepository
           .Page(2, 40)
-          .SortBy(c => c.Id)
-          .Find("SELECT * FROM Category WHERE Id > @Id AND Description <> @Description",
+          .SortBy(c => c.Id),
+          "SELECT * FROM Category WHERE Id > @Id AND Description <> @Description",
           new Dictionary<string, object>
           {
             { "Description", "XXX" },
@@ -266,7 +385,22 @@ namespace RepositoryFramework.Dapper.Test
     }
 
     [Fact]
-    public void FindSql_No_Parameters()
+    public async Task FindSql_No_Parameters()
+    {
+      await FindSql_No_Parameters_Test(
+        async (r, sql) =>
+        {
+          return await Task.Run(() => r.Find(sql));
+        });
+      await FindSql_No_Parameters_Test(
+        async (r, sql) =>
+        {
+          return await r.FindAsync(sql);
+        });
+    }
+
+    protected virtual async Task FindSql_No_Parameters_Test(
+      Func<IDapperRepository<Category>, string, Task<IEnumerable<Category>>> find)
     {
       using (var connection = CreateConnection())
       {
@@ -284,11 +418,10 @@ namespace RepositoryFramework.Dapper.Test
           categories.Add(category);
         }
         var categoryRepository = (DapperRepository<Category>)CreateCategoryRepository(connection);
-        categoryRepository.CreateMany(categories);
+        await categoryRepository.CreateManyAsync(categories);
 
         // Act
-        var result = categoryRepository
-          .Find("SELECT * FROM Category");
+        var result = await find(categoryRepository, "SELECT * FROM Category");
 
         // Assert
         Assert.Equal(100, result.Count());
@@ -296,7 +429,22 @@ namespace RepositoryFramework.Dapper.Test
     }
 
     [Fact]
-    public void FindSql_With_Parameters()
+    public async Task FindSql_With_Parameters()
+    {
+      await FindSql_With_Parameters_Test(
+        async (r, sql, parameters) =>
+        {
+          return await Task.Run(() => r.Find(sql, parameters));
+        });
+      await FindSql_With_Parameters_Test(
+        async (r, sql, parameters) =>
+        {
+          return await r.FindAsync(sql, parameters);
+        });
+    }
+
+    protected virtual async Task FindSql_With_Parameters_Test(
+      Func<IDapperRepository<Category>, string, Dictionary<string, object>, Task<IEnumerable<Category>>> find)
     {
       using (var connection = CreateConnection())
       {
@@ -314,11 +462,11 @@ namespace RepositoryFramework.Dapper.Test
           categories.Add(category);
         }
         var categoryRepository = (DapperRepository<Category>)CreateCategoryRepository(connection);
-        categoryRepository.CreateMany(categories);
+        await categoryRepository.CreateManyAsync(categories);
 
         // Act
-        var result = categoryRepository
-          .Find("SELECT * FROM Category WHERE Id > @Id AND Description <> @Description",
+        var result = await find(categoryRepository,
+          "SELECT * FROM Category WHERE Id > @Id AND Description <> @Description",
           new Dictionary<string, object>
           {
             { "Description", "XXX" },
@@ -331,7 +479,22 @@ namespace RepositoryFramework.Dapper.Test
     }
 
     [Fact]
-    public void FindSql_With_Parameters_And_Pattern()
+    public async Task FindSql_With_Parameters_And_Pattern()
+    {
+      await FindSql_With_Parameters_And_Pattern_Test(
+        async (r, sql, parameters, pattern) =>
+        {
+          return await Task.Run(() => r.Find(sql, parameters, pattern));
+        });
+      await FindSql_With_Parameters_And_Pattern_Test(
+        async (r, sql, parameters, pattern) =>
+        {
+          return await r.FindAsync(sql, parameters, pattern);
+        });
+    }
+
+    protected virtual async Task FindSql_With_Parameters_And_Pattern_Test(
+      Func<IDapperRepository<Category>, string, Dictionary<string, object>, string, Task<IEnumerable<Category>>> find)
     {
       using (var connection = CreateConnection())
       {
@@ -349,11 +512,11 @@ namespace RepositoryFramework.Dapper.Test
           categories.Add(category);
         }
         var categoryRepository = (DapperRepository<Category>)CreateCategoryRepository(connection);
-        categoryRepository.CreateMany(categories);
+        await categoryRepository.CreateManyAsync(categories);
 
         // Act
-        var result = categoryRepository
-          .Find("SELECT * FROM Category WHERE Id > :Id AND Description <> :Description",
+        var result = await find(categoryRepository,
+          "SELECT * FROM Category WHERE Id > :Id AND Description <> :Description",
           new Dictionary<string, object>
           {
             { "Description", "XXX" },
@@ -367,7 +530,22 @@ namespace RepositoryFramework.Dapper.Test
     }
 
     [Fact]
-    public void FindSql_Wrong_Parameter()
+    public async Task FindSql_Wrong_Parameter()
+    {
+      await FindSql_Wrong_Parameter_Test(
+        async (r, sql, parameters) =>
+        {
+          return await Task.Run(() => r.Find(sql, parameters));
+        });
+      await FindSql_Wrong_Parameter_Test(
+        async (r, sql, parameters) =>
+        {
+          return await r.FindAsync(sql, parameters);
+        });
+    }
+
+    protected virtual async Task FindSql_Wrong_Parameter_Test(
+      Func<IDapperRepository<Category>, string, Dictionary<string, object>, Task<IEnumerable<Category>>> find)
     {
       using (var connection = CreateConnection())
       {
@@ -388,12 +566,11 @@ namespace RepositoryFramework.Dapper.Test
         categoryRepository.CreateMany(categories);
 
         // Act
-
         // Assert
-        Assert.Throws(typeof(ArgumentException), () => 
-          categoryRepository.Find("SELECT * FROM Category WHERE Id > @Id"));
-        Assert.Throws(typeof(ArgumentException), () => 
-          categoryRepository.Find("SELECT * FROM Category WHERE Id > @Id", 
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
+          await find(categoryRepository, "SELECT * FROM Category WHERE Id > @Id", null));
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
+          await find(categoryRepository, "SELECT * FROM Category WHERE Id > @Id",
             new Dictionary<string, object> { { "Wrong", 1 } }));
       }
     }
@@ -403,7 +580,22 @@ namespace RepositoryFramework.Dapper.Test
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public void SortBy(bool descendingOrder, bool useExpression)
+    public async Task SortBy(bool descendingOrder, bool useExpression)
+    {
+      await SortByTest(descendingOrder, useExpression,
+        async (r) =>
+        {
+          return await Task.Run(() => r.Find());
+        });
+      await SortByTest(descendingOrder, useExpression,
+        async (r) =>
+        {
+          return await r.FindAsync();
+        });
+    }
+
+    protected virtual async Task SortByTest(bool descendingOrder, bool useExpression,
+      Func<ISortableRepository<Category>, Task<IEnumerable<Category>>> find)
     {
       // Create new empty database
       using (var connection = CreateConnection())
@@ -422,7 +614,7 @@ namespace RepositoryFramework.Dapper.Test
           categories.Add(category);
         }
         ISortableRepository<Category> categoryRepository = CreateCategoryRepository(connection);
-        categoryRepository.CreateMany(categories);
+        await categoryRepository.CreateManyAsync(categories);
 
         // Act
         if (descendingOrder)
@@ -446,7 +638,7 @@ namespace RepositoryFramework.Dapper.Test
           categoryRepository.SortBy(p => p.Name);
         }
 
-        var result = categoryRepository.Find().ToList();
+        var result = (await find(categoryRepository)).ToList();
 
         // Assert
         var sortedCategories = descendingOrder
@@ -454,16 +646,6 @@ namespace RepositoryFramework.Dapper.Test
           : result.OrderBy(p => p.Name);
         Assert.NotNull(result);
         Assert.Equal(result, sortedCategories);
-
-        // Act
-        result = categoryRepository
-          .ClearSorting()
-          .Find()
-          .ToList();
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.NotEqual(result, sortedCategories);
       }
     }
 
@@ -472,7 +654,23 @@ namespace RepositoryFramework.Dapper.Test
     [InlineData(2, 40, 100, 40)]
     [InlineData(3, 40, 100, 20)]
     [InlineData(4, 40, 100, 0)]
-    public void Page(int page, int pageSize, int totalRows, int expectedRows)
+    [InlineData(1, 0, 100, 100)]
+    public async Task Page(int page, int pageSize, int totalRows, int expectedRows)
+    {
+      await PageTest(page, pageSize, totalRows, expectedRows,
+        async (r) =>
+        {
+          return await Task.Run(() => r.Find());
+        });
+      await PageTest(page, pageSize, totalRows, expectedRows,
+        async (r) =>
+        {
+          return await r.FindAsync();
+        });
+    }
+
+    protected virtual async Task PageTest(int page, int pageSize, int totalRows, int expectedRows,
+      Func<IPageableRepository<Category>, Task<IEnumerable<Category>>> find)
     {
       // Create new empty database
       using (var connection = CreateConnection())
@@ -491,29 +689,17 @@ namespace RepositoryFramework.Dapper.Test
           categories.Add(category);
         }
         IPageableRepository<Category> categoryRepository = CreateCategoryRepository(connection);
-        categoryRepository.CreateMany(categories);
+        await categoryRepository.CreateManyAsync(categories);
 
         // Act
-        var pageItems = categoryRepository
-          .Page(page, pageSize)
-          .Find();
+        var pageItems = await find(categoryRepository.Page(page, pageSize));
 
         // Assert
         Assert.NotNull(pageItems);
         Assert.Equal(expectedRows, pageItems.Count());
-
-        // Assert
-        Assert.NotNull(pageItems);
-        Assert.Equal(expectedRows, pageItems.Count());
-
-        // Act
-        pageItems = categoryRepository
-          .ClearPaging()
-          .Find();
-
-        // Assert
-        Assert.NotNull(pageItems);
-        Assert.Equal(totalRows, pageItems.Count());
+        Assert.Equal(totalRows, categoryRepository.TotalItems);
+        Assert.Equal(pageSize == 0 ? 1 : (totalRows / pageSize) + 1, categoryRepository.TotalPages);
+        Assert.Equal((page * pageSize) + 1, categoryRepository.StartIndex);
       }
     }
 
