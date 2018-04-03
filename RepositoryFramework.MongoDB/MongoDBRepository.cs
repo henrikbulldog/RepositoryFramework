@@ -82,7 +82,7 @@ namespace RepositoryFramework.MongoDB
     /// </summary>
     public virtual int StartIndex
     {
-      get { return (PageNumber * PageSize) + 1; }
+      get { return PageNumber < 2 ? 1 : ((PageNumber - 1) * PageSize) + 1; }
     }
 
     /// <summary>

@@ -253,7 +253,8 @@ namespace RepositoryFramework.MongoDB.Test
       Assert.Equal(expectedRows, pageItems.Count());
       Assert.Equal(totalRows, mongoDBRepository.TotalItems);
       Assert.Equal(pageSize == 0 ? 1 : (totalRows / pageSize) + 1, mongoDBRepository.TotalPages);
-      Assert.Equal((page * pageSize) + 1, mongoDBRepository.StartIndex);
+      Assert.Equal(page, mongoDBRepository.PageNumber);
+      Assert.Equal(page < 2 ? 1 : ((page - 1) * pageSize) + 1, mongoDBRepository.StartIndex);
     }
 
     [Fact]

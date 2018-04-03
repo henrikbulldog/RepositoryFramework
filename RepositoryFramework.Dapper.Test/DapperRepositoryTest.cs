@@ -699,7 +699,8 @@ namespace RepositoryFramework.Dapper.Test
         Assert.Equal(expectedRows, pageItems.Count());
         Assert.Equal(totalRows, categoryRepository.TotalItems);
         Assert.Equal(pageSize == 0 ? 1 : (totalRows / pageSize) + 1, categoryRepository.TotalPages);
-        Assert.Equal((page * pageSize) + 1, categoryRepository.StartIndex);
+        Assert.Equal(page, categoryRepository.PageNumber);
+        Assert.Equal(page < 2 ? 1 : ((page - 1) * pageSize) + 1, categoryRepository.StartIndex);
       }
     }
 
