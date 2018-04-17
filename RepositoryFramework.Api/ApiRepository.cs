@@ -907,7 +907,10 @@ namespace RepositoryFramework.Api
           headerParams["api_key"] = GetApiKeyWithPrefix("api_key");
           break;
         case AuthenticationType.OAuth2:
-          RestClient.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(Configuration.AccessToken);
+          RestClient.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(Configuration.AccessToken, "Bearer");
+          break;
+        case AuthenticationType.Jwt:
+          RestClient.Authenticator = new JwtAuthenticator(Configuration.AccessToken);
           break;
       }
     }

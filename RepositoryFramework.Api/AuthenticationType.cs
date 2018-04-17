@@ -23,6 +23,11 @@
     /// <summary>
     /// OAuth2 / OpenID Connect token authentication
     /// </summary>
-    OAuth2
+    OAuth2,
+
+    /// <summary>
+    /// Jwt authentication
+    /// </summary>
+    Jwt
   }
 }
