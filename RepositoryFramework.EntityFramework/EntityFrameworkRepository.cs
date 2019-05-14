@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using RepositoryFramework.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using RepositoryFramework.Interfaces;
 
 namespace RepositoryFramework.EntityFramework
 {
@@ -19,9 +19,6 @@ namespace RepositoryFramework.EntityFramework
     IEntityFrameworkRepository<TEntity>
     where TEntity : class
   {
-    private long totalItems = 0;
-    private Task<long> totalItemsTask = null;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="EntityFrameworkRepository{TEntity}"/> class
     /// </summary>
@@ -66,20 +63,7 @@ namespace RepositoryFramework.EntityFramework
     /// <summary>
     /// Gets the total number of items available in this set. For example, if a user has 100 blog posts, the response may only contain 10 items, but the totalItems would be 100.
     /// </summary>
-    public virtual long TotalItems
-    {
-      get
-      {
-        if (this.totalItemsTask != null)
-        {
-          this.totalItemsTask.WaitSync();
-          this.totalItems = this.totalItemsTask.Result;
-          this.totalItemsTask = null;
-        }
-
-        return this.totalItems;
-      }
-    }
+    public virtual long TotalItems { get; private set; } = 0;
 
     /// <summary>
     /// Gets the index of the first item. For consistency, startIndex should be 1-based. For example, the first item in the first set of items should have a startIndex of 1. If the user requests the next set of data, the startIndex may be 10.
@@ -307,11 +291,11 @@ namespace RepositoryFramework.EntityFramework
       var r = await GetQuery().ToListAsync();
       if (PageSize == 0)
       {
-        this.totalItems = r.LongCount();
+        TotalItems = r.LongCount();
       }
       else
       {
-        totalItemsTask = GetQuery(false, false).LongCountAsync();
+        TotalItems = await GetQuery(false, false).LongCountAsync();
       }
 
       return r;
@@ -346,11 +330,11 @@ namespace RepositoryFramework.EntityFramework
       var r = await GetQuery(sql, parameters, parameterPattern).ToListAsync();
       if (PageSize == 0)
       {
-        this.totalItems = r.LongCount();
+        TotalItems = r.LongCount();
       }
       else
       {
-        totalItemsTask = GetQuery(sql, parameters, parameterPattern, false, false).LongCountAsync();
+        TotalItems = await GetQuery(sql, parameters, parameterPattern, false, false).LongCountAsync();
       }
 
       return r;
@@ -380,11 +364,11 @@ namespace RepositoryFramework.EntityFramework
           .ToListAsync();
       if (PageSize == 0)
       {
-        this.totalItems = r.LongCount();
+        TotalItems = r.LongCount();
       }
       else
       {
-        totalItemsTask = GetQuery(false, false).Where(where).LongCountAsync();
+        TotalItems = await GetQuery(false, false).Where(where).LongCountAsync();
       }
 
       return r;
@@ -575,15 +559,13 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Current instance</returns>
     public IEntityFrameworkRepository<TEntity> SortBy(string propertyName)
     {
-      if (propertyName == null)
+      if (!string.IsNullOrWhiteSpace(propertyName))
       {
-        throw new ArgumentNullException(nameof(propertyName));
+        ValidatePropertyName(propertyName, out propertyName);
+        SortOrder = Interfaces.SortOrder.Ascending;
+        SortPropertyName = propertyName;
       }
 
-      ValidatePropertyName(propertyName, out propertyName);
-
-      SortOrder = Interfaces.SortOrder.Ascending;
-      SortPropertyName = propertyName;
       return this;
     }
 
@@ -605,13 +587,12 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Current instance</returns>
     public IEntityFrameworkRepository<TEntity> SortByDescending(Expression<Func<TEntity, object>> property)
     {
-      if (property == null)
+      if (property != null)
       {
-        throw new ArgumentNullException(nameof(property));
+        var name = GetPropertyName(property);
+        SortByDescending(name);
       }
 
-      var name = GetPropertyName(property);
-      SortByDescending(name);
       return this;
     }
 
@@ -632,15 +613,13 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Current instance</returns>
     public IEntityFrameworkRepository<TEntity> SortByDescending(string propertyName)
     {
-      if (propertyName == null)
+      if (!string.IsNullOrWhiteSpace(propertyName))
       {
-        throw new ArgumentNullException(nameof(propertyName));
+        ValidatePropertyName(propertyName, out propertyName);
+        SortOrder = Interfaces.SortOrder.Descending;
+        SortPropertyName = propertyName;
       }
 
-      ValidatePropertyName(propertyName, out propertyName);
-
-      SortOrder = Interfaces.SortOrder.Descending;
-      SortPropertyName = propertyName;
       return this;
     }
 
