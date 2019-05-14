@@ -1,15 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RepositoryFramework.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
-namespace RepositoryFramework.EntityFramework
+﻿namespace RepositoryFramework.EntityFramework
 {
+  using System;
+  using System.Collections.Generic;
+  using System.Linq;
+  using System.Linq.Expressions;
+  using System.Reflection;
+  using System.Text.RegularExpressions;
+  using System.Threading.Tasks;
+  using Microsoft.EntityFrameworkCore;
+  using RepositoryFramework.Interfaces;
+
   /// <summary>
   /// Repository that uses Entity Framework Core
   /// </summary>
@@ -24,11 +24,13 @@ namespace RepositoryFramework.EntityFramework
     /// </summary>
     /// <param name="dbContext">Database context</param>
     /// <param name="autoCommit">Automatically save changes when data is modified</param>
+    /// <param name="calculateTotalItems">Set whether TotalItems is calculated on Find()</param>
     /// <param name="idProperty">Id property expression</param>
     public EntityFrameworkRepository(
       DbContext dbContext,
       Expression<Func<TEntity, object>> idProperty = null,
-      bool autoCommit = true)
+      bool autoCommit = true,
+      bool calculateTotalItems = true)
       : base(idProperty)
     {
       if (dbContext == null)
@@ -38,12 +40,18 @@ namespace RepositoryFramework.EntityFramework
 
       DbContext = dbContext;
       AutoCommit = autoCommit;
+      CalculateTotalItems = calculateTotalItems;
     }
 
     /// <summary>
     /// Gets or sets a value indicating whether to automatically save changes when data is modified
     /// </summary>
     public bool AutoCommit { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether TotalItems is calculated on Find()
+    /// </summary>
+    public bool CalculateTotalItems { get; }
 
     /// <summary>
     /// Gets a list of reference properties to include
@@ -288,17 +296,7 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Query result</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync()
     {
-      var r = await GetQuery().ToListAsync();
-      if (PageSize == 0)
-      {
-        TotalItems = r.LongCount();
-      }
-      else
-      {
-        TotalItems = await GetQuery(false, false).LongCountAsync();
-      }
-
-      return r;
+      return await FindAsync(null);
     }
 
     /// <summary>
@@ -327,17 +325,46 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Filtered collection of entities</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync(string sql, IDictionary<string, object> parameters = null, string parameterPattern = "@(\\w+)")
     {
-      var r = await GetQuery(sql, parameters, parameterPattern).ToListAsync();
-      if (PageSize == 0)
+      var query = DbContext.Set<TEntity>().AsQueryable();
+      if (!string.IsNullOrWhiteSpace(sql))
       {
-        TotalItems = r.LongCount();
-      }
-      else
-      {
-        TotalItems = await GetQuery(sql, parameters, parameterPattern, false, false).LongCountAsync();
+        if (parameters == null)
+        {
+          parameters = new Dictionary<string, object>();
+        }
+
+        var parameterValues = new List<object>();
+        var placeholders = Regex.Matches(sql, parameterPattern);
+        for (int i = 0; i < placeholders.Count; i++)
+        {
+          sql = sql.Replace(placeholders[i].Value, $"{{{i}}}");
+
+          var parameterName = Regex.Match(placeholders[i].Value, @"(\w+)").Value;
+          if (!parameters.ContainsKey(parameterName))
+          {
+            throw new ArgumentException($"Value must be specified for parameter \"{parameterName}\"");
+          }
+
+          parameterValues.Add(parameters[parameterName]);
+        }
+
+        query = query.FromSql(sql, parameterValues.ToArray());
       }
 
-      return r;
+      foreach (var propertyName in Includes)
+      {
+        query = query.Include(propertyName);
+      }
+
+      if (CalculateTotalItems)
+      {
+        TotalItems = await query.LongCountAsync();
+      }
+
+      return await query
+        .Sort(this)
+        .Page(this)
+        .ToListAsync();
     }
 
     /// <summary>
@@ -359,19 +386,26 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Filtered collection of entities</returns>
     public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> where)
     {
-      var r = await GetQuery()
-          .Where(where)
-          .ToListAsync();
-      if (PageSize == 0)
+      var query = DbContext.Set<TEntity>().AsQueryable();
+      if (where != null)
       {
-        TotalItems = r.LongCount();
-      }
-      else
-      {
-        TotalItems = await GetQuery(false, false).Where(where).LongCountAsync();
+        query = query.Where(where);
       }
 
-      return r;
+      foreach (var propertyName in Includes)
+      {
+        query = query.Include(propertyName);
+      }
+
+      if (CalculateTotalItems)
+      {
+        TotalItems = await query.LongCountAsync();
+      }
+
+      return await query
+        .Sort(this)
+        .Page(this)
+        .ToListAsync();
     }
 
     /// <summary>
@@ -709,76 +743,15 @@ namespace RepositoryFramework.EntityFramework
     /// <returns>Queryable collection of entities</returns>
     public virtual IQueryable<TEntity> AsQueryable()
     {
-      return GetQuery();
-    }
-
-    /// <summary>
-    /// Gets a collection of entities with sorting, paging and include constraints
-    /// </summary>
-    /// <param name="sort">Sort</param>
-    /// <param name="page">Page</param>
-    /// <returns>Queryable collection</returns>
-    protected virtual IQueryable<TEntity> GetQuery(bool sort = true, bool page = true)
-    {
-      IQueryable<TEntity> query = DbContext.Set<TEntity>();
-
+      var query = DbContext.Set<TEntity>().AsQueryable();
       foreach (var propertyName in Includes)
       {
         query = query.Include(propertyName);
       }
 
-      if (sort)
-      {
-        query = query.Sort(this);
-      }
-
-      if (page)
-      {
-        query = query.Page(this);
-      }
-
-      return query;
-    }
-
-    /// <summary>
-    /// Filters a collection of entities using a predicate
-    /// </summary>
-    /// <param name="sql">SQL containing named parameter placeholders. For example: SELECT * FROM Customer WHERE Id = @Id</param>
-    /// <param name="parameters">Named parameters</param>
-    /// <param name="parameterPattern">Parameter Regex pattern, Defualts to @(\w+)</param>
-    /// <param name="sort">Sort</param>
-    /// <param name="page">Page</param>
-    /// <returns>Queryable collection</returns>
-    protected virtual IQueryable<TEntity> GetQuery(
-      string sql,
-      IDictionary<string, object> parameters,
-      string parameterPattern,
-      bool sort = true,
-      bool page = true)
-    {
-      if (parameters == null)
-      {
-        parameters = new Dictionary<string, object>();
-      }
-
-      var parameterValues = new List<object>();
-
-      var placeholders = Regex.Matches(sql, parameterPattern);
-      for (int i = 0; i < placeholders.Count; i++)
-      {
-        sql = sql.Replace(placeholders[i].Value, $"{{{i}}}");
-
-        var parameterName = Regex.Match(placeholders[i].Value, @"(\w+)").Value;
-        if (!parameters.ContainsKey(parameterName))
-        {
-          throw new ArgumentException($"Value must be specified for parameter \"{parameterName}\"");
-        }
-
-        parameterValues.Add(parameters[parameterName]);
-      }
-
-      return GetQuery(sort, page)
-        .FromSql(sql, parameterValues.ToArray());
+      return query
+        .Sort(this)
+        .Page(this);
     }
   }
 }
