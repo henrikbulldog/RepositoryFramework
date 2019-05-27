@@ -19,6 +19,8 @@
     IEntityFrameworkRepository<TEntity>
     where TEntity : class
   {
+    private IQueryable<TEntity> whereExpression = null;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="EntityFrameworkRepository{TEntity}"/> class
     /// </summary>
@@ -391,6 +393,10 @@
       {
         query = query.Where(where);
       }
+      else if (whereExpression != null)
+      {
+        query = whereExpression;
+      }
 
       foreach (var propertyName in Includes)
       {
@@ -743,7 +749,12 @@
     /// <returns>Queryable collection of entities</returns>
     public virtual IQueryable<TEntity> AsQueryable()
     {
-      var query = DbContext.Set<TEntity>().AsQueryable();
+      if (whereExpression == null)
+      {
+        whereExpression = DbContext.Set<TEntity>();
+      }
+
+      var query = whereExpression;
       foreach (var propertyName in Includes)
       {
         query = query.Include(propertyName);
@@ -752,6 +763,25 @@
       return query
         .Sort(this)
         .Page(this);
+    }
+
+    /// <inheritdoc/>
+    public IQueryableRepository<TEntity> Where(Expression<Func<TEntity, bool>> where)
+    {
+      if (whereExpression == null)
+      {
+        whereExpression = DbContext.Set<TEntity>();
+      }
+
+      whereExpression = whereExpression.Where(where);
+      return this;
+    }
+
+    /// <inheritdoc/>
+    public IQueryableRepository<TEntity> ClearWhere()
+    {
+      whereExpression = null;
+      return this;
     }
   }
 }

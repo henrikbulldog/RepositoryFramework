@@ -19,6 +19,7 @@ namespace RepositoryFramework.MongoDB
   {
     private long totalItems = 0;
     private Task<long> totalItemsTask = null;
+    private IQueryable<TEntity> whereExpression = null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoDBRepository{TEntity}"/> class
@@ -517,11 +518,33 @@ namespace RepositoryFramework.MongoDB
     /// <returns>Queryable collection of entities</returns>
     public IQueryable<TEntity> AsQueryable()
     {
-      IQueryable<TEntity> query = Collection.AsQueryable();
+      if (whereExpression == null)
+      {
+        whereExpression = Collection.AsQueryable();
+      }
 
-      return query
+      return whereExpression
         .Sort(this)
         .Page(this);
+    }
+
+    /// <inheritdoc/>
+    public IQueryableRepository<TEntity> Where(Expression<Func<TEntity, bool>> where)
+    {
+      if (whereExpression == null)
+      {
+        whereExpression = Collection.AsQueryable();
+      }
+
+      whereExpression = whereExpression.Where(where);
+      return this;
+    }
+
+    /// <inheritdoc/>
+    public IQueryableRepository<TEntity> ClearWhere()
+    {
+      whereExpression = null;
+      return this;
     }
 
     /// <summary>

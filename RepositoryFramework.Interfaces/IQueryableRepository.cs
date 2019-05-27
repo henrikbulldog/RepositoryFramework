@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace RepositoryFramework.Interfaces
@@ -18,5 +19,18 @@ namespace RepositoryFramework.Interfaces
     /// </summary>
     /// <returns>Queryable collection of entities</returns>
     IQueryable<TEntity> AsQueryable();
+
+    /// <summary>
+    /// Filters a collection of entities using a predicate using deferred execution
+    /// </summary>
+    /// <param name="where">Where predicate</param>
+    /// <returns>Filtered collection of entities for deferred execution</returns>
+    IQueryableRepository<TEntity> Where(Expression<Func<TEntity, bool>> where);
+
+    /// <summary>
+    /// Clear filters
+    /// </summary>
+    /// <returns>Current instance</returns>
+    IQueryableRepository<TEntity> ClearWhere();
   }
 }
