@@ -1,15 +1,17 @@
-﻿using Microsoft.WindowsAzure.Storage.Blob;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using System.Threading;
-using Microsoft.WindowsAzure.Storage;
 using System.IO;
 using Xunit;
 using RepositoryFramework.Interfaces;
 using System.Text;
+using Microsoft.Azure.Storage.Auth;
+using Microsoft.Azure.Storage.Blob;
+using Microsoft.Azure.Storage;
+using Microsoft.Azure.Services.AppAuthentication;
 
 namespace RepositoryFramework.Azure.Blob.Test
 {
@@ -24,6 +26,11 @@ namespace RepositoryFramework.Azure.Blob.Test
     /// Specify environment variable that contains Azure Storage connection string
     /// </summary>
     private const string azureStorageConnectionEnvironmentVariable = "Azure.Storage.Connection";
+
+    /// <summary>
+    /// Specify environment variable that contains Azure Storage URI
+    /// </summary>
+    private const string azureStorageAccountNameEnvironmentVariable = "Azure.Storage.AccountName";
 
     [Fact]
     public void Upload_And_Download_File()
@@ -146,14 +153,29 @@ namespace RepositoryFramework.Azure.Blob.Test
       {
         return GetCloudBlobContainerMock().Object;
       }
+
       var connectionString = Environment.GetEnvironmentVariable(azureStorageConnectionEnvironmentVariable);
-      if (string.IsNullOrWhiteSpace(connectionString))
+      if (!string.IsNullOrWhiteSpace(connectionString))
       {
-        throw new Exception($"Environment variable {azureStorageConnectionEnvironmentVariable} must be set");
+        CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
+        CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+        return blobClient.GetContainerReference("data");
       }
-      CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
-      CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-      return blobClient.GetContainerReference("data");
+
+      var accountName = Environment.GetEnvironmentVariable(azureStorageAccountNameEnvironmentVariable);
+      if (!string.IsNullOrWhiteSpace(accountName))
+      {
+        var tokenProvider = new AzureServiceTokenProvider();
+        var token = tokenProvider.GetAccessTokenAsync($"https://{accountName}.core.windows.net").GetAwaiter().GetResult();
+        var tokenCred = new TokenCredential(token);
+        var creds = new StorageCredentials(tokenCred);
+
+        var cloudStorageAccount = new CloudStorageAccount(storageCredentials: creds, accountName: accountName, endpointSuffix: "core.windows.net", useHttps: true);
+        var blobClient = cloudStorageAccount.CreateCloudBlobClient();
+        return blobClient.GetContainerReference("data");
+      }
+
+      return null;
     }
 
     private Mock<CloudBlobContainer> GetCloudBlobContainerMock()
